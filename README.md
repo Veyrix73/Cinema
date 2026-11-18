@@ -7,7 +7,7 @@ A bilingual (Latvian / English) cinema booking website with a Node.js API and Po
 - Latvian and English language switch.
 - Movie catalogue with search, genre filters, poster thumbnails and animated page transitions.
 - Admin movie editor accepts HTTPS poster URLs or JPG/PNG/WebP image uploads (automatically resized before saving).
-- Four-step booking flow: screening, seating, upgrades/snacks and contact details.
+- Four-step booking flow: screening, seating, snacks and contact details.
 - 7 physical seats per screening: 6 bed-style seats plus 1 separate office chair.
 - Automatic seat assignment or custom seat selection (€0.10 per booking).
 - One separately selectable office-chair seat with its own configurable surcharge.
