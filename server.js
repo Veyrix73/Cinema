@@ -53,6 +53,35 @@ const defaultMovies = [
   { title: "Augļu lielais piedzīvojums", genre: "Piedzīvojumi", duration: 96, age: "U", year: 2026, emoji: "🍍", poster: "linear-gradient(135deg,#9b5623,#4c6a32)", description: "Jautrs ģimenes piedzīvojums — Dancing Fruit Cinema demonstrācijas filma." }
 ];
 
+const BED_SEATS = Array.from({length:6},(_,index)=>"BED-"+(index+1));
+const OFFICE_SEAT = "OFFICE-1";
+const ROOM_SEATS = [...BED_SEATS,OFFICE_SEAT];
+
+async function createRoomSeats(client,screeningId) {
+  for (const seat of BED_SEATS) {
+    await client.query(
+      "INSERT INTO screening_seats(screening_id,seat_number,office_chair) VALUES($1,$2,FALSE) ON CONFLICT(screening_id,seat_number) DO UPDATE SET office_chair=FALSE",
+      [screeningId,seat]
+    );
+  }
+  await client.query(
+    "INSERT INTO screening_seats(screening_id,seat_number,office_chair) VALUES($1,$2,TRUE) ON CONFLICT(screening_id,seat_number) DO UPDATE SET office_chair=TRUE",
+    [screeningId,OFFICE_SEAT]
+  );
+}
+
+// Keep existing reservations intact while limiting every screening to the real seven-seat room.
+async function ensureRoomLayout() {
+  const screenings = await pool.query("SELECT id FROM screenings");
+  for (const screening of screenings.rows) {
+    await createRoomSeats(pool,screening.id);
+    await pool.query(
+      "DELETE FROM screening_seats WHERE screening_id=$1 AND NOT (seat_number=ANY($2::text[])) AND booking_id IS NULL",
+      [screening.id,ROOM_SEATS]
+    );
+  }
+}
+
 async function createScreening(movieId, date, time, hallName) {
   const id = crypto.randomUUID();
   const result = await pool.query(
@@ -62,15 +91,7 @@ async function createScreening(movieId, date, time, hallName) {
     [id, movieId, date, time, hallName || "1. zāle"]
   );
   if (!result.rowCount) return;
-  for (let row = 1; row <= 6; row++) {
-    for (let col = 0; col < 6; col++) {
-      const seat = "R" + row + "-" + String.fromCharCode(65 + col);
-      await pool.query(
-        "INSERT INTO screening_seats(screening_id,seat_number) VALUES($1,$2) ON CONFLICT DO NOTHING",
-        [id, seat]
-      );
-    }
-  }
+  await createRoomSeats(pool,id);
 }
 
 async function initDatabase() {
@@ -78,7 +99,7 @@ async function initDatabase() {
     "CREATE TABLE IF NOT EXISTS admin_users (id UUID PRIMARY KEY, username TEXT NOT NULL UNIQUE, password_hash TEXT NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW())",
     "CREATE TABLE IF NOT EXISTS movies (id UUID PRIMARY KEY, title TEXT NOT NULL, genre TEXT NOT NULL DEFAULT 'Cits', duration INTEGER NOT NULL CHECK(duration>0), age TEXT NOT NULL DEFAULT 'U', year INTEGER NOT NULL, emoji TEXT NOT NULL DEFAULT '🎬', poster TEXT NOT NULL DEFAULT 'linear-gradient(135deg,#753039,#182838)', description TEXT NOT NULL DEFAULT '', active BOOLEAN NOT NULL DEFAULT TRUE, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW())",
     "CREATE TABLE IF NOT EXISTS screenings (id UUID PRIMARY KEY, movie_id UUID NOT NULL REFERENCES movies(id) ON DELETE RESTRICT, show_date DATE NOT NULL, show_time TIME NOT NULL, starts_at TIMESTAMPTZ NOT NULL, hall_name TEXT NOT NULL DEFAULT '1. zāle', created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), UNIQUE(movie_id,show_date,show_time))",
-    "CREATE TABLE IF NOT EXISTS bookings (id UUID PRIMARY KEY, booking_code TEXT NOT NULL UNIQUE, screening_id UUID NOT NULL REFERENCES screenings(id) ON DELETE RESTRICT, customer_name TEXT NOT NULL, customer_email TEXT NOT NULL, ticket_count INTEGER NOT NULL CHECK(ticket_count BETWEEN 1 AND 8), custom_selection BOOLEAN NOT NULL DEFAULT FALSE, water_count INTEGER NOT NULL DEFAULT 0 CHECK(water_count>=0), popcorn_count INTEGER NOT NULL DEFAULT 0 CHECK(popcorn_count>=0), total_cents INTEGER NOT NULL CHECK(total_cents>=0), status TEXT NOT NULL DEFAULT 'confirmed' CHECK(status IN ('confirmed','cancelled')), created_at TIMESTAMPTZ NOT NULL DEFAULT NOW())",
+    "CREATE TABLE IF NOT EXISTS bookings (id UUID PRIMARY KEY, booking_code TEXT NOT NULL UNIQUE, screening_id UUID NOT NULL REFERENCES screenings(id) ON DELETE RESTRICT, customer_name TEXT NOT NULL, customer_email TEXT NOT NULL, ticket_count INTEGER NOT NULL CHECK(ticket_count BETWEEN 1 AND 7), custom_selection BOOLEAN NOT NULL DEFAULT FALSE, water_count INTEGER NOT NULL DEFAULT 0 CHECK(water_count>=0), popcorn_count INTEGER NOT NULL DEFAULT 0 CHECK(popcorn_count>=0), total_cents INTEGER NOT NULL CHECK(total_cents>=0), status TEXT NOT NULL DEFAULT 'confirmed' CHECK(status IN ('confirmed','cancelled')), created_at TIMESTAMPTZ NOT NULL DEFAULT NOW())",
     "CREATE TABLE IF NOT EXISTS screening_seats (screening_id UUID NOT NULL REFERENCES screenings(id) ON DELETE CASCADE, seat_number TEXT NOT NULL, booking_id UUID REFERENCES bookings(id) ON DELETE SET NULL, office_chair BOOLEAN NOT NULL DEFAULT FALSE, PRIMARY KEY(screening_id,seat_number))",
     "CREATE TABLE IF NOT EXISTS booking_seats (booking_id UUID NOT NULL REFERENCES bookings(id) ON DELETE CASCADE, screening_id UUID NOT NULL REFERENCES screenings(id) ON DELETE RESTRICT, seat_number TEXT NOT NULL, office_chair BOOLEAN NOT NULL DEFAULT FALSE, PRIMARY KEY(booking_id,seat_number))",
     "CREATE TABLE IF NOT EXISTS cinema_settings (setting_key TEXT PRIMARY KEY, value_cents INTEGER NOT NULL CHECK(value_cents>=0))",
@@ -116,6 +137,8 @@ async function initDatabase() {
       for (const time of times) await createScreening(id,dateString,time,"1. zāle");
     }
   }
+
+  await ensureRoomLayout();
 }
 
 async function getPrices(client) {
@@ -162,35 +185,48 @@ app.get("/api/prices", async (req,res,next) => {
 app.get("/api/screenings/:id/seats", async (req,res,next) => {
   try {
     const result = await pool.query(
-      "SELECT seat_number,(booking_id IS NOT NULL) AS occupied,office_chair FROM screening_seats WHERE screening_id=$1 ORDER BY seat_number",
-      [req.params.id]
+      "SELECT seat_number,(booking_id IS NOT NULL) AS occupied,office_chair FROM screening_seats WHERE screening_id=$1 AND seat_number=ANY($2::text[]) ORDER BY array_position($2::text[],seat_number)",
+      [req.params.id,ROOM_SEATS]
     );
     if (!result.rowCount) return res.status(404).json({error:"Screening not found."});
-    res.json({seats:result.rows});
+    const legacy = await pool.query(
+      "SELECT COALESCE(SUM(b.ticket_count),0)::int AS count FROM bookings b " +
+      "WHERE b.screening_id=$1 AND b.status='confirmed' AND EXISTS(" +
+      "SELECT 1 FROM booking_seats bs WHERE bs.booking_id=b.id AND NOT (bs.seat_number=ANY($2::text[])))",
+      [req.params.id,ROOM_SEATS]
+    );
+    let legacySeats = Number(legacy.rows[0]?.count || 0);
+    const seats = result.rows.map((seat) => {
+      const virtualOccupied = !seat.occupied && legacySeats > 0;
+      if (virtualOccupied) legacySeats--;
+      return {...seat,occupied:Boolean(seat.occupied || virtualOccupied),legacy:virtualOccupied};
+    });
+    res.json({seats,capacity:7,bedSeats:6,officeSeat:OFFICE_SEAT});
   } catch(error) { next(error); }
 });
 
 app.post("/api/bookings", async (req,res,next) => {
   const body = req.body || {};
-  const count = Number(body.ticketCount), water = Number(body.waterCount || 0), popcorn = Number(body.popcornCount || 0), officeChairCount = Number(body.officeChairCount || 0);
+  const count = Number(body.ticketCount), water = Number(body.waterCount || 0), popcorn = Number(body.popcornCount || 0);
   const selected = Array.isArray(body.selectedSeats) ? body.selectedSeats : [];
   const office = Array.isArray(body.officeSeats) ? body.officeSeats : [];
   const custom = Boolean(body.customSelection);
   const email = String(body.customerEmail || "").trim().toLowerCase();
   const name = String(body.customerName || "").trim();
   if (!body.screeningId || !name || name.length > 70 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
-      !Number.isInteger(count) || count < 1 || count > 8 ||
+      !Number.isInteger(count) || count < 1 || count > 7 ||
       !Number.isInteger(water) || water < 0 || water > 20 ||
       !Number.isInteger(popcorn) || popcorn < 0 || popcorn > 20 ||
-      new Set(office).size !== office.length || office.some((seat) => typeof seat !== "string") || !Number.isInteger(officeChairCount) || officeChairCount < 0 || officeChairCount > count) {
-    return res.status(400).json({error:"Check your details. A booking can contain 1–8 tickets."});
+      new Set(office).size !== office.length || office.some((seat) => seat !== OFFICE_SEAT)) {
+    return res.status(400).json({error:"Check your details. A booking can contain 1–7 seats (6 bed seats plus 1 office chair)."});
   }
-  if (custom && (selected.length !== count || new Set(selected).size !== count)) {
-    return res.status(400).json({error:"Choose exactly the number of seats in your booking."});
+  if (custom && (selected.length !== count || new Set(selected).size !== count || selected.some((seat) => !ROOM_SEATS.includes(seat)))) {
+    return res.status(400).json({error:"Choose exactly the number of valid seats in your booking."});
   }
   if (!custom && (selected.length || office.length)) return res.status(400).json({error:"Custom seat details are not valid for automatic allocation."});
-  if (custom && office.some((seat) => !selected.includes(seat))) return res.status(400).json({error:"Office chair upgrades must match selected seats."});
-  if (office.length > count) return res.status(400).json({error:"Too many office chair upgrades."});
+  if (custom && (office.length !== (selected.includes(OFFICE_SEAT) ? 1 : 0) || office.some((seat) => !selected.includes(seat)))) {
+    return res.status(400).json({error:"The office chair must be selected as the separate seventh seat."});
+  }
 
   const client = await pool.connect();
   try {
@@ -201,27 +237,44 @@ app.post("/api/bookings", async (req,res,next) => {
       await client.query("ROLLBACK"); return res.status(409).json({error:"This screening has already started."});
     }
 
-    let allocated;
-    if (custom) {
-      const result = await client.query(
-        "SELECT seat_number FROM screening_seats WHERE screening_id=$1 AND seat_number=ANY($2::text[]) AND booking_id IS NULL FOR UPDATE SKIP LOCKED",
-        [body.screeningId,selected]
-      );
-      allocated = result.rows.map((row) => row.seat_number);
-    } else {
-      const result = await client.query(
-        "SELECT seat_number FROM screening_seats WHERE screening_id=$1 AND booking_id IS NULL ORDER BY seat_number LIMIT $2 FOR UPDATE SKIP LOCKED",
-        [body.screeningId,count]
-      );
-      allocated = result.rows.map((row) => row.seat_number);
+    const activeCount = await client.query(
+      "SELECT COALESCE(SUM(ticket_count),0)::int AS count FROM bookings WHERE screening_id=$1 AND status='confirmed'",
+      [body.screeningId]
+    );
+    if (Number(activeCount.rows[0].count) + count > 7) {
+      await client.query("ROLLBACK");
+      return res.status(409).json({error:"This screening has only seven seats: six bed seats and one office chair."});
     }
+
+    const legacy = await client.query(
+      "SELECT COALESCE(SUM(b.ticket_count),0)::int AS count FROM bookings b " +
+      "WHERE b.screening_id=$1 AND b.status='confirmed' AND EXISTS(" +
+      "SELECT 1 FROM booking_seats bs WHERE bs.booking_id=b.id AND NOT (bs.seat_number=ANY($2::text[])))",
+      [body.screeningId,ROOM_SEATS]
+    );
+    const freeResult = await client.query(
+      "SELECT seat_number FROM screening_seats WHERE screening_id=$1 AND seat_number=ANY($2::text[]) AND booking_id IS NULL " +
+      "ORDER BY array_position($2::text[],seat_number) FOR UPDATE SKIP LOCKED",
+      [body.screeningId,ROOM_SEATS]
+    );
+    let legacySeats = Number(legacy.rows[0]?.count || 0);
+    const virtuallyBlocked = new Set();
+    for (const row of freeResult.rows) {
+      if (legacySeats <= 0) break;
+      virtuallyBlocked.add(row.seat_number);
+      legacySeats--;
+    }
+    const effectiveFree = freeResult.rows.map((row)=>row.seat_number).filter((seat)=>!virtuallyBlocked.has(seat));
+    const allocated = custom
+      ? selected.filter((seat)=>effectiveFree.includes(seat))
+      : effectiveFree.slice(0,count);
     if (allocated.length !== count) {
       await client.query("ROLLBACK");
       return res.status(409).json({error:"One or more seats are no longer available. Refresh the seat map and try again."});
     }
 
     const p = await getPrices(client);
-    const officeAllocated = custom ? office : allocated.slice(0, officeChairCount);
+    const officeAllocated = allocated.filter((seat)=>seat===OFFICE_SEAT);
     const total = count*p.ticket + (custom ? p.custom : 0) + officeAllocated.length*p.office + water*p.water + popcorn*p.popcorn;
     const id = crypto.randomUUID();
     const code = "DFC-" + crypto.randomBytes(4).toString("hex").toUpperCase();
@@ -364,7 +417,7 @@ app.post("/api/admin/movies",adminOnly,async(req,res,next)=>{
         if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) throw new Error("Invalid screening time.");
         const sid=crypto.randomUUID();
         const inserted=await client.query("INSERT INTO screenings(id,movie_id,show_date,show_time,starts_at,hall_name) VALUES($1,$2,$3::date,$4::time,($3::date + $4::time) AT TIME ZONE 'Europe/Riga',$5) ON CONFLICT(movie_id,show_date,show_time) DO NOTHING RETURNING id",[sid,id,date,time,"1. zāle"]);
-        if(inserted.rowCount) for(let row=1;row<=6;row++) for(let col=0;col<6;col++) await client.query("INSERT INTO screening_seats(screening_id,seat_number) VALUES($1,$2)",[sid,"R"+row+"-"+String.fromCharCode(65+col)]);
+        if(inserted.rowCount) await createRoomSeats(client,sid);
       }
     }
     await client.query("COMMIT");res.status(201).json({id});
@@ -389,7 +442,7 @@ app.put("/api/admin/movies/:id",adminOnly,async(req,res,next)=>{
         if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) throw new Error("Invalid screening time.");
         const sid=crypto.randomUUID();
         const inserted=await client.query("INSERT INTO screenings(id,movie_id,show_date,show_time,starts_at,hall_name) VALUES($1,$2,$3::date,$4::time,($3::date + $4::time) AT TIME ZONE 'Europe/Riga',$5) ON CONFLICT(movie_id,show_date,show_time) DO NOTHING RETURNING id",[sid,req.params.id,date,time,"1. zāle"]);
-        if(inserted.rowCount) for(let row=1;row<=6;row++) for(let col=0;col<6;col++) await client.query("INSERT INTO screening_seats(screening_id,seat_number) VALUES($1,$2)",[sid,"R"+row+"-"+String.fromCharCode(65+col)]);
+        if(inserted.rowCount) await createRoomSeats(client,sid);
       }
     }
     await client.query("COMMIT");res.json({ok:true});
