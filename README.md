@@ -5,7 +5,8 @@ A bilingual (Latvian / English) cinema booking website with a Node.js API and Po
 ## What's included
 
 - Latvian and English language switch.
-- Movie catalogue with search and genre filters.
+- Movie catalogue with search, genre filters, poster thumbnails and animated page transitions.
+- Admin movie editor accepts HTTPS poster URLs or JPG/PNG/WebP image uploads (automatically resized before saving).
 - Four-step booking flow: screening, seating, upgrades/snacks and contact details.
 - 36 bed-style seats per screening (6 rows × 6 seats).
 - Automatic seat assignment or custom seat selection (€0.10 per booking).
@@ -78,5 +79,5 @@ A booking reference and email address are required to look up a reservation. Cus
 
 - The backend and shared booking system are implemented, but the service is **not online until you deploy it and configure PostgreSQL and the environment variables**.
 - The site records reservations; it does not currently take card payments or send confirmation emails.
-- Movie posters are currently illustrative placeholders/emojis. Add licensed poster images when you have permission to use them.
+- Movie posters can be added through the admin editor using an HTTPS image URL or a JPG/PNG/WebP upload. Uploaded images are resized and stored in PostgreSQL; use images you have permission to display.
 - This is a starter cinema platform, not a certified ticketing/payment system. Add monitoring, backups, a privacy notice and any required legal information before using it with real customers.
