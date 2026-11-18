@@ -16,7 +16,7 @@ const DICT = {
     details:"Tavi dati un apstiprinājums",detailsIntro:"Ievadi kontaktinformāciju rezervācijas apstiprinājumam.",name:"Vārds",email:"E-pasts",cancellationRule:"Klients var atcelt rezervāciju līdz 24 stundām pirms seansa sākuma. Pēc šī termiņa atcelšanu var veikt tikai administrators.",back:"← Atpakaļ",confirm:"Apstiprināt rezervāciju",validDetails:"Lūdzu, ievadi derīgu vārdu un e-pastu.",seatRace:"Viena no vietām tikko tika rezervēta. Izvēlies vietas vēlreiz.",confirmedEyebrow:"REZERVĀCIJA APSTIPRINĀTA",confirmed:"Tiekamies kinoteātrī!",savedBrowser:"Tava rezervācija ir saglabāta serverī.",bookingNumber:"Rezervācijas numurs",screening:"Seanss",close:"Aizvērt",demoPayment:"Šī ir rezervācija bez tiešsaistes maksājuma. Biļetes apmaksa šobrīd netiek veikta.",
     lookupMissing:"Ievadi rezervācijas kodu un e-pastu.",lookupNo:"Rezervācija ar šādu kodu un e-pastu nav atrasta.",statusConfirmed:"Apstiprināta",statusCancelled:"Atcelta",cancelBooking:"Atcelt rezervāciju",cancelConfirm:"Vai tiešām atcelt šo rezervāciju?",cancelled:"Rezervācija atcelta. Vietas atkal ir pieejamas.",cancelTooLate:"Klienta atcelšana iespējama tikai līdz 24 stundām pirms seansa.",
     adminLogin:"Administratora pieslēgšanās",adminIntro:"Ievadi serverī izveidotā administratora konta datus.",username:"Lietotājvārds",password:"Parole",login:"Pieteikties",badLogin:"Nepareizs lietotājvārds vai parole.",adminHint:"Atver šo logu ar Ctrl + Shift + Alt + P. Fn taustiņu pārlūks parasti nevar noteikt, tāpēc tas nav vajadzīgs.",
-    adminTitle:"Administrācijas panelis",adminIntro2:"Pārvaldi filmas, seansus, rezervācijas un cenas.",tabMovies:"🎬 Filmas un seansi",tabBookings:"🎟️ Rezervācijas",tabPrices:"€ Cenas",tabAccount:"⚙ Konts",logout:"Izrakstīties",adminSession:"Administratora sesija",addMovie:"+ Pievienot filmu",edit:"Rediģēt",delete:"Dzēst",noMovies:"Pagaidām nav filmu.",movieTitle:"Filmas nosaukums",genre:"Žanrs",duration:"Ilgums (minūtēs)",ageRating:"Vecuma ierobežojums",year:"Izlaiduma gads",posterEmoji:"Plakāta simbols",posterBackground:"Plakāta fona CSS krāsa",description:"Apraksts",schedule:"Seansi (katru datumu jaunā rindā)",scheduleHelp:"Formāts: GGGG-MM-DD:14:00,17:00 — katru datumu raksti jaunā rindā.",save:"Saglabāt",movieRequired:"Aizpildi nosaukumu, aprakstu un derīgu ilgumu.",invalidSchedule:"Pārbaudi seansu datumu un laiku formātu.",movieSaved:"Filma saglabāta.",movieDeleted:"Filma noņemta no publiskā saraksta.",deleteMovieConfirm:"Noņemt šo filmu no publiskā saraksta?",bookingList:"Visas rezervācijas",noBookings:"Vēl nav rezervāciju.",priceTitle:"Cenu iestatījumi",priceTicket:"Standarta biļete (€)",priceCustom:"Vietas izvēle par rezervāciju (€)",priceOffice:"Biroja krēsla uzlabojums (€)",priceWater:"Ūdens (€)",pricePopcorn:"Popkorns (€)",savePrices:"Saglabāt cenas",pricesSaved:"Cenas saglabātas.",changePassword:"Mainīt administratora paroli",currentPassword:"Pašreizējā parole",newPassword:"Jaunā parole (vismaz 12 rakstzīmes)",passwordChanged:"Parole nomainīta.",passwordMin:"Jaunajai parolei jābūt vismaz 12 rakstzīmēm.",wrongCurrent:"Pašreizējā parole nav pareiza.",serverError:"Serveris pašlaik nav pieejams. Pārbaudi servera iestatījumus.",loading:"Ielādē...",bookNow:"Pirkt biļeti",min:"min",bookingSearchSuccess:"Rezervācija atrasta.",emptyScreenings:"Nav pievienotu seansu."
+    adminTitle:"Administrācijas panelis",adminIntro2:"Pārvaldi filmas, seansus, rezervācijas un cenas.",tabMovies:"🎬 Filmas un seansi",tabBookings:"🎟️ Rezervācijas",tabPrices:"€ Cenas",tabAccount:"⚙ Konts",logout:"Izrakstīties",adminSession:"Administratora sesija",addMovie:"+ Pievienot filmu",edit:"Rediģēt",delete:"Dzēst",noMovies:"Pagaidām nav filmu.",movieTitle:"Filmas nosaukums",genre:"Žanrs",duration:"Ilgums (minūtēs)",ageRating:"Vecuma ierobežojums",year:"Izlaiduma gads",posterEmoji:"Plakāta simbols",posterUrl:"Filmas plakāta attēla saite (HTTPS)",posterUpload:"Augšupielādēt plakātu",posterRemove:"Noņemt plakātu",posterPreview:"Plakāta priekšskatījums",posterUploadHelp:"Izvēlies JPG, PNG vai WebP attēlu. Tas tiks samazināts un saglabāts kopā ar filmu.",posterBackground:"Plakāta fona CSS krāsa",description:"Apraksts",schedule:"Seansi (katru datumu jaunā rindā)",scheduleHelp:"Formāts: GGGG-MM-DD:14:00,17:00 — katru datumu raksti jaunā rindā.",save:"Saglabāt",movieRequired:"Aizpildi nosaukumu, aprakstu un derīgu ilgumu.",invalidSchedule:"Pārbaudi seansu datumu un laiku formātu.",movieSaved:"Filma saglabāta.",movieDeleted:"Filma noņemta no publiskā saraksta.",deleteMovieConfirm:"Noņemt šo filmu no publiskā saraksta?",bookingList:"Visas rezervācijas",noBookings:"Vēl nav rezervāciju.",priceTitle:"Cenu iestatījumi",priceTicket:"Standarta biļete (€)",priceCustom:"Vietas izvēle par rezervāciju (€)",priceOffice:"Biroja krēsla uzlabojums (€)",priceWater:"Ūdens (€)",pricePopcorn:"Popkorns (€)",savePrices:"Saglabāt cenas",pricesSaved:"Cenas saglabātas.",changePassword:"Mainīt administratora paroli",currentPassword:"Pašreizējā parole",newPassword:"Jaunā parole (vismaz 12 rakstzīmes)",passwordChanged:"Parole nomainīta.",passwordMin:"Jaunajai parolei jābūt vismaz 12 rakstzīmēm.",wrongCurrent:"Pašreizējā parole nav pareiza.",serverError:"Serveris pašlaik nav pieejams. Pārbaudi servera iestatījumus.",loading:"Ielādē...",bookNow:"Pirkt biļeti",min:"min",bookingSearchSuccess:"Rezervācija atrasta.",emptyScreenings:"Nav pievienotu seansu."
   },
   en: {
     navHome:"Home",navMovies:"Movies",navSeats:"Seating",navBookings:"My bookings",buyTicket:"Book a ticket",
@@ -33,7 +33,7 @@ const DICT = {
     details:"Your details and confirmation",detailsIntro:"Enter your contact details for the booking confirmation.",name:"Name",email:"Email",cancellationRule:"Customers can cancel up to 24 hours before the screening starts. After that, only an administrator can cancel.",back:"← Back",confirm:"Confirm booking",validDetails:"Please enter a valid name and email address.",seatRace:"One of those seats was just booked. Please choose seats again.",confirmedEyebrow:"BOOKING CONFIRMED",confirmed:"See you at the cinema!",savedBrowser:"Your reservation has been saved on the server.",bookingNumber:"Booking reference",screening:"Screening",close:"Close",demoPayment:"This booking does not take an online payment. No ticket payment has been collected.",
     lookupMissing:"Enter the booking code and email address.",lookupNo:"No booking was found for that code and email.",statusConfirmed:"Confirmed",statusCancelled:"Cancelled",cancelBooking:"Cancel booking",cancelConfirm:"Are you sure you want to cancel this booking?",cancelled:"Booking cancelled. The seats are available again.",cancelTooLate:"Customers can only cancel up to 24 hours before the screening.",
     adminLogin:"Administrator login",adminIntro:"Enter the administrator account configured on the server.",username:"Username",password:"Password",login:"Log in",badLogin:"Incorrect username or password.",adminHint:"Open this window with Ctrl + Shift + Alt + P. Browsers usually cannot detect the Fn key, so it is not needed.",
-    adminTitle:"Admin dashboard",adminIntro2:"Manage movies, screenings, bookings and prices.",tabMovies:"🎬 Movies & screenings",tabBookings:"🎟️ Bookings",tabPrices:"€ Prices",tabAccount:"⚙ Account",logout:"Log out",adminSession:"Administrator session",addMovie:"+ Add movie",edit:"Edit",delete:"Remove",noMovies:"There are no movies yet.",movieTitle:"Movie title",genre:"Genre",duration:"Duration (minutes)",ageRating:"Age rating",year:"Release year",posterEmoji:"Poster symbol",posterBackground:"Poster background CSS colour",description:"Description",schedule:"Screenings (one date per line)",scheduleHelp:"Format: YYYY-MM-DD:14:00,17:00 — put each date on a new line.",save:"Save",movieRequired:"Enter a title, description and valid duration.",invalidSchedule:"Check the screening date and time format.",movieSaved:"Movie saved.",movieDeleted:"Movie removed from the public list.",deleteMovieConfirm:"Remove this movie from the public list?",bookingList:"All bookings",noBookings:"There are no bookings yet.",priceTitle:"Price settings",priceTicket:"Standard ticket (€)",priceCustom:"Custom seat selection per booking (€)",priceOffice:"Office chair upgrade (€)",priceWater:"Water (€)",pricePopcorn:"Popcorn (€)",savePrices:"Save prices",pricesSaved:"Prices saved.",changePassword:"Change admin password",currentPassword:"Current password",newPassword:"New password (at least 12 characters)",passwordChanged:"Password changed.",passwordMin:"The new password must be at least 12 characters.",wrongCurrent:"The current password is incorrect.",serverError:"The server is currently unavailable. Check the server setup.",loading:"Loading...",bookNow:"Book ticket",min:"min",bookingSearchSuccess:"Booking found.",emptyScreenings:"No screenings added."
+    adminTitle:"Admin dashboard",adminIntro2:"Manage movies, screenings, bookings and prices.",tabMovies:"🎬 Movies & screenings",tabBookings:"🎟️ Bookings",tabPrices:"€ Prices",tabAccount:"⚙ Account",logout:"Log out",adminSession:"Administrator session",addMovie:"+ Add movie",edit:"Edit",delete:"Remove",noMovies:"There are no movies yet.",movieTitle:"Movie title",genre:"Genre",duration:"Duration (minutes)",ageRating:"Age rating",year:"Release year",posterEmoji:"Poster symbol",posterUrl:"Poster image URL (HTTPS)",posterUpload:"Upload poster image",posterRemove:"Remove poster",posterPreview:"Poster preview",posterUploadHelp:"Choose a JPG, PNG or WebP image. It will be resized and saved with the movie.",posterBackground:"Poster background CSS colour",description:"Description",schedule:"Screenings (one date per line)",scheduleHelp:"Format: YYYY-MM-DD:14:00,17:00 — put each date on a new line.",save:"Save",movieRequired:"Enter a title, description and valid duration.",invalidSchedule:"Check the screening date and time format.",movieSaved:"Movie saved.",movieDeleted:"Movie removed from the public list.",deleteMovieConfirm:"Remove this movie from the public list?",bookingList:"All bookings",noBookings:"There are no bookings yet.",priceTitle:"Price settings",priceTicket:"Standard ticket (€)",priceCustom:"Custom seat selection per booking (€)",priceOffice:"Office chair upgrade (€)",priceWater:"Water (€)",pricePopcorn:"Popcorn (€)",savePrices:"Save prices",pricesSaved:"Prices saved.",changePassword:"Change admin password",currentPassword:"Current password",newPassword:"New password (at least 12 characters)",passwordChanged:"Password changed.",passwordMin:"The new password must be at least 12 characters.",wrongCurrent:"The current password is incorrect.",serverError:"The server is currently unavailable. Check the server setup.",loading:"Loading...",bookNow:"Book ticket",min:"min",bookingSearchSuccess:"Booking found.",emptyScreenings:"No screenings added."
   }
 };
 
@@ -44,6 +44,28 @@ let selectedGenre = "all";
 let booking = null;
 let adminTab = "movies";
 let toastTimer = null;
+let revealObserver = null;
+function revealElement(element, delay) {
+  element.classList.add("reveal");
+  element.style.setProperty("--reveal-delay", Math.min(delay || 0, 320) + "ms");
+  if (revealObserver && element.dataset.revealBound !== "true") {
+    element.dataset.revealBound = "true";
+    revealObserver.observe(element);
+  }
+}
+function setupMotion() {
+  if (!("IntersectionObserver" in window)) return;
+  revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("in-view");
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, {threshold:0.12, rootMargin:"0px 0px -35px 0px"});
+  const selectors = ".hero-copy,.hero-visual,.stats > div,.section-heading,.filters,.experience-visual,.experience > div:not(.experience-visual),.lookup";
+  document.querySelectorAll(selectors).forEach((element, index) => revealElement(element, index * 45));
+}
 
 function t(key) { return (DICT[language] && DICT[language][key]) || DICT.lv[key] || key; }
 function escapeHTML(value) {
@@ -56,6 +78,57 @@ function formatMoney(value) {
 }
 function formatDate(value) {
   return new Date(value + "T12:00:00").toLocaleDateString(language === "lv" ? "lv-LV" : "en-GB", {day:"numeric",month:"long",year:"numeric"});
+}
+function isImagePoster(value) {
+  const poster = String(value || "");
+  if (/^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/i.test(poster)) return poster.length <= 950000;
+  try {
+    const url = new URL(poster);
+    return url.protocol === "https:" && poster.length <= 2048 && !url.username && !url.password;
+  } catch { return false; }
+}
+function posterBackground(value) {
+  const poster = String(value || "");
+  return /^linear-gradient\((?:135deg|145deg),#[0-9a-f]{3,8},#[0-9a-f]{3,8}\)$/i.test(poster)
+    ? poster : "linear-gradient(135deg,#5e2833,#182838)";
+}
+function moviePosterContent(movie) {
+  if (isImagePoster(movie.poster)) {
+    return '<img class="poster-image" src="' + escapeHTML(movie.poster) + '" alt="' + escapeHTML(movie.title) + ' poster" loading="lazy"><span class="poster-shade"></span>';
+  }
+  return '<span class="poster-emoji">' + escapeHTML(movie.emoji || "🎬") + '</span>';
+}
+function compressPosterFile(file) {
+  return new Promise((resolve, reject) => {
+    if (!file || !/^image\/(?:jpeg|png|webp)$/i.test(file.type)) {
+      reject(new Error(language === "lv" ? "Izvēlies JPG, PNG vai WebP attēlu." : "Choose a JPG, PNG or WebP image."));
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      reject(new Error(language === "lv" ? "Attēls ir pārāk liels (maks. 8 MB pirms saspiešanas)." : "The image is too large (8 MB maximum before compression)."));
+      return;
+    }
+    const objectUrl = URL.createObjectURL(file);
+    const image = new Image();
+    image.onload = () => {
+      try {
+        const scale = Math.min(1, 720 / image.naturalWidth, 1000 / image.naturalHeight);
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+        canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+        const context = canvas.getContext("2d");
+        if (!context) throw new Error("Image processing is not supported in this browser.");
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+        let data = canvas.toDataURL("image/webp", 0.78);
+        if (!data.startsWith("data:image/webp")) data = canvas.toDataURL("image/jpeg", 0.82);
+        if (data.length > 950000) throw new Error(language === "lv" ? "Attēlu neizdevās pietiekami saspiest. Izvēlies mazāku attēlu." : "The image could not be compressed enough. Choose a smaller image.");
+        resolve(data);
+      } catch (error) { reject(error); }
+      finally { URL.revokeObjectURL(objectUrl); }
+    };
+    image.onerror = () => { URL.revokeObjectURL(objectUrl); reject(new Error(language === "lv" ? "Neizdevās atvērt šo attēlu." : "Could not open that image.")); };
+    image.src = objectUrl;
+  });
 }
 async function api(path, options) {
   const config = Object.assign({ method:"GET", headers:{} }, options || {});
@@ -130,12 +203,13 @@ function renderMovies() {
   });
   $("#movieGrid").innerHTML = visible.map((movie) =>
     '<article class="movie-card">' +
-      '<div class="poster" style="background:' + escapeHTML(movie.poster || "linear-gradient(135deg,#5e2833,#182838)") + '">' +
-        '<span class="poster-emoji">' + escapeHTML(movie.emoji || "🎬") + '</span><strong class="poster-title">' + escapeHTML(movie.title) + '</strong>' +
+      '<div class="poster" style="background:' + posterBackground(movie.poster) + '">' +
+        moviePosterContent(movie) + '<strong class="poster-title">' + escapeHTML(movie.title) + '</strong>' +
       '</div><div class="movie-info"><div class="movie-meta"><span>' + escapeHTML(genreName(movie.genre)) + '</span><span>•</span><span>' + escapeHTML(movie.duration) + " " + t("min") + '</span><span>•</span><span>' + escapeHTML(movie.age) + '</span></div>' +
       '<h3>' + escapeHTML(movie.title) + '</h3><p>' + escapeHTML(movie.description) + '</p>' +
       '<div class="movie-bottom"><strong>' + formatMoney(prices.ticket) + '</strong><button class="small-button" data-book="' + escapeHTML(movie.id) + '">' + t("bookNow") + '</button></div></div></article>'
   ).join("");
+  $("#movieGrid").querySelectorAll(".movie-card").forEach((card, index) => revealElement(card, index * 75));
   $("#emptyMovies").classList.toggle("hidden", visible.length > 0);
 }
 function setGenre(genre) {
@@ -462,11 +536,53 @@ function renderMovieEditor(movie) {
     '<div class="field"><label for="movieAge">' + t("ageRating") + '</label><input id="movieAge" value="' + escapeHTML(movie?.age || "U") + '"></div>' +
     '<div class="field"><label for="movieYear">' + t("year") + '</label><input id="movieYear" type="number" min="1900" max="2100" value="' + escapeHTML(movie?.year || new Date().getFullYear()) + '"></div>' +
     '<div class="field"><label for="movieEmoji">' + t("posterEmoji") + '</label><input id="movieEmoji" maxlength="5" value="' + escapeHTML(movie?.emoji || "🎬") + '"></div>' +
-    '<div class="field"><label for="moviePoster">' + t("posterBackground") + '</label><input id="moviePoster" value="' + escapeHTML(movie?.poster || "linear-gradient(135deg,#753039,#182838)") + '"></div>' +
+    '<div class="field full"><label for="moviePoster">' + t("posterUrl") + '</label><input id="moviePoster" type="url" placeholder="https://example.com/movie-poster.jpg" value="' + escapeHTML(isImagePoster(movie?.poster) && !String(movie.poster).startsWith("data:") ? movie.poster : "") + '"></div>' +
+    '<div class="field full poster-upload-tools"><label for="moviePosterFile">' + t("posterUpload") + '</label><input id="moviePosterFile" type="file" accept="image/jpeg,image/png,image/webp"><small>' + t("posterUploadHelp") + '</small>' +
+    '<div class="poster-preview-wrap"><span>' + t("posterPreview") + '</span><div id="posterPreview" class="poster-preview">' +
+    (isImagePoster(movie?.poster) ? '<img src="' + escapeHTML(movie.poster) + '" alt="Poster preview">' : '<span>' + escapeHTML(movie?.emoji || "🎬") + '</span>') +
+    '</div><button class="button button-secondary" type="button" id="clearMoviePoster">' + t("posterRemove") + '</button></div></div>' +
     '<div class="field full"><label for="movieDescription">' + t("description") + '</label><input id="movieDescription" maxlength="1000" value="' + escapeHTML(movie?.description || "") + '"></div>' +
     '<div class="field full"><label>' + (language === "lv" ? "Esošie seansi" : "Current screenings") + '</label>' + (screeningRows || '<p class="admin-note">' + t("emptyScreenings") + '</p>') + '</div>' +
     '<div class="field full"><label for="movieSchedule">' + t("schedule") + '</label><textarea id="movieSchedule" rows="4">' + escapeHTML(schedule) + '</textarea><small class="admin-note">' + t("scheduleHelp") + '</small></div></div>' +
     '<div class="modal-actions"><button class="button button-secondary" id="cancelMovieEdit">' + t("back") + '</button><button class="small-button" id="saveMovie">' + t("save") + '</button></div>';
+  let uploadedPosterData = "";
+  let removeMoviePoster = false;
+  const posterUrl = $("#moviePoster");
+  const posterFile = $("#moviePosterFile");
+  const posterPreview = $("#posterPreview");
+  const showPosterPreview = (source) => {
+    posterPreview.innerHTML = source
+      ? '<img src="' + escapeHTML(source) + '" alt="Poster preview">'
+      : '<span>' + escapeHTML(movie?.emoji || "🎬") + '</span>';
+  };
+  posterFile.onchange = async () => {
+    const file = posterFile.files && posterFile.files[0];
+    if (!file) return;
+    try {
+      uploadedPosterData = await compressPosterFile(file);
+      removeMoviePoster = false;
+      posterUrl.value = "";
+      showPosterPreview(uploadedPosterData);
+      toast(language === "lv" ? "Plakāts sagatavots. Saglabā filmu, lai to pievienotu." : "Poster ready. Save the movie to attach it.");
+    } catch(error) {
+      posterFile.value = "";
+      toast(error.message);
+    }
+  };
+  posterUrl.oninput = () => {
+    uploadedPosterData = "";
+    removeMoviePoster = false;
+    const value = posterUrl.value.trim();
+    if (!value) showPosterPreview("");
+    else if (isImagePoster(value)) showPosterPreview(value);
+  };
+  $("#clearMoviePoster").onclick = () => {
+    uploadedPosterData = "";
+    removeMoviePoster = true;
+    posterUrl.value = "";
+    posterFile.value = "";
+    showPosterPreview("");
+  };
   $("#cancelMovieEdit").onclick = renderAdminTab;
   document.querySelectorAll("[data-remove-screening]").forEach((button) => button.onclick = async () => {
     if (!confirm(language === "lv" ? "Noņemt šo seansu?" : "Remove this screening?")) return;
@@ -493,10 +609,16 @@ function renderMovieEditor(movie) {
         if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !times.every((time)=>/^([01]\d|2[0-3]):[0-5]\d$/.test(time))) throw new Error(t("invalidSchedule"));
         return {date,times};
       });
+      const posterUrlValue = $("#moviePoster").value.trim();
+      if (posterUrlValue && !isImagePoster(posterUrlValue)) {
+        toast(language === "lv" ? "Plakāta saitei jābūt derīgai HTTPS attēla adresei." : "Poster URL must be a valid HTTPS image address.");
+        return;
+      }
+      const defaultPoster = "linear-gradient(135deg,#753039,#182838)";
       const body = {
         title,description,duration,genre:$("#movieGenre").value,age:$("#movieAge").value.trim()||"U",
         year:Number($("#movieYear").value)||new Date().getFullYear(),emoji:$("#movieEmoji").value||"🎬",
-        poster:$("#moviePoster").value||"linear-gradient(135deg,#753039,#182838)",screenings
+        poster:uploadedPosterData || (posterUrlValue || (removeMoviePoster ? defaultPoster : (movie?.poster || defaultPoster))),screenings
       };
       await api(movie ? "/admin/movies/"+encodeURIComponent(movie.id) : "/admin/movies",{method:movie?"PUT":"POST",body});
       const data = await api("/movies"); movies = data.movies || []; renderMovies();
@@ -614,5 +736,6 @@ $("#languageToggle").addEventListener("click",()=>{
 $("#menuToggle").addEventListener("click",()=>$("#mainNav").classList.toggle("open"));
 document.querySelectorAll("#mainNav a").forEach((link)=>link.addEventListener("click",()=>$("#mainNav").classList.remove("open")));
 
+setupMotion();
 applyLanguage();
 loadData();
