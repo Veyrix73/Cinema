@@ -437,9 +437,17 @@ async function renderAdminMovies(panel) {
   const list = data.movies || [];
   panel.innerHTML = '<h3>' + t("tabMovies") + '</h3><button class="small-button" id="addMovieButton">' + t("addMovie") + '</button><div style="height:12px"></div>' +
     (list.length ? list.map((movie) => '<div class="admin-item"><div><b>' + escapeHTML(movie.title) + '</b><small>' + escapeHTML(genreName(movie.genre)) + ' · ' + (movie.screenings||[]).length + '</small></div>' +
-      '<div><button class="small-button" data-edit-movie="' + escapeHTML(movie.id) + '">' + t("edit") + '</button></div></div>').join("") : '<p class="admin-note">' + t("noMovies") + '</p>');
+      '<div><button class="small-button" data-edit-movie="' + escapeHTML(movie.id) + '">' + t("edit") + '</button> <button class="danger-button" data-delete-movie="' + escapeHTML(movie.id) + '">' + t("delete") + '</button></div></div>').join("") : '<p class="admin-note">' + t("noMovies") + '</p>');
   $("#addMovieButton").onclick = () => renderMovieEditor(null);
   document.querySelectorAll("[data-edit-movie]").forEach((button) => button.onclick = () => renderMovieEditor(list.find((movie) => movie.id === button.dataset.editMovie)));
+  document.querySelectorAll("[data-delete-movie]").forEach((button) => button.onclick = async () => {
+    if (!confirm(t("deleteMovieConfirm"))) return;
+    try {
+      await api("/admin/movies/" + encodeURIComponent(button.dataset.deleteMovie), {method:"DELETE"});
+      const refreshed = await api("/movies"); movies = refreshed.movies || [];
+      renderMovies(); await renderAdminMovies($("#adminPanel")); toast(t("movieDeleted"));
+    } catch(error) { toast(error.message); }
+  });
 }
 function renderMovieEditor(movie) {
   const schedule = "";
