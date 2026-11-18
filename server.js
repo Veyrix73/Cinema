@@ -210,7 +210,8 @@ app.post("/api/bookings", async (req,res,next) => {
     }
 
     const p = await getPrices(client);
-    const officeAllocated = custom ? office : allocated.slice(0, officeChairCount);\n    const total = count*p.ticket + (custom ? p.custom : 0) + officeAllocated.length*p.office + water*p.water + popcorn*p.popcorn;
+    const officeAllocated = custom ? office : allocated.slice(0, officeChairCount);
+    const total = count*p.ticket + (custom ? p.custom : 0) + officeAllocated.length*p.office + water*p.water + popcorn*p.popcorn;
     const id = crypto.randomUUID();
     const code = "DFC-" + crypto.randomBytes(4).toString("hex").toUpperCase();
     await client.query(
