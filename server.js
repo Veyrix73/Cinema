@@ -80,6 +80,7 @@ async function initDatabase() {
     "CREATE TABLE IF NOT EXISTS screenings (id UUID PRIMARY KEY, movie_id UUID NOT NULL REFERENCES movies(id) ON DELETE RESTRICT, show_date DATE NOT NULL, show_time TIME NOT NULL, starts_at TIMESTAMPTZ NOT NULL, hall_name TEXT NOT NULL DEFAULT '1. zāle', created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), UNIQUE(movie_id,show_date,show_time))",
     "CREATE TABLE IF NOT EXISTS bookings (id UUID PRIMARY KEY, booking_code TEXT NOT NULL UNIQUE, screening_id UUID NOT NULL REFERENCES screenings(id) ON DELETE RESTRICT, customer_name TEXT NOT NULL, customer_email TEXT NOT NULL, ticket_count INTEGER NOT NULL CHECK(ticket_count BETWEEN 1 AND 8), custom_selection BOOLEAN NOT NULL DEFAULT FALSE, water_count INTEGER NOT NULL DEFAULT 0 CHECK(water_count>=0), popcorn_count INTEGER NOT NULL DEFAULT 0 CHECK(popcorn_count>=0), total_cents INTEGER NOT NULL CHECK(total_cents>=0), status TEXT NOT NULL DEFAULT 'confirmed' CHECK(status IN ('confirmed','cancelled')), created_at TIMESTAMPTZ NOT NULL DEFAULT NOW())",
     "CREATE TABLE IF NOT EXISTS screening_seats (screening_id UUID NOT NULL REFERENCES screenings(id) ON DELETE CASCADE, seat_number TEXT NOT NULL, booking_id UUID REFERENCES bookings(id) ON DELETE SET NULL, office_chair BOOLEAN NOT NULL DEFAULT FALSE, PRIMARY KEY(screening_id,seat_number))",
+    "CREATE TABLE IF NOT EXISTS booking_seats (booking_id UUID NOT NULL REFERENCES bookings(id) ON DELETE CASCADE, screening_id UUID NOT NULL REFERENCES screenings(id) ON DELETE RESTRICT, seat_number TEXT NOT NULL, office_chair BOOLEAN NOT NULL DEFAULT FALSE, PRIMARY KEY(booking_id,seat_number))",
     "CREATE TABLE IF NOT EXISTS cinema_settings (setting_key TEXT PRIMARY KEY, value_cents INTEGER NOT NULL CHECK(value_cents>=0))",
     "CREATE INDEX IF NOT EXISTS idx_screenings_starts_at ON screenings(starts_at)",
     "CREATE INDEX IF NOT EXISTS idx_bookings_screening ON bookings(screening_id)",
@@ -223,6 +224,9 @@ app.post("/api/bookings", async (req,res,next) => {
       [id,officeAllocated,body.screeningId,allocated]
     );
     if (update.rowCount !== count) throw new Error("Seat allocation changed before commit.");
+    for (const seat of allocated) {
+      await client.query("INSERT INTO booking_seats(booking_id,screening_id,seat_number,office_chair) VALUES($1,$2,$3,$4)",[id,body.screeningId,seat,officeAllocated.includes(seat)]);
+    }
     await client.query("COMMIT");
     res.status(201).json({booking:{code,customerName:name,customerEmail:email,screeningId:body.screeningId,ticketCount:count,seats:allocated,officeSeats:officeAllocated,waterCount:water,popcornCount:popcorn,total:total/100,status:"confirmed"}});
   } catch(error) {
@@ -242,7 +246,7 @@ app.post("/api/bookings/lookup", async (req,res,next) => {
       "COALESCE(array_agg(ss.seat_number ORDER BY ss.seat_number) FILTER(WHERE ss.seat_number IS NOT NULL),'{}') AS seats," +
       "COALESCE(array_agg(ss.seat_number ORDER BY ss.seat_number) FILTER(WHERE ss.office_chair=TRUE),'{}') AS office_seats " +
       "FROM bookings b JOIN screenings s ON s.id=b.screening_id JOIN movies m ON m.id=s.movie_id " +
-      "LEFT JOIN screening_seats ss ON ss.booking_id=b.id WHERE b.booking_code=$1 AND lower(b.customer_email)=lower($2) GROUP BY b.id,s.id,m.id",
+      "LEFT JOIN booking_seats ss ON ss.booking_id=b.id WHERE b.booking_code=$1 AND lower(b.customer_email)=lower($2) GROUP BY b.id,s.id,m.id",
       [code,email]
     );
     if (!result.rowCount) return res.status(404).json({error:"No booking found for that code and email."});
@@ -307,7 +311,7 @@ app.get("/api/admin/bookings",adminOnly,async(req,res,next)=>{
       "to_char(s.show_date,'YYYY-MM-DD') AS show_date,to_char(s.show_time,'HH24:MI') AS show_time,m.title AS movie_title,"+
       "COALESCE(array_agg(ss.seat_number ORDER BY ss.seat_number) FILTER(WHERE ss.seat_number IS NOT NULL),'{}') AS seats "+
       "FROM bookings b JOIN screenings s ON s.id=b.screening_id JOIN movies m ON m.id=s.movie_id "+
-      "LEFT JOIN screening_seats ss ON ss.booking_id=b.id GROUP BY b.id,s.id,m.id ORDER BY b.created_at DESC"
+      "LEFT JOIN booking_seats ss ON ss.booking_id=b.id GROUP BY b.id,s.id,m.id ORDER BY b.created_at DESC"
     );
     res.json({bookings:result.rows.map(row=>({code:row.booking_code,name:row.customer_name,email:row.customer_email,
       count:row.ticket_count,total:row.total_cents/100,status:row.status,date:row.show_date,time:row.show_time,movie:row.movie_title,seats:row.seats}))});
