@@ -4,36 +4,36 @@ const DICT = {
   lv: {
     navHome:"Sākums",navMovies:"Filmas",navSeats:"Sēdvietas",navBookings:"Manas rezervācijas",buyTicket:"Pirkt biļeti",
     heroEyebrow:"TAVS MĀJĪGAIS KINO PIEDZĪVOJUMS",heroTitle:"Filmu vakari,<br><em>citā līmenī.</em>",heroText:"Izvēlies filmu, rezervē savu vietu un izbaudi kino savā ritmā — arī īpaši ērtā gultas tipa sēdvietā.",
-    browseMovies:"Apskatīt filmas",ticketsFrom:"Standarta biļetes no",statTicket:"Standarta biļete",statMax:"Maks. vietas vienā rezervācijā",statCancel:"Klienta atcelšanas termiņš",statSnacks:"Popkorns un ūdens",
+    browseMovies:"Apskatīt filmas",ticketsFrom:"Standarta biļetes no",statTicket:"Standarta biļete",statMax:"6 gultas vietas + 1 biroja krēsls",statCancel:"Klienta atcelšanas termiņš",statSnacks:"Popkorns un ūdens",
     moviesEyebrow:"IZVĒLIES SAVU NĀKAMO FILMU",moviesTitle:"Šobrīd kinoteātrī",searchMovies:"Meklēt filmu...",filterAll:"Visas filmas",filterAnimation:"Animācija",filterComedy:"Komēdija",filterAdventure:"Piedzīvojumi",emptyMovies:"Filmas netika atrastas.",
-    comfortEyebrow:"ĒRTĪBA PĒC TAVAS IZVĒLES",comfortTitle:"Ne tikai krēsls.<br><em>Tavs kino stils.</em>",comfortText:"Standarta vietas ir plašas, gultas tipa sēdvietas. Izvēlies konkrētu vietu par 0,10 € par rezervāciju vai uzlabo izvēlēto sēdvietu uz biroja krēslu.",
-    featureBeds:"Gultas tipa vietas",featureBedsDesc:"Iekļautas biļetes cenā",featureSelect:"Vietas izvēle",featureSelectDesc:"0,10 € par rezervāciju",featureChair:"Biroja krēsls",featureChairDesc:"No 0,20 € par vietu",
+    comfortEyebrow:"ĒRTĪBA PĒC TAVAS IZVĒLES",comfortTitle:"Ne tikai krēsls.<br><em>Tavs kino stils.</em>",comfortText:"Zālē ir sešas gultas tipa vietas un viens atsevišķs biroja krēsls. Kopā pieejamas 7 vietas; bez biroja krēsla — 6.",
+    featureBeds:"Gultas tipa vietas",featureBedsDesc:"6 vietas zālē",featureSelect:"Vietas izvēle",featureSelectDesc:"0,10 € par rezervāciju",featureChair:"Biroja krēsls",featureChairDesc:"Atsevišķā 7. vieta",
     bookingEyebrow:"TAVAS BIĻETES VIENUViet",bookingTitle:"Manas rezervācijas",bookingLookupHelp:"Ievadi rezervācijas kodu un e-pastu, ko izmantoji rezervācijā.",bookingCode:"Rezervācijas kods",yourEmail:"Tavs e-pasts",lookupButton:"Apskatīt rezervāciju",
     footerText:"Dancing Fruit Cinema © 2026 · Visas tiesības aizsargātas.",
-    noShows:"Šai filmai pašlaik nav pieejamu seansu.",step1:"1. SOLIS NO 4",step2:"2. SOLIS NO 4",step3:"3. SOLIS NO 4",step4:"4. SOLIS NO 4",bookTickets:"Rezervē biļetes",date:"Seansa datums",time:"Seansa laiks",ticketCount:"Biļešu skaits (maksimums 8)",continue:"Turpināt →",cancel:"Atcelt",chooseSeats:"Izvēlies sēdvietas",
-    seatIntro:"Standarta vietas ir plašas gultas tipa sēdvietas. Vari ļaut sistēmai piešķirt vietas bez maksas vai izvēlēties konkrētas vietas par",auto:"Automātiska izvēle",autoDesc:"Bez papildu maksas",custom:"Izvēlēties pašam",customDesc:"par rezervāciju",screen:"KINOTEĀTRA EKRĀNS",available:"Brīva",occupied:"Aizņemta",selected:"Izvēlēta",bedSeat:"Gultas tipa vieta",chosenSeats:"Izvēlētās vietas",needSeats:"Jāizvēlas tieši",seats:"vietas.",selectOnly:"Vari izvēlēties tikai",seats2:"vietas.",notEnough:"Šajā seansā nav pietiekami daudz brīvu vietu.",
-    extras:"Papildu iespējas",extrasIntro:"Izvēlies, kuras vietas vēlies uzlabot uz biroja krēslu. Pārējās paliks gultas tipa vietas.",chairUpgrade:"Biroja krēsls",water:"Ūdens",popcorn:"Popkorns",portion:"porcija",beds:"Gultas tipa vieta",summary:"Kopsavilkums",tickets:"Biļetes",seatSelection:"Vietas izvēle",officeChairs:"Biroja krēsli",snacks:"Ūdens un popkorns",total:"Kopā",
-    details:"Tavi dati un apstiprinājums",detailsIntro:"Ievadi kontaktinformāciju rezervācijas apstiprinājumam.",name:"Vārds",email:"E-pasts",cancellationRule:"Klients var atcelt rezervāciju līdz 24 stundām pirms seansa sākuma. Pēc šī termiņa atcelšanu var veikt tikai administrators.",back:"← Atpakaļ",confirm:"Apstiprināt rezervāciju",validDetails:"Lūdzu, ievadi derīgu vārdu un e-pastu.",seatRace:"Viena no vietām tikko tika rezervēta. Izvēlies vietas vēlreiz.",confirmedEyebrow:"REZERVĀCIJA APSTIPRINĀTA",confirmed:"Tiekamies kinoteātrī!",savedBrowser:"Tava rezervācija ir saglabāta serverī.",bookingNumber:"Rezervācijas numurs",screening:"Seanss",close:"Aizvērt",demoPayment:"Šī ir rezervācija bez tiešsaistes maksājuma. Biļetes apmaksa šobrīd netiek veikta.",
+    noShows:"Šai filmai pašlaik nav pieejamu seansu.",step1:"1. SOLIS NO 4",step2:"2. SOLIS NO 4",step3:"3. SOLIS NO 4",step4:"4. SOLIS NO 4",bookTickets:"Rezervē biļetes",date:"Seansa datums",time:"Seansa laiks",ticketCount:"Vietu skaits (maks. 7: 6 gultas + 1 biroja krēsls)",continue:"Turpināt →",cancel:"Atcelt",chooseSeats:"Izvēlies sēdvietas",
+    seatIntro:"Zālē ir 6 gultas tipa vietas un viens atsevišķs biroja krēsls. Kopā ne vairāk kā 7 cilvēki. Automātiska vietu piešķiršana ir bez maksas, bet konkrētu vietu izvēle maksā",auto:"Automātiska izvēle",autoDesc:"Bez papildu maksas",custom:"Izvēlēties pašam",customDesc:"par rezervāciju",screen:"KINOTEĀTRA EKRĀNS",available:"Brīva",occupied:"Aizņemta",selected:"Izvēlēta",bedSeat:"Gultas tipa vieta",chosenSeats:"Izvēlētās vietas",needSeats:"Jāizvēlas tieši",seats:"vietas.",selectOnly:"Vari izvēlēties tikai",seats2:"vietas.",notEnough:"Šajā seansā nav pietiekami daudz brīvu vietu.",
+    extras:"Papildu iespējas",extrasIntro:"Pievieno ūdeni vai popkornu. Biroja krēsls ir atsevišķa 7. vieta, nevis gultas vietas uzlabojums.",chairUpgrade:"Biroja krēsls",water:"Ūdens",popcorn:"Popkorns",portion:"porcija",beds:"Gultas tipa vieta",summary:"Kopsavilkums",tickets:"Biļetes",seatSelection:"Vietas izvēle",officeChairs:"Biroja krēsls",snacks:"Ūdens un popkorns",total:"Kopā",
+    details:"Tavi dati un apstiprinājums",detailsIntro:"Ievadi kontaktinformāciju rezervācijas apstiprinājumam.",name:"Vārds",email:"E-pasts",cancellationRule:"Klients var atcelt rezervāciju līdz 24 stundām pirms seansa sākuma. Pēc šī termiņa atcelšanu var veikt tikai administrators.",back:"← Atpakaļ",confirm:"Apstiprināt rezervāciju",validDetails:"Lūdzu, ievadi derīgu vārdu un e-pastu.",seatRace:"Viena no vietām tikko tika rezervēta. Izvēlies vietas vēlreiz.",confirmedEyebrow:"REZERVĀCIJA APSTIPRINĀTA",confirmed:"Tiekamies kinoteātrī!",savedBrowser:"Tava rezervācija ir saglabāta serverī.",bookingNumber:"Rezervācijas numurs",screening:"Seanss",close:"Aizvērt",demoPayment:"Rezervācija ir saglabāta, bet tiešsaistes maksājums nav pieslēgts. Apmaksa jāveic kinoteātrī.",
     lookupMissing:"Ievadi rezervācijas kodu un e-pastu.",lookupNo:"Rezervācija ar šādu kodu un e-pastu nav atrasta.",statusConfirmed:"Apstiprināta",statusCancelled:"Atcelta",cancelBooking:"Atcelt rezervāciju",cancelConfirm:"Vai tiešām atcelt šo rezervāciju?",cancelled:"Rezervācija atcelta. Vietas atkal ir pieejamas.",cancelTooLate:"Klienta atcelšana iespējama tikai līdz 24 stundām pirms seansa.",
     adminLogin:"Administratora pieslēgšanās",adminIntro:"Ievadi serverī izveidotā administratora konta datus.",username:"Lietotājvārds",password:"Parole",login:"Pieteikties",badLogin:"Nepareizs lietotājvārds vai parole.",adminHint:"Atver šo logu ar Ctrl + Shift + Alt + P. Fn taustiņu pārlūks parasti nevar noteikt, tāpēc tas nav vajadzīgs.",
-    adminTitle:"Administrācijas panelis",adminIntro2:"Pārvaldi filmas, seansus, rezervācijas un cenas.",tabMovies:"🎬 Filmas un seansi",tabBookings:"🎟️ Rezervācijas",tabPrices:"€ Cenas",tabAccount:"⚙ Konts",logout:"Izrakstīties",adminSession:"Administratora sesija",addMovie:"+ Pievienot filmu",edit:"Rediģēt",delete:"Dzēst",noMovies:"Pagaidām nav filmu.",movieTitle:"Filmas nosaukums",genre:"Žanrs",duration:"Ilgums (minūtēs)",ageRating:"Vecuma ierobežojums",year:"Izlaiduma gads",posterEmoji:"Plakāta simbols",posterUrl:"Filmas plakāta attēla saite (HTTPS)",posterUpload:"Augšupielādēt plakātu",posterRemove:"Noņemt plakātu",posterPreview:"Plakāta priekšskatījums",posterUploadHelp:"Izvēlies JPG, PNG vai WebP attēlu. Tas tiks samazināts un saglabāts kopā ar filmu.",posterBackground:"Plakāta fona CSS krāsa",description:"Apraksts",schedule:"Seansi (katru datumu jaunā rindā)",scheduleHelp:"Formāts: GGGG-MM-DD:14:00,17:00 — katru datumu raksti jaunā rindā.",save:"Saglabāt",movieRequired:"Aizpildi nosaukumu, aprakstu un derīgu ilgumu.",invalidSchedule:"Pārbaudi seansu datumu un laiku formātu.",movieSaved:"Filma saglabāta.",movieDeleted:"Filma noņemta no publiskā saraksta.",deleteMovieConfirm:"Noņemt šo filmu no publiskā saraksta?",bookingList:"Visas rezervācijas",noBookings:"Vēl nav rezervāciju.",priceTitle:"Cenu iestatījumi",priceTicket:"Standarta biļete (€)",priceCustom:"Vietas izvēle par rezervāciju (€)",priceOffice:"Biroja krēsla uzlabojums (€)",priceWater:"Ūdens (€)",pricePopcorn:"Popkorns (€)",savePrices:"Saglabāt cenas",pricesSaved:"Cenas saglabātas.",changePassword:"Mainīt administratora paroli",currentPassword:"Pašreizējā parole",newPassword:"Jaunā parole (vismaz 12 rakstzīmes)",passwordChanged:"Parole nomainīta.",passwordMin:"Jaunajai parolei jābūt vismaz 12 rakstzīmēm.",wrongCurrent:"Pašreizējā parole nav pareiza.",serverError:"Serveris pašlaik nav pieejams. Pārbaudi servera iestatījumus.",loading:"Ielādē...",bookNow:"Pirkt biļeti",min:"min",bookingSearchSuccess:"Rezervācija atrasta.",emptyScreenings:"Nav pievienotu seansu."
+    adminTitle:"Administrācijas panelis",adminIntro2:"Pārvaldi filmas, seansus, rezervācijas un cenas.",tabMovies:"🎬 Filmas un seansi",tabBookings:"🎟️ Rezervācijas",tabPrices:"€ Cenas",tabAccount:"⚙ Konts",logout:"Izrakstīties",adminSession:"Administratora sesija",addMovie:"+ Pievienot filmu",edit:"Rediģēt",delete:"Dzēst",noMovies:"Pagaidām nav filmu.",movieTitle:"Filmas nosaukums",genre:"Žanrs",duration:"Ilgums (minūtēs)",ageRating:"Vecuma ierobežojums",year:"Izlaiduma gads",posterEmoji:"Plakāta simbols",posterUrl:"Filmas plakāta attēla saite (HTTPS)",posterUpload:"Augšupielādēt plakātu",posterRemove:"Noņemt plakātu",posterPreview:"Plakāta priekšskatījums",posterUploadHelp:"Izvēlies JPG, PNG vai WebP attēlu. Tas tiks samazināts un saglabāts kopā ar filmu.",posterBackground:"Plakāta fona CSS krāsa",description:"Apraksts",schedule:"Seansi (katru datumu jaunā rindā)",scheduleHelp:"Formāts: GGGG-MM-DD:14:00,17:00 — katru datumu raksti jaunā rindā.",save:"Saglabāt",movieRequired:"Aizpildi nosaukumu, aprakstu un derīgu ilgumu.",invalidSchedule:"Pārbaudi seansu datumu un laiku formātu.",movieSaved:"Filma saglabāta.",movieDeleted:"Filma noņemta no publiskā saraksta.",deleteMovieConfirm:"Noņemt šo filmu no publiskā saraksta?",bookingList:"Visas rezervācijas",noBookings:"Vēl nav rezervāciju.",priceTitle:"Cenu iestatījumi",priceTicket:"Standarta biļete (€)",priceCustom:"Vietas izvēle par rezervāciju (€)",priceOffice:"Biroja krēsla piemaksa (€)",priceWater:"Ūdens (€)",pricePopcorn:"Popkorns (€)",savePrices:"Saglabāt cenas",pricesSaved:"Cenas saglabātas.",changePassword:"Mainīt administratora paroli",currentPassword:"Pašreizējā parole",newPassword:"Jaunā parole (vismaz 12 rakstzīmes)",passwordChanged:"Parole nomainīta.",passwordMin:"Jaunajai parolei jābūt vismaz 12 rakstzīmēm.",wrongCurrent:"Pašreizējā parole nav pareiza.",serverError:"Serveris pašlaik nav pieejams. Pārbaudi servera iestatījumus.",loading:"Ielādē...",bookNow:"Pirkt biļeti",min:"min",bookingSearchSuccess:"Rezervācija atrasta.",emptyScreenings:"Nav pievienotu seansu.",officeSeatShort:"Biroja krēsls",bedSeatShort:"Gultas vieta",tabDashboard:"⌂ Pārskats",dashboardWelcome:"Šodienas kino pārskats",dashboardMovies:"Aktīvas filmas",dashboardScreenings:"Turpmākie seansi",dashboardBookings:"Apstiprinātas rezervācijas",dashboardValue:"Rezervāciju summa",latestBookings:"Jaunākās rezervācijas",searchBookings:"Meklēt kodu, vārdu, e-pastu vai filmu",allStatuses:"Visi statusi",exportBookings:"Eksportēt CSV",noFilterBookings:"Pēc šiem filtriem rezervāciju nav.",payAtCinema:"Apmaksa kinoteātrī",paymentDue:"Maksājums tiks veikts uz vietas. Karte netiks iekasēta tiešsaistē.",printTicket:"Drukāt biļeti"
   },
   en: {
     navHome:"Home",navMovies:"Movies",navSeats:"Seating",navBookings:"My bookings",buyTicket:"Book a ticket",
     heroEyebrow:"YOUR COSY CINEMA EXPERIENCE",heroTitle:"Movie nights,<br><em>on another level.</em>",heroText:"Choose a movie, reserve your spot and enjoy cinema your way — including a comfy bed-style seat.",
-    browseMovies:"Browse movies",ticketsFrom:"Standard tickets from",statTicket:"Standard ticket",statMax:"Maximum seats per booking",statCancel:"Customer cancellation deadline",statSnacks:"Popcorn and water",
+    browseMovies:"Browse movies",ticketsFrom:"Standard tickets from",statTicket:"Standard ticket",statMax:"6 bed seats + 1 office chair",statCancel:"Customer cancellation deadline",statSnacks:"Popcorn and water",
     moviesEyebrow:"FIND YOUR NEXT MOVIE",moviesTitle:"Now showing",searchMovies:"Search movies...",filterAll:"All movies",filterAnimation:"Animation",filterComedy:"Comedy",filterAdventure:"Adventure",emptyMovies:"No movies found.",
-    comfortEyebrow:"COMFORT, YOUR WAY",comfortTitle:"More than a chair.<br><em>Your cinema style.</em>",comfortText:"Standard seats are spacious bed-style loungers. Choose your exact seat for €0.10 per booking, or upgrade a seat to an office chair.",
-    featureBeds:"Bed-style seats",featureBedsDesc:"Included with the ticket",featureSelect:"Custom seat selection",featureSelectDesc:"€0.10 per booking",featureChair:"Office chair",featureChairDesc:"From €0.20 per seat",
+    comfortEyebrow:"COMFORT, YOUR WAY",comfortTitle:"More than a chair.<br><em>Your cinema style.</em>",comfortText:"The room has six bed-style seats and one separate office chair. That is seven seats total, or six without the office chair.",
+    featureBeds:"Bed-style seats",featureBedsDesc:"6 seats in the room",featureSelect:"Custom seat selection",featureSelectDesc:"€0.10 per booking",featureChair:"Office chair",featureChairDesc:"Separate seventh seat",
     bookingEyebrow:"YOUR TICKETS IN ONE PLACE",bookingTitle:"My bookings",bookingLookupHelp:"Enter the booking code and the email address used for the reservation.",bookingCode:"Booking code",yourEmail:"Your email",lookupButton:"Find booking",
     footerText:"Dancing Fruit Cinema © 2026 · All rights reserved.",
-    noShows:"There are no available screenings for this movie.",step1:"STEP 1 OF 4",step2:"STEP 2 OF 4",step3:"STEP 3 OF 4",step4:"STEP 4 OF 4",bookTickets:"Book tickets",date:"Screening date",time:"Screening time",ticketCount:"Number of tickets (maximum 8)",continue:"Continue →",cancel:"Cancel",chooseSeats:"Choose your seats",
-    seatIntro:"Standard seats are spacious bed-style loungers. Let the system assign seats for free, or choose exact seats for",auto:"Automatic assignment",autoDesc:"No extra charge",custom:"Choose seats myself",customDesc:"per booking",screen:"CINEMA SCREEN",available:"Available",occupied:"Occupied",selected:"Selected",bedSeat:"Bed-style seat",chosenSeats:"Selected seats",needSeats:"Choose exactly",seats:"seats.",selectOnly:"You can select only",seats2:"seats.",notEnough:"There are not enough available seats for this screening.",
-    extras:"Optional extras",extrasIntro:"Choose which seats you want to upgrade to office chairs. All other seats remain bed-style.",chairUpgrade:"Office chair",water:"Water",popcorn:"Popcorn",portion:"portion",beds:"Bed-style seat",summary:"Summary",tickets:"Tickets",seatSelection:"Seat selection",officeChairs:"Office chairs",snacks:"Water and popcorn",total:"Total",
-    details:"Your details and confirmation",detailsIntro:"Enter your contact details for the booking confirmation.",name:"Name",email:"Email",cancellationRule:"Customers can cancel up to 24 hours before the screening starts. After that, only an administrator can cancel.",back:"← Back",confirm:"Confirm booking",validDetails:"Please enter a valid name and email address.",seatRace:"One of those seats was just booked. Please choose seats again.",confirmedEyebrow:"BOOKING CONFIRMED",confirmed:"See you at the cinema!",savedBrowser:"Your reservation has been saved on the server.",bookingNumber:"Booking reference",screening:"Screening",close:"Close",demoPayment:"This booking does not take an online payment. No ticket payment has been collected.",
+    noShows:"There are no available screenings for this movie.",step1:"STEP 1 OF 4",step2:"STEP 2 OF 4",step3:"STEP 3 OF 4",step4:"STEP 4 OF 4",bookTickets:"Book tickets",date:"Screening date",time:"Screening time",ticketCount:"Number of seats (max 7: 6 beds + 1 office chair)",continue:"Continue →",cancel:"Cancel",chooseSeats:"Choose your seats",
+    seatIntro:"The room has six bed-style seats and one separate office chair: seven people maximum. Automatic assignment is free; choosing exact seats costs",auto:"Automatic assignment",autoDesc:"No extra charge",custom:"Choose seats myself",customDesc:"per booking",screen:"CINEMA SCREEN",available:"Available",occupied:"Occupied",selected:"Selected",bedSeat:"Bed-style seat",chosenSeats:"Selected seats",needSeats:"Choose exactly",seats:"seats.",selectOnly:"You can select only",seats2:"seats.",notEnough:"There are not enough available seats for this screening.",
+    extras:"Optional extras",extrasIntro:"Add water or popcorn. The office chair is a separate seventh seat, not an upgrade to a bed seat.",chairUpgrade:"Office chair",water:"Water",popcorn:"Popcorn",portion:"portion",beds:"Bed-style seat",summary:"Summary",tickets:"Tickets",seatSelection:"Seat selection",officeChairs:"Office chair",snacks:"Water and popcorn",total:"Total",
+    details:"Your details and confirmation",detailsIntro:"Enter your contact details for the booking confirmation.",name:"Name",email:"Email",cancellationRule:"Customers can cancel up to 24 hours before the screening starts. After that, only an administrator can cancel.",back:"← Back",confirm:"Confirm booking",validDetails:"Please enter a valid name and email address.",seatRace:"One of those seats was just booked. Please choose seats again.",confirmedEyebrow:"BOOKING CONFIRMED",confirmed:"See you at the cinema!",savedBrowser:"Your reservation has been saved on the server.",bookingNumber:"Booking reference",screening:"Screening",close:"Close",demoPayment:"Your reservation is saved, but online payments are not connected. Payment is due at the cinema.",
     lookupMissing:"Enter the booking code and email address.",lookupNo:"No booking was found for that code and email.",statusConfirmed:"Confirmed",statusCancelled:"Cancelled",cancelBooking:"Cancel booking",cancelConfirm:"Are you sure you want to cancel this booking?",cancelled:"Booking cancelled. The seats are available again.",cancelTooLate:"Customers can only cancel up to 24 hours before the screening.",
     adminLogin:"Administrator login",adminIntro:"Enter the administrator account configured on the server.",username:"Username",password:"Password",login:"Log in",badLogin:"Incorrect username or password.",adminHint:"Open this window with Ctrl + Shift + Alt + P. Browsers usually cannot detect the Fn key, so it is not needed.",
-    adminTitle:"Admin dashboard",adminIntro2:"Manage movies, screenings, bookings and prices.",tabMovies:"🎬 Movies & screenings",tabBookings:"🎟️ Bookings",tabPrices:"€ Prices",tabAccount:"⚙ Account",logout:"Log out",adminSession:"Administrator session",addMovie:"+ Add movie",edit:"Edit",delete:"Remove",noMovies:"There are no movies yet.",movieTitle:"Movie title",genre:"Genre",duration:"Duration (minutes)",ageRating:"Age rating",year:"Release year",posterEmoji:"Poster symbol",posterUrl:"Poster image URL (HTTPS)",posterUpload:"Upload poster image",posterRemove:"Remove poster",posterPreview:"Poster preview",posterUploadHelp:"Choose a JPG, PNG or WebP image. It will be resized and saved with the movie.",posterBackground:"Poster background CSS colour",description:"Description",schedule:"Screenings (one date per line)",scheduleHelp:"Format: YYYY-MM-DD:14:00,17:00 — put each date on a new line.",save:"Save",movieRequired:"Enter a title, description and valid duration.",invalidSchedule:"Check the screening date and time format.",movieSaved:"Movie saved.",movieDeleted:"Movie removed from the public list.",deleteMovieConfirm:"Remove this movie from the public list?",bookingList:"All bookings",noBookings:"There are no bookings yet.",priceTitle:"Price settings",priceTicket:"Standard ticket (€)",priceCustom:"Custom seat selection per booking (€)",priceOffice:"Office chair upgrade (€)",priceWater:"Water (€)",pricePopcorn:"Popcorn (€)",savePrices:"Save prices",pricesSaved:"Prices saved.",changePassword:"Change admin password",currentPassword:"Current password",newPassword:"New password (at least 12 characters)",passwordChanged:"Password changed.",passwordMin:"The new password must be at least 12 characters.",wrongCurrent:"The current password is incorrect.",serverError:"The server is currently unavailable. Check the server setup.",loading:"Loading...",bookNow:"Book ticket",min:"min",bookingSearchSuccess:"Booking found.",emptyScreenings:"No screenings added."
+    adminTitle:"Admin dashboard",adminIntro2:"Manage movies, screenings, bookings and prices.",tabMovies:"🎬 Movies & screenings",tabBookings:"🎟️ Bookings",tabPrices:"€ Prices",tabAccount:"⚙ Account",logout:"Log out",adminSession:"Administrator session",addMovie:"+ Add movie",edit:"Edit",delete:"Remove",noMovies:"There are no movies yet.",movieTitle:"Movie title",genre:"Genre",duration:"Duration (minutes)",ageRating:"Age rating",year:"Release year",posterEmoji:"Poster symbol",posterUrl:"Poster image URL (HTTPS)",posterUpload:"Upload poster image",posterRemove:"Remove poster",posterPreview:"Poster preview",posterUploadHelp:"Choose a JPG, PNG or WebP image. It will be resized and saved with the movie.",posterBackground:"Poster background CSS colour",description:"Description",schedule:"Screenings (one date per line)",scheduleHelp:"Format: YYYY-MM-DD:14:00,17:00 — put each date on a new line.",save:"Save",movieRequired:"Enter a title, description and valid duration.",invalidSchedule:"Check the screening date and time format.",movieSaved:"Movie saved.",movieDeleted:"Movie removed from the public list.",deleteMovieConfirm:"Remove this movie from the public list?",bookingList:"All bookings",noBookings:"There are no bookings yet.",priceTitle:"Price settings",priceTicket:"Standard ticket (€)",priceCustom:"Custom seat selection per booking (€)",priceOffice:"Office chair surcharge (€)",priceWater:"Water (€)",pricePopcorn:"Popcorn (€)",savePrices:"Save prices",pricesSaved:"Prices saved.",changePassword:"Change admin password",currentPassword:"Current password",newPassword:"New password (at least 12 characters)",passwordChanged:"Password changed.",passwordMin:"The new password must be at least 12 characters.",wrongCurrent:"The current password is incorrect.",serverError:"The server is currently unavailable. Check the server setup.",loading:"Loading...",bookNow:"Book ticket",min:"min",bookingSearchSuccess:"Booking found.",emptyScreenings:"No screenings added.",officeSeatShort:"Office chair",bedSeatShort:"Bed seat",tabDashboard:"⌂ Overview",dashboardWelcome:"Your cinema at a glance",dashboardMovies:"Active movies",dashboardScreenings:"Upcoming screenings",dashboardBookings:"Confirmed bookings",dashboardValue:"Booking value",latestBookings:"Latest bookings",searchBookings:"Search code, name, email or movie",allStatuses:"All statuses",exportBookings:"Export CSV",noFilterBookings:"No bookings match these filters.",payAtCinema:"Pay at the cinema",paymentDue:"Payment is due at the venue. No card will be charged online.",printTicket:"Print ticket"
   }
 };
 
@@ -42,7 +42,7 @@ let movies = [];
 let prices = { ticket: 0.10, custom: 0.10, office: 0.20, water: 0.20, popcorn: 0.50 };
 let selectedGenre = "all";
 let booking = null;
-let adminTab = "movies";
+let adminTab = "dashboard";
 let toastTimer = null;
 let revealObserver = null;
 function revealElement(element, delay) {
@@ -69,6 +69,13 @@ function setupMotion() {
 }
 
 function t(key) { return (DICT[language] && DICT[language][key]) || DICT.lv[key] || key; }
+function checkoutProgress(activeStep) {
+  const labels = language === "lv" ? ["Seanss","Vietas","Papildus","Dati"] : ["Showtime","Seats","Extras","Details"];
+  return '<div class="checkout-progress">' + labels.map((label,index) =>
+    '<div class="checkout-progress-step ' + (index+1===activeStep ? "active" : index+1<activeStep ? "done" : "") + '"><span>' +
+    (index+1<activeStep ? "✓" : index+1) + '</span><small>' + label + '</small></div>'
+  ).join("") + '</div>';
+}
 function escapeHTML(value) {
   return String(value ?? "").replace(/[&<>"']/g, (character) => ({
     "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
@@ -228,7 +235,7 @@ function openBooking(movieId) {
   if (!movie || !showings.length) { toast(t("noShows")); return; }
   booking = {
     movieId, screeningId:showings[0].id, date:showings[0].date, time:showings[0].time,
-    count:1, mode:"auto", seats:[], seatMap:[], officeSeats:[], officeCount:0, waterCount:0, popcornCount:0
+    count:1, mode:"auto", seats:[], seatMap:[], officeSeats:[], waterCount:0, popcornCount:0
   };
   renderBookingDateStep();
 }
@@ -243,12 +250,12 @@ function renderBookingDateStep() {
   const dayShowings = selectedShowingOptions(booking.date);
   if (!dayShowings.some((item) => item.id === booking.screeningId)) booking.screeningId = dayShowings[0].id;
   const html =
-    '<p class="eyebrow">' + t("step1") + '</p><h2 id="modalTitle">' + t("bookTickets") + '</h2>' +
+    '<p class="eyebrow">' + t("step1") + '</p>' + checkoutProgress(1) + '<h2 id="modalTitle">' + t("bookTickets") + '</h2>' +
     '<p class="modal-intro">' + escapeHTML(movie.title) + ' · ' + movie.duration + ' ' + t("min") + ' · ' + escapeHTML(movie.age) + '</p>' +
     '<div class="form-grid">' +
       '<div class="field"><label for="bookDate">' + t("date") + '</label><select id="bookDate">' + dates.map((date) => '<option value="' + date + '"' + (date === booking.date ? " selected" : "") + '>' + formatDate(date) + '</option>').join("") + '</select></div>' +
       '<div class="field"><label for="bookTime">' + t("time") + '</label><select id="bookTime">' + dayShowings.map((item) => '<option value="' + item.id + '"' + (item.id === booking.screeningId ? " selected" : "") + '>' + escapeHTML(item.time) + '</option>').join("") + '</select></div>' +
-      '<div class="field full"><label for="ticketCount">' + t("ticketCount") + '</label><select id="ticketCount">' + Array.from({length:8},(_,index)=>'<option value="'+(index+1)+'"'+(index===0?" selected":"")+'>'+(index+1)+'</option>').join("") + '</select></div>' +
+      '<div class="field full"><label for="ticketCount">' + t("ticketCount") + '</label><select id="ticketCount">' + Array.from({length:7},(_,index)=>'<option value="'+(index+1)+'"'+(index===0?" selected":"")+'>'+(index+1)+'</option>').join("") + '</select></div>' +
     '</div><div class="modal-actions"><button class="button button-secondary" data-close>' + t("cancel") + '</button><button class="small-button" id="toSeats">' + t("continue") + '</button></div>';
   showModal(html);
   $("#bookDate").onchange = (event) => {
@@ -282,17 +289,18 @@ async function renderSeatStep() {
     const chosen = booking.seats.includes(seat.seat_number);
     const klass = (seat.occupied ? "occupied " : "") + (chosen ? "selected " : "") + (seat.office_chair ? "office" : "");
     const disabled = seat.occupied || booking.mode === "auto";
+    const officeSeat = seat.seat_number === "OFFICE-1";
     return '<button class="seat ' + klass + '" data-seat="' + escapeHTML(seat.seat_number) + '"' + (disabled ? " disabled" : "") + '>' +
-      escapeHTML(seat.seat_number.split("-")[1]) + '<small>' + escapeHTML(seat.seat_number.split("-")[0]) + '</small></button>';
+      (officeSeat ? "🪑" : escapeHTML(seat.seat_number.split("-")[1])) + '<small>' + (officeSeat ? t("officeSeatShort") : t("bedSeatShort")) + '</small></button>';
   }).join("");
   showModal(
-    '<p class="eyebrow">' + t("step2") + '</p><h2 id="modalTitle">' + t("chooseSeats") + '</h2>' +
+    '<p class="eyebrow">' + t("step2") + '</p>' + checkoutProgress(2) + '<h2 id="modalTitle">' + t("chooseSeats") + '</h2>' +
     '<p class="modal-intro">' + t("seatIntro") + ' ' + formatMoney(prices.custom) + '.</p>' +
     '<div class="choice-row"><button class="choice-card ' + (booking.mode === "auto" ? "active" : "") + '" id="autoMode"><b>' + t("auto") + '</b><small>' + t("autoDesc") + '</small></button>' +
     '<button class="choice-card ' + (booking.mode === "custom" ? "active" : "") + '" id="customMode"><b>' + t("custom") + '</b><small>' + formatMoney(prices.custom) + ' ' + t("customDesc") + '</small></button></div>' +
     '<div class="screen-label">' + t("screen") + '</div><div class="seat-grid">' + seatButtons + '</div>' +
-    '<div class="seat-legend"><span><i class="legend-box" style="background:#183d30"></i>' + t("available") + '</span><span><i class="legend-box" style="background:#63272b"></i>' + t("occupied") + '</span><span><i class="legend-box" style="background:#8e6421"></i>' + t("selected") + '</span><span>▰ ' + t("bedSeat") + '</span></div>' +
-    '<div class="seat-actions">' + t("chosenSeats") + ': <b>' + (booking.mode === "auto" ? t("autoDesc") : booking.seats.map(escapeHTML).join(", ")) + '</b><br>' + t("needSeats") + ' ' + booking.count + ' ' + t("seats") + '</div>' +
+    '<div class="seat-legend"><span><i class="legend-box" style="background:#183d30"></i>' + t("available") + '</span><span><i class="legend-box" style="background:#63272b"></i>' + t("occupied") + '</span><span><i class="legend-box" style="background:#8e6421"></i>' + t("selected") + '</span><span>▰ ' + t("bedSeat") + '</span><span>🪑 ' + t("officeSeatShort") + '</span></div>' +
+    '<div class="seat-actions">' + t("chosenSeats") + ': <b>' + booking.seats.map(escapeHTML).join(", ") + '</b><br>' + t("needSeats") + ' ' + booking.count + ' ' + t("seats") + '</div>' +
     '<div class="modal-actions"><button class="button button-secondary" id="backToDates">' + t("back") + '</button><button class="small-button" id="toExtras">' + t("continue") + '</button></div>'
   );
   $("#autoMode").onclick = () => { booking.mode = "auto"; booking.seats = []; renderSeatStep(); };
@@ -307,8 +315,7 @@ async function renderSeatStep() {
   $("#backToDates").onclick = renderBookingDateStep;
   $("#toExtras").onclick = () => {
     if (booking.mode === "custom" && booking.seats.length !== booking.count) { toast(t("needSeats") + " " + booking.count + " " + t("seats")); return; }
-    booking.officeSeats = [];
-    booking.officeCount = 0;
+    booking.officeSeats = booking.seats.includes("OFFICE-1") ? ["OFFICE-1"] : [];
     booking.waterCount = 0;
     booking.popcornCount = 0;
     renderExtrasStep();
@@ -317,54 +324,37 @@ async function renderSeatStep() {
 function currentTotal() {
   return booking.count * prices.ticket +
     (booking.mode === "custom" ? prices.custom : 0) +
-    (booking.mode === "custom" ? booking.officeSeats.length : booking.officeCount) * prices.office +
+    (booking.seats.includes("OFFICE-1") ? prices.office : 0) +
     booking.waterCount * prices.water + booking.popcornCount * prices.popcorn;
 }
 function renderExtrasStep() {
-  let chairOptions = "";
-  if (booking.mode === "custom") {
-    chairOptions = '<div class="choice-row">' + booking.seats.map((seat) =>
-      '<button class="choice-card ' + (booking.officeSeats.includes(seat) ? "active" : "") + '" data-office-seat="' + escapeHTML(seat) + '"><b>' + escapeHTML(seat) + '</b><small>' +
-      (booking.officeSeats.includes(seat) ? "🪑 " + t("chairUpgrade") : "▰ " + t("beds")) + ' · ' + formatMoney(prices.office) + '</small></button>'
-    ).join("") + '</div>';
-  } else {
-    chairOptions = '<div class="field"><label for="officeCount">' + t("chairUpgrade") + ' · ' + formatMoney(prices.office) + '</label><select id="officeCount">' +
-      Array.from({length:booking.count+1},(_,i)=>'<option value="'+i+'"'+(i===0?" selected":"")+'>'+i+'</option>').join("") +
-      '</select></div>';
-  }
+  const hasOfficeSeat = booking.seats.includes("OFFICE-1");
+  booking.officeSeats = hasOfficeSeat ? ["OFFICE-1"] : [];
   showModal(
-    '<p class="eyebrow">' + t("step3") + '</p><h2 id="modalTitle">' + t("extras") + '</h2><p class="modal-intro">' + t("extrasIntro") + '</p>' +
-    chairOptions +
-    '<div class="form-grid" style="margin-top:18px"><div class="field"><label for="waterCount">' + t("water") + ' (' + formatMoney(prices.water) + ')</label><input id="waterCount" type="number" min="0" max="20" value="0"></div>' +
-    '<div class="field"><label for="popcornCount">' + t("popcorn") + ' (' + formatMoney(prices.popcorn) + ')</label><input id="popcornCount" type="number" min="0" max="20" value="0"></div></div>' +
+    '<p class="eyebrow">' + t("step3") + '</p>' + checkoutProgress(3) +
+    '<h2 id="modalTitle">' + t("extras") + '</h2><p class="modal-intro">' + t("extrasIntro") + '</p>' +
+    '<div class="checkout-seat-summary"><span>' + t("chosenSeats") + '</span><strong>' + booking.seats.map(escapeHTML).join(", ") + '</strong>' +
+    '<small>' + (hasOfficeSeat ? "🪑 " + t("officeSeatShort") + " · " + formatMoney(prices.office) : "▰ " + t("bedSeat")) + '</small></div>' +
+    '<div class="form-grid" style="margin-top:18px"><div class="field"><label for="waterCount">' + t("water") + ' (' + formatMoney(prices.water) + ')</label><input id="waterCount" type="number" min="0" max="20" value="' + booking.waterCount + '"></div>' +
+    '<div class="field"><label for="popcornCount">' + t("popcorn") + ' (' + formatMoney(prices.popcorn) + ')</label><input id="popcornCount" type="number" min="0" max="20" value="' + booking.popcornCount + '"></div></div>' +
     '<div class="summary-box">' +
       '<div class="summary-line"><span>' + t("tickets") + ' (' + booking.count + ')</span><b>' + formatMoney(booking.count * prices.ticket) + '</b></div>' +
       '<div class="summary-line"><span>' + t("seatSelection") + '</span><b>' + formatMoney(booking.mode === "custom" ? prices.custom : 0) + '</b></div>' +
-      '<div class="summary-line"><span>' + t("officeChairs") + '</span><b id="officePrice">' + formatMoney(0) + '</b></div>' +
-      '<div class="summary-line"><span>' + t("snacks") + '</span><b id="snackPrice">' + formatMoney(0) + '</b></div>' +
+      '<div class="summary-line"><span>' + t("officeChairs") + '</span><b id="officePrice">' + formatMoney(hasOfficeSeat ? prices.office : 0) + '</b></div>' +
+      '<div class="summary-line"><span>' + t("snacks") + '</span><b id="snackPrice">' + formatMoney(booking.waterCount * prices.water + booking.popcornCount * prices.popcorn) + '</b></div>' +
       '<div class="summary-line total"><span>' + t("total") + '</span><b id="grandTotal">' + formatMoney(currentTotal()) + '</b></div></div>' +
     '<div class="modal-actions"><button class="button button-secondary" id="backToSeats">' + t("back") + '</button><button class="small-button" id="toCustomerDetails">' + t("continue") + '</button></div>'
   );
   function refreshCosts() {
-    if (booking.mode === "auto") booking.officeCount = Number($("#officeCount").value);
     booking.waterCount = Math.max(0,Math.min(20,Number($("#waterCount").value)||0));
     booking.popcornCount = Math.max(0,Math.min(20,Number($("#popcornCount").value)||0));
-    const officeCount = booking.mode === "custom" ? booking.officeSeats.length : booking.officeCount;
-    $("#officePrice").textContent = formatMoney(officeCount * prices.office);
     $("#snackPrice").textContent = formatMoney(booking.waterCount * prices.water + booking.popcornCount * prices.popcorn);
     $("#grandTotal").textContent = formatMoney(currentTotal());
   }
-  if ($("#officeCount")) $("#officeCount").onchange = refreshCosts;
   $("#waterCount").oninput = refreshCosts;
   $("#popcornCount").oninput = refreshCosts;
-  document.querySelectorAll("[data-office-seat]").forEach((button) => button.onclick = () => {
-    const seat = button.dataset.officeSeat;
-    booking.officeSeats = booking.officeSeats.includes(seat) ? booking.officeSeats.filter((item) => item !== seat) : [...booking.officeSeats,seat];
-    renderExtrasStep();
-  });
   $("#backToSeats").onclick = renderSeatStep;
   $("#toCustomerDetails").onclick = () => {
-    if (booking.mode === "auto") booking.officeCount = Number($("#officeCount").value);
     booking.waterCount = Number($("#waterCount").value)||0;
     booking.popcornCount = Number($("#popcornCount").value)||0;
     renderCustomerDetailsStep();
@@ -372,24 +362,30 @@ function renderExtrasStep() {
 }
 function renderCustomerDetailsStep() {
   const movie = movies.find((item) => item.id === booking.movieId);
-  const officeCount = booking.mode === "custom" ? booking.officeSeats.length : booking.officeCount;
+  const hasOfficeSeat = booking.seats.includes("OFFICE-1");
+  const officeSeats = hasOfficeSeat ? ["OFFICE-1"] : [];
   showModal(
-    '<p class="eyebrow">' + t("step4") + '</p><h2 id="modalTitle">' + t("details") + '</h2><p class="modal-intro">' + t("detailsIntro") + '</p>' +
-    '<div class="form-grid"><div class="field"><label for="customerName">' + t("name") + '</label><input id="customerName" maxlength="70" required></div>' +
-    '<div class="field"><label for="customerEmail">' + t("email") + '</label><input id="customerEmail" type="email" required></div></div>' +
+    '<p class="eyebrow">' + t("step4") + '</p>' + checkoutProgress(4) +
+    '<h2 id="modalTitle">' + t("details") + '</h2><p class="modal-intro">' + t("detailsIntro") + '</p>' +
+    '<div class="form-grid"><div class="field"><label for="customerName">' + t("name") + '</label><input id="customerName" maxlength="70" autocomplete="name" required></div>' +
+    '<div class="field"><label for="customerEmail">' + t("email") + '</label><input id="customerEmail" type="email" autocomplete="email" required></div></div>' +
     '<div class="summary-box"><div class="summary-line"><span>' + t("screening") + '</span><b>' + escapeHTML(movie.title) + ' · ' + formatDate(booking.date) + ' · ' + escapeHTML(booking.time) + '</b></div>' +
-    '<div class="summary-line"><span>' + t("chosenSeats") + '</span><b>' + (booking.mode === "custom" ? booking.seats.map(escapeHTML).join(", ") : t("auto")) + '</b></div>' +
-    '<div class="summary-line"><span>' + t("officeChairs") + ' / ' + t("snacks") + '</span><b>' + officeCount + ' · ' + booking.waterCount + ' ' + t("water").toLowerCase() + ' · ' + booking.popcornCount + ' ' + t("popcorn").toLowerCase() + '</b></div>' +
+    '<div class="summary-line"><span>' + t("chosenSeats") + '</span><b>' + booking.seats.map(escapeHTML).join(", ") + '</b></div>' +
+    '<div class="summary-line"><span>' + t("officeChairs") + ' / ' + t("snacks") + '</span><b>' + (hasOfficeSeat ? "1" : "0") + ' · ' + booking.waterCount + ' ' + t("water").toLowerCase() + ' · ' + booking.popcornCount + ' ' + t("popcorn").toLowerCase() + '</b></div>' +
     '<div class="summary-line total"><span>' + t("total") + '</span><b>' + formatMoney(currentTotal()) + '</b></div></div>' +
+    '<div class="payment-choice"><span class="payment-icon">€</span><span><strong>' + t("payAtCinema") + '</strong><small>' + t("paymentDue") + '</small></span><b>' + formatMoney(currentTotal()) + '</b></div>' +
     '<p class="admin-note">' + t("cancellationRule") + '</p>' +
-    '<div class="modal-actions"><button class="button button-secondary" id="backToExtras">' + t("back") + '</button><button class="small-button" id="confirmBooking">' + t("confirm") + '</button></div>'
+    '<div class="modal-actions"><button class="button button-secondary" id="backToExtras">' + t("back") + '</button><button class="small-button" id="confirmBooking">' + t("confirm") + ' · ' + formatMoney(currentTotal()) + '</button></div>'
   );
   $("#backToExtras").onclick = renderExtrasStep;
   $("#confirmBooking").onclick = async () => {
+    const button = $("#confirmBooking");
     const name = $("#customerName").value.trim();
     const email = $("#customerEmail").value.trim();
     if (!name || !$("#customerEmail").checkValidity()) { toast(t("validDetails")); return; }
-    const officeSeats = booking.mode === "custom" ? booking.officeSeats : [];
+    button.disabled = true;
+    button.textContent = language === "lv" ? "Apstrādā rezervāciju..." : "Confirming reservation...";
+    const submittedOfficeSeats = booking.mode === "custom" ? officeSeats : [];
     try {
       const result = await api("/bookings", {
         method:"POST",
@@ -400,14 +396,15 @@ function renderCustomerDetailsStep() {
           ticketCount:booking.count,
           customSelection:booking.mode === "custom",
           selectedSeats:booking.mode === "custom" ? booking.seats : [],
-          officeSeats,
-          officeChairCount:booking.mode === "auto" ? booking.officeCount : 0,
+          officeSeats:submittedOfficeSeats,
           waterCount:booking.waterCount,
           popcornCount:booking.popcornCount
         }
       });
       renderConfirmation(result.booking);
     } catch (error) {
+      button.disabled = false;
+      button.textContent = t("confirm") + " · " + formatMoney(currentTotal());
       toast(error.message);
       if (error.status === 409) renderSeatStep();
     }
@@ -419,15 +416,16 @@ function renderConfirmation(item) {
   showModal(
     '<div style="text-align:center;padding:12px 0"><div style="font-size:46px">🎟️</div>' +
     '<p class="eyebrow">' + t("confirmedEyebrow") + '</p><h2 id="modalTitle">' + t("confirmed") + '</h2>' +
-    '<p class="modal-intro">' + t("savedBrowser") + '</p><div class="summary-box" style="text-align:left">' +
+    '<p class="modal-intro">' + t("savedBrowser") + '</p><div class="summary-box ticket-print" style="text-align:left">' +
     '<div class="summary-line"><span>' + t("bookingNumber") + '</span><b>' + escapeHTML(item.code) + '</b></div>' +
     '<div class="summary-line"><span>' + t("email") + '</span><b>' + escapeHTML(item.customerEmail) + '</b></div>' +
     '<div class="summary-line"><span>' + t("screening") + '</span><b>' + escapeHTML(movie?.title || "") + ' · ' + formatDate(booking.date) + ' · ' + escapeHTML(booking.time) + '</b></div>' +
     '<div class="summary-line"><span>' + t("chosenSeats") + '</span><b>' + seats.map(escapeHTML).join(", ") + '</b></div>' +
     '<div class="summary-line total"><span>' + t("total") + '</span><b>' + formatMoney(item.total) + '</b></div></div>' +
     '<p class="admin-note">' + t("demoPayment") + ' ' + t("bookingLookupHelp") + '</p>' +
-    '<button class="small-button" data-close style="width:100%;margin-top:12px">' + t("close") + '</button></div>'
+    '<div class="ticket-actions"><button class="button button-secondary" id="printTicket">' + t("printTicket") + '</button><button class="small-button" data-close>' + t("close") + '</button></div></div>'
   );
+  $("#printTicket").onclick = () => window.print();
   $("#lookupCode").value = item.code;
   $("#lookupEmail").value = item.customerEmail;
 }
@@ -480,8 +478,9 @@ async function renderAdminDashboard() {
   showModal(
     '<p class="eyebrow">DANCING FRUIT CINEMA · ADMIN</p><h2 id="modalTitle">' + t("adminTitle") + '</h2><p class="modal-intro">' + t("adminIntro2") + '</p>' +
     '<div class="admin-wrap"><aside class="admin-side">' +
-    '<button class="active" data-admin-tab="movies">' + t("tabMovies") + '</button><button data-admin-tab="bookings">' + t("tabBookings") + '</button>' +
-    '<button data-admin-tab="prices">' + t("tabPrices") + '</button><button data-admin-tab="account">' + t("tabAccount") + '</button></aside>' +
+    '<button class="' + (adminTab === "dashboard" ? "active" : "") + '" data-admin-tab="dashboard">' + t("tabDashboard") + '</button>' +
+    '<button class="' + (adminTab === "movies" ? "active" : "") + '" data-admin-tab="movies">' + t("tabMovies") + '</button><button class="' + (adminTab === "bookings" ? "active" : "") + '" data-admin-tab="bookings">' + t("tabBookings") + '</button>' +
+    '<button class="' + (adminTab === "prices" ? "active" : "") + '" data-admin-tab="prices">' + t("tabPrices") + '</button><button class="' + (adminTab === "account" ? "active" : "") + '" data-admin-tab="account">' + t("tabAccount") + '</button></aside>' +
     '<div class="admin-panel" id="adminPanel">' + t("loading") + '</div></div>' +
     '<div class="modal-actions"><span class="admin-note">' + t("adminSession") + '</span><button class="button button-secondary" id="adminLogout">' + t("logout") + '</button></div>'
   );
@@ -501,11 +500,45 @@ async function renderAdminTab() {
   if (!panel) return;
   panel.innerHTML = t("loading");
   try {
+    if (adminTab === "dashboard") await renderAdminOverview(panel);
     if (adminTab === "movies") await renderAdminMovies(panel);
     if (adminTab === "bookings") await renderAdminBookings(panel);
     if (adminTab === "prices") await renderAdminPrices(panel);
     if (adminTab === "account") renderAdminAccount(panel);
   } catch(error) { panel.innerHTML = '<p class="admin-note">' + escapeHTML(error.message) + '</p>'; }
+}
+async function renderAdminOverview(panel) {
+  const [bookingData,movieData] = await Promise.all([api("/admin/bookings"),api("/movies")]);
+  const bookings = bookingData.bookings || [];
+  const active = bookings.filter((item)=>item.status==="confirmed");
+  const cancelled = bookings.filter((item)=>item.status==="cancelled");
+  const moviesList = movieData.movies || [];
+  const upcoming = moviesList.reduce((total,movie)=>total+(movie.screenings||[]).length,0);
+  const reservedValue = active.reduce((total,item)=>total+Number(item.total||0),0);
+  const cards = [
+    [t("dashboardMovies"),moviesList.length,"🎬"],
+    [t("dashboardScreenings"),upcoming,"🗓"],
+    [t("dashboardBookings"),active.length,"🎟"],
+    [t("dashboardValue"),formatMoney(reservedValue),"€"]
+  ];
+  panel.innerHTML =
+    '<div class="admin-overview-head"><div><h3>' + t("tabDashboard") + '</h3><p>' + t("dashboardWelcome") + '</p></div>' +
+    '<button class="small-button" data-quick-tab="bookings">' + t("tabBookings") + ' →</button></div>' +
+    '<div class="admin-stat-grid">' + cards.map((card)=>'<article class="admin-stat-card"><span>' + card[2] + '</span><small>' + card[0] + '</small><strong>' + card[1] + '</strong></article>').join("") + '</div>' +
+    '<div class="admin-overview-columns"><section class="admin-overview-box"><h4>' + t("latestBookings") + '</h4>' +
+    (bookings.length ? bookings.slice(0,5).map((item)=>
+      '<div class="admin-mini-booking"><div><strong>' + escapeHTML(item.name) + '</strong><small>' + escapeHTML(item.code) + ' · ' + escapeHTML(item.movie) + '</small></div>' +
+      '<span class="admin-status ' + (item.status==="cancelled"?"cancelled":"confirmed") + '">' + (item.status==="cancelled"?t("statusCancelled"):t("statusConfirmed")) + '</span></div>'
+    ).join("") : '<p class="admin-note">' + t("noBookings") + '</p>') +
+    '</section><section class="admin-overview-box"><h4>' + (language==="lv"?"Ātrās darbības":"Quick actions") + '</h4>' +
+    '<button class="admin-quick-action" data-quick-tab="movies">' + t("addMovie") + ' <span>→</span></button>' +
+    '<button class="admin-quick-action" data-quick-tab="prices">' + t("tabPrices") + ' <span>→</span></button>' +
+    '<button class="admin-quick-action" data-quick-tab="account">' + t("tabAccount") + ' <span>→</span></button>' +
+    '<p class="admin-note">' + (language==="lv"?"Atceltās rezervācijas":"Cancelled reservations") + ': <b>' + cancelled.length + '</b></p></section></div>';
+  panel.querySelectorAll("[data-quick-tab]").forEach((button)=>button.onclick=()=>{
+    const tab = document.querySelector('[data-admin-tab="' + button.dataset.quickTab + '"]');
+    if(tab) tab.click();
+  });
 }
 async function renderAdminMovies(panel) {
   const data = await api("/movies");
@@ -630,19 +663,55 @@ function renderMovieEditor(movie) {
 async function renderAdminBookings(panel) {
   const data = await api("/admin/bookings");
   const list = data.bookings || [];
-  panel.innerHTML = '<h3>' + t("bookingList") + '</h3>' + (list.length ? list.map((item) =>
-    '<div class="admin-item"><div><b>' + escapeHTML(item.code) + ' · ' + escapeHTML(item.name) + '</b><small>' +
-    escapeHTML(item.movie) + ' · ' + formatDate(item.date) + ' · ' + escapeHTML(item.time) + ' · ' + item.seats.map(escapeHTML).join(", ") +
-    '</small><small>' + escapeHTML(item.email) + ' · ' + formatMoney(item.total) + ' · ' + (item.status === "cancelled" ? t("statusCancelled") : t("statusConfirmed")) +
-    '</small></div>' + (item.status === "confirmed" ? '<button class="danger-button" data-admin-cancel="' + escapeHTML(item.code) + '">' + t("cancelBooking") + '</button>' : "") + '</div>'
-  ).join("") : '<p class="admin-note">' + t("noBookings") + '</p>');
-  document.querySelectorAll("[data-admin-cancel]").forEach((button) => button.onclick = async () => {
-    if (!confirm(t("cancelConfirm"))) return;
-    try {
-      await api("/admin/bookings/"+encodeURIComponent(button.dataset.adminCancel)+"/cancel",{method:"POST"});
-      toast(t("cancelled")); await renderAdminBookings($("#adminPanel"));
-    } catch(error) { toast(error.message); }
-  });
+  panel.innerHTML =
+    '<div class="admin-bookings-head"><div><h3>' + t("bookingList") + '</h3><p>' + (language==="lv"?"Meklē, filtrē un eksportē rezervācijas.":"Search, filter and export reservations.") + '</p></div>' +
+    '<button class="button button-secondary" id="exportBookings">' + t("exportBookings") + '</button></div>' +
+    '<div class="admin-booking-toolbar"><input id="bookingAdminSearch" type="search" placeholder="' + t("searchBookings") + '">' +
+    '<select id="bookingStatusFilter"><option value="all">' + t("allStatuses") + '</option><option value="confirmed">' + t("statusConfirmed") + '</option><option value="cancelled">' + t("statusCancelled") + '</option></select></div>' +
+    '<p class="admin-filter-count" id="bookingFilterCount"></p><div id="adminBookingList" class="admin-booking-list"></div>';
+  const listElement = $("#adminBookingList");
+  let filteredBookings = list;
+  const draw = () => {
+    const query = $("#bookingAdminSearch").value.trim().toLocaleLowerCase();
+    const status = $("#bookingStatusFilter").value;
+    const filtered = list.filter((item)=>{
+      const matchesStatus = status==="all" || item.status===status;
+      const haystack = [item.code,item.name,item.email,item.movie,(item.seats||[]).join(" ")].join(" ").toLocaleLowerCase();
+      return matchesStatus && haystack.includes(query);
+    });
+    filteredBookings = filtered;
+    $("#bookingFilterCount").textContent = language==="lv"
+      ? "Rādītas " + filtered.length + " no " + list.length + " rezervācijām"
+      : "Showing " + filtered.length + " of " + list.length + " bookings";
+    listElement.innerHTML = filtered.length ? filtered.map((item)=>
+      '<div class="admin-booking-row"><div class="admin-booking-main"><div class="admin-booking-title"><strong>' + escapeHTML(item.code) + '</strong>' +
+      '<span class="admin-status ' + (item.status==="cancelled"?"cancelled":"confirmed") + '">' + (item.status==="cancelled"?t("statusCancelled"):t("statusConfirmed")) + '</span></div>' +
+      '<b>' + escapeHTML(item.name) + '</b><small>' + escapeHTML(item.movie) + ' · ' + formatDate(item.date) + ' · ' + escapeHTML(item.time) + '</small>' +
+      '<small>' + escapeHTML(item.email) + '</small><small>' + (item.seats||[]).map(escapeHTML).join(", ") + ' · ' + formatMoney(item.total) + '</small></div>' +
+      (item.status==="confirmed" ? '<button class="danger-button" data-admin-cancel="' + escapeHTML(item.code) + '">' + t("cancelBooking") + '</button>' : '') + '</div>'
+    ).join("") : '<p class="admin-note">' + t("noFilterBookings") + '</p>';
+    listElement.querySelectorAll("[data-admin-cancel]").forEach((button)=>button.onclick=async()=>{
+      if(!confirm(t("cancelConfirm"))) return;
+      try {
+        await api("/admin/bookings/"+encodeURIComponent(button.dataset.adminCancel)+"/cancel",{method:"POST"});
+        toast(t("cancelled"));
+        await renderAdminBookings($("#adminPanel"));
+      } catch(error) { toast(error.message); }
+    });
+  };
+  $("#bookingAdminSearch").oninput = draw;
+  $("#bookingStatusFilter").onchange = draw;
+  $("#exportBookings").onclick = () => {
+    const headers = ["Booking code","Name","Email","Movie","Date","Time","Seats","Total EUR","Status"];
+    const rows = filteredBookings.map((item)=>[item.code,item.name,item.email,item.movie,item.date,item.time,(item.seats||[]).join(" "),Number(item.total).toFixed(2),item.status]);
+    const csv = [headers,...rows].map((row)=>row.map((cell)=>'"'+String(cell??"").replace(/"/g,'""')+'"').join(",")).join("\r\n");
+    const url = URL.createObjectURL(new Blob(["\uFEFF",csv],{type:"text/csv;charset=utf-8"}));
+    const link = document.createElement("a");
+    link.href=url; link.download="dancing-fruit-cinema-bookings.csv";
+    document.body.appendChild(link); link.click(); link.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  };
+  draw();
 }
 async function renderAdminPrices(panel) {
   const data = await api("/prices");
