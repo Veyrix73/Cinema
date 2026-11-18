@@ -161,7 +161,7 @@ app.get("/api/screenings/:id/seats", async (req,res,next) => {
 
 app.post("/api/bookings", async (req,res,next) => {
   const body = req.body || {};
-  const count = Number(body.ticketCount), water = Number(body.waterCount || 0), popcorn = Number(body.popcornCount || 0);
+  const count = Number(body.ticketCount), water = Number(body.waterCount || 0), popcorn = Number(body.popcornCount || 0), officeChairCount = Number(body.officeChairCount || 0);
   const selected = Array.isArray(body.selectedSeats) ? body.selectedSeats : [];
   const office = Array.isArray(body.officeSeats) ? body.officeSeats : [];
   const custom = Boolean(body.customSelection);
@@ -171,13 +171,13 @@ app.post("/api/bookings", async (req,res,next) => {
       !Number.isInteger(count) || count < 1 || count > 8 ||
       !Number.isInteger(water) || water < 0 || water > 20 ||
       !Number.isInteger(popcorn) || popcorn < 0 || popcorn > 20 ||
-      new Set(office).size !== office.length || office.some((seat) => typeof seat !== "string")) {
+      new Set(office).size !== office.length || office.some((seat) => typeof seat !== "string") || !Number.isInteger(officeChairCount) || officeChairCount < 0 || officeChairCount > count) {
     return res.status(400).json({error:"Check your details. A booking can contain 1–8 tickets."});
   }
   if (custom && (selected.length !== count || new Set(selected).size !== count)) {
     return res.status(400).json({error:"Choose exactly the number of seats in your booking."});
   }
-  if (!custom && selected.length) return res.status(400).json({error:"Custom seat list is not valid for automatic allocation."});
+  if (!custom && (selected.length || office.length)) return res.status(400).json({error:"Custom seat details are not valid for automatic allocation."});
   if (custom && office.some((seat) => !selected.includes(seat))) return res.status(400).json({error:"Office chair upgrades must match selected seats."});
   if (office.length > count) return res.status(400).json({error:"Too many office chair upgrades."});
 
@@ -199,7 +199,7 @@ app.post("/api/bookings", async (req,res,next) => {
       allocated = result.rows.map((row) => row.seat_number);
     } else {
       const result = await client.query(
-        "SELECT seat_number FROM screening_seats WHERE screening_id=$1 AND booking_id IS NULL ORDER BY seat_number FOR UPDATE SKIP LOCKED LIMIT $2",
+        "SELECT seat_number FROM screening_seats WHERE screening_id=$1 AND booking_id IS NULL ORDER BY seat_number LIMIT $2 FOR UPDATE SKIP LOCKED",
         [body.screeningId,count]
       );
       allocated = result.rows.map((row) => row.seat_number);
@@ -210,7 +210,7 @@ app.post("/api/bookings", async (req,res,next) => {
     }
 
     const p = await getPrices(client);
-    const total = count*p.ticket + (custom ? p.custom : 0) + office.length*p.office + water*p.water + popcorn*p.popcorn;
+    const officeAllocated = custom ? office : allocated.slice(0, officeChairCount);\n    const total = count*p.ticket + (custom ? p.custom : 0) + officeAllocated.length*p.office + water*p.water + popcorn*p.popcorn;
     const id = crypto.randomUUID();
     const code = "DFC-" + crypto.randomBytes(4).toString("hex").toUpperCase();
     await client.query(
@@ -219,11 +219,11 @@ app.post("/api/bookings", async (req,res,next) => {
     );
     const update = await client.query(
       "UPDATE screening_seats SET booking_id=$1,office_chair=(seat_number=ANY($2::text[])) WHERE screening_id=$3 AND seat_number=ANY($4::text[]) AND booking_id IS NULL",
-      [id,office,body.screeningId,allocated]
+      [id,officeAllocated,body.screeningId,allocated]
     );
     if (update.rowCount !== count) throw new Error("Seat allocation changed before commit.");
     await client.query("COMMIT");
-    res.status(201).json({booking:{code,customerName:name,customerEmail:email,screeningId:body.screeningId,ticketCount:count,seats:allocated,officeSeats:office,waterCount:water,popcornCount:popcorn,total:total/100,status:"confirmed"}});
+    res.status(201).json({booking:{code,customerName:name,customerEmail:email,screeningId:body.screeningId,ticketCount:count,seats:allocated,officeSeats:officeAllocated,waterCount:water,popcornCount:popcorn,total:total/100,status:"confirmed"}});
   } catch(error) {
     await client.query("ROLLBACK").catch(()=>{});
     next(error);
