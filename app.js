@@ -442,25 +442,35 @@ async function renderAdminMovies(panel) {
   document.querySelectorAll("[data-edit-movie]").forEach((button) => button.onclick = () => renderMovieEditor(list.find((movie) => movie.id === button.dataset.editMovie)));
 }
 function renderMovieEditor(movie) {
-  const schedule = (movie?.screenings || []).reduce((lines,item) => {
-    let existing = lines.find((line) => line.date === item.date);
-    if (!existing) { existing = {date:item.date,times:[]}; lines.push(existing); }
-    existing.times.push(item.time);
-    return lines;
-  },[]).map((item) => item.date + ":" + item.times.join(",")).join("\n");
+  const schedule = "";
+  const screeningRows = (movie?.screenings || []).map((showing) =>
+    '<div class="admin-item"><div><b>' + formatDate(showing.date) + ' · ' + escapeHTML(showing.time) + '</b><small>' + escapeHTML(showing.hall || "1. zāle") + '</small></div><button class="danger-button" data-remove-screening="' + escapeHTML(showing.id) + '">' + (language === "lv" ? "Noņemt seansu" : "Remove screening") + '</button></div>'
+  ).join("");
   $("#adminPanel").innerHTML =
     '<p class="eyebrow">' + (movie ? t("edit") : t("addMovie")) + '</p><h3>' + (movie ? t("edit") : t("addMovie")) + '</h3>' +
     '<div class="form-grid"><div class="field full"><label for="movieTitle">' + t("movieTitle") + '</label><input id="movieTitle" maxlength="100" value="' + escapeHTML(movie?.title || "") + '"></div>' +
-    '<div class="field"><label for="movieGenre">' + t("genre") + '</label><select id="movieGenre">' + ["Animācija","Komēdija","Piedzīvojumi","Drāma","Fantāzija","Cits"].map((genre) => '<option' + (movie?.genre === genre ? " selected" : "") + '>' + genreName(genre) + '</option>').join("") + '</select></div>' +
+    '<div class="field"><label for="movieGenre">' + t("genre") + '</label><select id="movieGenre">' + ["Animācija","Komēdija","Piedzīvojumi","Drāma","Fantāzija","Cits"].map((genre) => '<option value="' + genre + '"' + (movie?.genre === genre ? " selected" : "") + '>' + genreName(genre) + '</option>').join("") + '</select></div>' +
     '<div class="field"><label for="movieDuration">' + t("duration") + '</label><input id="movieDuration" type="number" min="1" max="500" value="' + escapeHTML(movie?.duration || 90) + '"></div>' +
     '<div class="field"><label for="movieAge">' + t("ageRating") + '</label><input id="movieAge" value="' + escapeHTML(movie?.age || "U") + '"></div>' +
     '<div class="field"><label for="movieYear">' + t("year") + '</label><input id="movieYear" type="number" min="1900" max="2100" value="' + escapeHTML(movie?.year || new Date().getFullYear()) + '"></div>' +
     '<div class="field"><label for="movieEmoji">' + t("posterEmoji") + '</label><input id="movieEmoji" maxlength="5" value="' + escapeHTML(movie?.emoji || "🎬") + '"></div>' +
     '<div class="field"><label for="moviePoster">' + t("posterBackground") + '</label><input id="moviePoster" value="' + escapeHTML(movie?.poster || "linear-gradient(135deg,#753039,#182838)") + '"></div>' +
     '<div class="field full"><label for="movieDescription">' + t("description") + '</label><input id="movieDescription" maxlength="1000" value="' + escapeHTML(movie?.description || "") + '"></div>' +
-    '<div class="field full"><label for="movieSchedule">' + t("schedule") + '</label><textarea id="movieSchedule" rows="5">' + escapeHTML(schedule) + '</textarea><small class="admin-note">' + t("scheduleHelp") + '</small></div></div>' +
+    '<div class="field full"><label>' + (language === "lv" ? "Esošie seansi" : "Current screenings") + '</label>' + (screeningRows || '<p class="admin-note">' + t("emptyScreenings") + '</p>') + '</div>' +
+    '<div class="field full"><label for="movieSchedule">' + t("schedule") + '</label><textarea id="movieSchedule" rows="4">' + escapeHTML(schedule) + '</textarea><small class="admin-note">' + t("scheduleHelp") + '</small></div></div>' +
     '<div class="modal-actions"><button class="button button-secondary" id="cancelMovieEdit">' + t("back") + '</button><button class="small-button" id="saveMovie">' + t("save") + '</button></div>';
   $("#cancelMovieEdit").onclick = renderAdminTab;
+  document.querySelectorAll("[data-remove-screening]").forEach((button) => button.onclick = async () => {
+    if (!confirm(language === "lv" ? "Noņemt šo seansu?" : "Remove this screening?")) return;
+    try {
+      await api("/admin/screenings/" + encodeURIComponent(button.dataset.removeScreening), { method:"DELETE" });
+      const refreshed = await api("/movies");
+      movies = refreshed.movies || [];
+      renderMovies();
+      renderMovieEditor(movies.find((item) => item.id === movie?.id) || null);
+      toast(language === "lv" ? "Seanss noņemts." : "Screening removed.");
+    } catch(error) { toast(error.message); }
+  });
   $("#saveMovie").onclick = async () => {
     const title = $("#movieTitle").value.trim();
     const description = $("#movieDescription").value.trim();
