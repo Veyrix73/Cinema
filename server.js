@@ -31,7 +31,7 @@ const pool = new Pool({
 if (production) app.set("trust proxy", 1);
 app.disable("x-powered-by");
 app.use(helmet({ contentSecurityPolicy: false }));
-app.use(express.json({ limit: "100kb" }));
+app.use(express.json({ limit: "2mb" }));
 app.use(session({
   name: "dfc.sid",
   store: new PgSession({ pool, tableName: "user_sessions", createTableIfMissing: true }),
@@ -122,6 +122,16 @@ async function getPrices(client) {
   const result = await (client || pool).query("SELECT setting_key,value_cents FROM cinema_settings");
   const found = Object.fromEntries(result.rows.map((row) => [row.setting_key,row.value_cents]));
   return { ticket: found.ticket ?? 10, custom: found.custom ?? 10, office: found.office ?? 20, water: found.water ?? 20, popcorn: found.popcorn ?? 50 };
+}
+function validPoster(value) {
+  const poster = String(value || "").trim();
+  if (!poster || poster.length > 1000000) return false;
+  if (/^linear-gradient\((?:135deg|145deg),#[0-9a-f]{3,8},#[0-9a-f]{3,8}\)$/i.test(poster)) return true;
+  if (/^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/]+={0,2}$/i.test(poster)) return poster.length <= 950000;
+  try {
+    const url = new URL(poster);
+    return url.protocol === "https:" && poster.length <= 2048 && !url.username && !url.password;
+  } catch { return false; }
 }
 function adminOnly(req,res,next) {
   if (!req.session || !req.session.admin) return res.status(401).json({error:"Administrator login required."});
@@ -340,11 +350,13 @@ app.post("/api/admin/movies",adminOnly,async(req,res,next)=>{
   const m=req.body||{};
   if(!m.title||!m.description||!Number.isInteger(Number(m.duration))||Number(m.duration)<1)
     return res.status(400).json({error:"Movie title, description and valid duration are required."});
+  const poster=String(m.poster||"linear-gradient(135deg,#753039,#182838)").trim();
+  if(!validPoster(poster)) return res.status(400).json({error:"Use an HTTPS poster image URL or upload a JPG, PNG or WebP image under 1 MB."});
   const id=crypto.randomUUID(),client=await pool.connect();
   try {
     await client.query("BEGIN");
     await client.query("INSERT INTO movies(id,title,genre,duration,age,year,emoji,poster,description) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)",
-      [id,String(m.title).slice(0,100),String(m.genre||"Cits"),Number(m.duration),String(m.age||"U"),Number(m.year)||new Date().getFullYear(),String(m.emoji||"🎬"),String(m.poster||"linear-gradient(135deg,#753039,#182838)"),String(m.description).slice(0,1000)]);
+      [id,String(m.title).slice(0,100),String(m.genre||"Cits"),Number(m.duration),String(m.age||"U"),Number(m.year)||new Date().getFullYear(),String(m.emoji||"🎬"),poster,String(m.description).slice(0,1000)]);
     for(const showing of (Array.isArray(m.screenings)?m.screenings:[])) {
       const date=String(showing.date||""),times=Array.isArray(showing.times)?showing.times:[];
       if(!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error("Invalid screening date.");
@@ -360,11 +372,14 @@ app.post("/api/admin/movies",adminOnly,async(req,res,next)=>{
   finally {client.release();}
 });
 app.put("/api/admin/movies/:id",adminOnly,async(req,res,next)=>{
-  const m=req.body||{},client=await pool.connect();
+  const m=req.body||{};
+  const poster=String(m.poster||"linear-gradient(135deg,#753039,#182838)").trim();
+  if(!validPoster(poster)) return res.status(400).json({error:"Use an HTTPS poster image URL or upload a JPG, PNG or WebP image under 1 MB."});
+  const client=await pool.connect();
   try {
     await client.query("BEGIN");
     const result=await client.query("UPDATE movies SET title=$2,genre=$3,duration=$4,age=$5,year=$6,emoji=$7,poster=$8,description=$9 WHERE id=$1 RETURNING id",
-      [req.params.id,String(m.title||"").slice(0,100),String(m.genre||"Cits"),Number(m.duration),String(m.age||"U"),Number(m.year)||new Date().getFullYear(),String(m.emoji||"🎬"),String(m.poster||"linear-gradient(135deg,#753039,#182838)"),String(m.description||"").slice(0,1000)]);
+      [req.params.id,String(m.title||"").slice(0,100),String(m.genre||"Cits"),Number(m.duration),String(m.age||"U"),Number(m.year)||new Date().getFullYear(),String(m.emoji||"🎬"),poster,String(m.description||"").slice(0,1000)]);
     if(!result.rowCount){await client.query("ROLLBACK");return res.status(404).json({error:"Movie not found."});}
     const showings=Array.isArray(m.screenings)?m.screenings:[];
     for(const showing of showings) {
