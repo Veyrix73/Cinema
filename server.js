@@ -167,7 +167,7 @@ app.post("/api/bookings", async (req,res,next) => {
   const custom = Boolean(body.customSelection);
   const email = String(body.customerEmail || "").trim().toLowerCase();
   const name = String(body.customerName || "").trim();
-  if (!body.screeningId || !name || name.length > 70 || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) ||
+  if (!body.screeningId || !name || name.length > 70 || !/^[^\s@]+@[^\s@]+\\.[^\s@]+$/.test(email) ||
       !Number.isInteger(count) || count < 1 || count > 8 ||
       !Number.isInteger(water) || water < 0 || water > 20 ||
       !Number.isInteger(popcorn) || popcorn < 0 || popcorn > 20 ||
@@ -323,9 +323,9 @@ async function addShowings(client,movieId,showings) {
   for(const showing of showings) {
     const date=String(showing.date||"");
     const times=Array.isArray(showing.times)?showing.times:[];
-    if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(date)) throw new Error("Invalid screening date.");
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error("Invalid screening date.");
     for(const time of times) {
-      if(!/^([01]\\d|2[0-3]):[0-5]\\d$/.test(time)) throw new Error("Invalid screening time.");
+      if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) throw new Error("Invalid screening time.");
       await createScreening(client,movieId,date,time,"1. zāle");
     }
   }
@@ -343,9 +343,9 @@ app.post("/api/admin/movies",adminOnly,async(req,res,next)=>{
       [id,String(m.title).slice(0,100),String(m.genre||"Cits"),Number(m.duration),String(m.age||"U"),Number(m.year)||new Date().getFullYear(),String(m.emoji||"🎬"),String(m.poster||"linear-gradient(135deg,#753039,#182838)"),String(m.description).slice(0,1000)]);
     for(const showing of (Array.isArray(m.screenings)?m.screenings:[])) {
       const date=String(showing.date||""),times=Array.isArray(showing.times)?showing.times:[];
-      if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(date)) throw new Error("Invalid screening date.");
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error("Invalid screening date.");
       for(const time of times) {
-        if(!/^([01]\\d|2[0-3]):[0-5]\\d$/.test(time)) throw new Error("Invalid screening time.");
+        if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) throw new Error("Invalid screening time.");
         const sid=crypto.randomUUID();
         const inserted=await client.query("INSERT INTO screenings(id,movie_id,show_date,show_time,starts_at,hall_name) VALUES($1,$2,$3::date,$4::time,($3::date + $4::time) AT TIME ZONE 'Europe/Riga',$5) ON CONFLICT(movie_id,show_date,show_time) DO NOTHING RETURNING id",[sid,id,date,time,"1. zāle"]);
         if(inserted.rowCount) for(let row=1;row<=6;row++) for(let col=0;col<6;col++) await client.query("INSERT INTO screening_seats(screening_id,seat_number) VALUES($1,$2)",[sid,"R"+row+"-"+String.fromCharCode(65+col)]);
@@ -365,9 +365,9 @@ app.put("/api/admin/movies/:id",adminOnly,async(req,res,next)=>{
     const showings=Array.isArray(m.screenings)?m.screenings:[];
     for(const showing of showings) {
       const date=String(showing.date||""),times=Array.isArray(showing.times)?showing.times:[];
-      if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(date)) throw new Error("Invalid screening date.");
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error("Invalid screening date.");
       for(const time of times) {
-        if(!/^([01]\\d|2[0-3]):[0-5]\\d$/.test(time)) throw new Error("Invalid screening time.");
+        if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) throw new Error("Invalid screening time.");
         const sid=crypto.randomUUID();
         const inserted=await client.query("INSERT INTO screenings(id,movie_id,show_date,show_time,starts_at,hall_name) VALUES($1,$2,$3::date,$4::time,($3::date + $4::time) AT TIME ZONE 'Europe/Riga',$5) ON CONFLICT(movie_id,show_date,show_time) DO NOTHING RETURNING id",[sid,req.params.id,date,time,"1. zāle"]);
         if(inserted.rowCount) for(let row=1;row<=6;row++) for(let col=0;col<6;col++) await client.query("INSERT INTO screening_seats(screening_id,seat_number) VALUES($1,$2)",[sid,"R"+row+"-"+String.fromCharCode(65+col)]);
