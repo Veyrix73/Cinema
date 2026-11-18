@@ -168,7 +168,7 @@ app.post("/api/bookings", async (req,res,next) => {
   const custom = Boolean(body.customSelection);
   const email = String(body.customerEmail || "").trim().toLowerCase();
   const name = String(body.customerName || "").trim();
-  if (!body.screeningId || !name || name.length > 70 || !/^[^\s@]+@[^\s@]+\\.[^\s@]+$/.test(email) ||
+  if (!body.screeningId || !name || name.length > 70 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
       !Number.isInteger(count) || count < 1 || count > 8 ||
       !Number.isInteger(water) || water < 0 || water > 20 ||
       !Number.isInteger(popcorn) || popcorn < 0 || popcorn > 20 ||
