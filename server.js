@@ -126,8 +126,8 @@ async function getPrices(client) {
 function validPoster(value) {
   const poster = String(value || "").trim();
   if (!poster || poster.length > 1000000) return false;
-  if (/^linear-gradient\\((?:135deg|145deg),#[0-9a-f]{3,8},#[0-9a-f]{3,8}\\)$/i.test(poster)) return true;
-  if (/^data:image\\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/]+={0,2}$/i.test(poster)) return poster.length <= 950000;
+  if (/^linear-gradient\((?:135deg|145deg),#[0-9a-f]{3,8},#[0-9a-f]{3,8}\)$/i.test(poster)) return true;
+  if (/^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/]+={0,2}$/i.test(poster)) return poster.length <= 950000;
   try {
     const url = new URL(poster);
     return url.protocol === "https:" && poster.length <= 2048 && !url.username && !url.password;
