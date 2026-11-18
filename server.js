@@ -109,6 +109,10 @@ async function initDatabase() {
     "CREATE INDEX IF NOT EXISTS idx_screening_seats_booking ON screening_seats(booking_id)"
   ];
   for (const statement of schema) await pool.query(statement);
+  await pool.query(
+    "DO $ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname='bookings_ticket_count_seven_check' AND conrelid='bookings'::regclass) " +
+    "THEN ALTER TABLE bookings ADD CONSTRAINT bookings_ticket_count_seven_check CHECK(ticket_count BETWEEN 1 AND 7 OR status='cancelled') NOT VALID; END IF; END $"
+  );
 
   const defaultPrices = { ticket: 10, custom: 10, office: 20, water: 20, popcorn: 50 };
   for (const entry of Object.entries(defaultPrices)) {
