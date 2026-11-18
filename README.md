@@ -8,17 +8,17 @@ A bilingual (Latvian / English) cinema booking website with a Node.js API and Po
 - Movie catalogue with search, genre filters, poster thumbnails and animated page transitions.
 - Admin movie editor accepts HTTPS poster URLs or JPG/PNG/WebP image uploads (automatically resized before saving).
 - Four-step booking flow: screening, seating, upgrades/snacks and contact details.
-- 36 bed-style seats per screening (6 rows × 6 seats).
+- 7 physical seats per screening: 6 bed-style seats plus 1 separate office chair.
 - Automatic seat assignment or custom seat selection (€0.10 per booking).
-- Optional office-chair upgrades (default €0.20 per seat).
+- One separately selectable office-chair seat with its own configurable surcharge.
 - Water and popcorn add-ons.
-- Maximum 8 tickets per booking.
+- Maximum 7 tickets per booking (6 bed seats without the office chair; 7 when including it).
 - Server-side bookings shared by all visitors.
 - PostgreSQL transaction and row locks to prevent double-booking a seat.
 - Booking lookup with booking reference + email.
 - Customer cancellation up to 24 hours before the screening.
 - Hidden admin login shortcut: **Ctrl + Shift + Alt + P**.
-- Admin tools to add/edit movies and screening dates/times, view bookings, cancel reservations, update prices and change the admin password.
+- Admin dashboard with booking totals, movie/showing metrics, searchable and filterable bookings, CSV export, movie/screening management, price settings and password changes.
 - Admin login uses a server-side password hash and an HTTP-only session cookie.
 
 ## Run locally
@@ -67,7 +67,7 @@ The initial administrator is created from `ADMIN_USERNAME` and `ADMIN_PASSWORD` 
 ## Booking behaviour
 
 When a customer books, the server:
-1. Checks the screening and its remaining seats.
+1. Locks the screening and checks that no more than 7 seats (6 beds + 1 office chair) will be occupied.
 2. Locks the selected seat rows inside a database transaction.
 3. Calculates the price using server-side settings.
 4. Saves the booking and seat assignments.
