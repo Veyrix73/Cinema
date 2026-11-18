@@ -388,6 +388,16 @@ app.delete("/api/admin/movies/:id",adminOnly,async(req,res,next)=>{
     await pool.query("UPDATE movies SET active=FALSE WHERE id=$1",[req.params.id]);res.json({ok:true});
   } catch(error) {next(error);}
 });
+app.delete("/api/admin/screenings/:id",adminOnly,async(req,res,next)=>{
+  try {
+    const used=await pool.query("SELECT 1 FROM bookings WHERE screening_id=$1 LIMIT 1",[req.params.id]);
+    if(used.rowCount)return res.status(409).json({error:"This screening has booking history and cannot be removed."});
+    const result=await pool.query("DELETE FROM screenings WHERE id=$1 RETURNING id",[req.params.id]);
+    if(!result.rowCount)return res.status(404).json({error:"Screening not found."});
+    res.json({ok:true});
+  } catch(error) { next(error); }
+});
+
 app.put("/api/admin/prices",adminOnly,async(req,res,next)=>{
   try {
     for(const key of ["ticket","custom","office","water","popcorn"]) if(req.body?.[key]!==undefined) {
