@@ -670,6 +670,7 @@ async function renderAdminBookings(panel) {
     '<select id="bookingStatusFilter"><option value="all">' + t("allStatuses") + '</option><option value="confirmed">' + t("statusConfirmed") + '</option><option value="cancelled">' + t("statusCancelled") + '</option></select></div>' +
     '<p class="admin-filter-count" id="bookingFilterCount"></p><div id="adminBookingList" class="admin-booking-list"></div>';
   const listElement = $("#adminBookingList");
+  let filteredBookings = list;
   const draw = () => {
     const query = $("#bookingAdminSearch").value.trim().toLocaleLowerCase();
     const status = $("#bookingStatusFilter").value;
@@ -678,6 +679,7 @@ async function renderAdminBookings(panel) {
       const haystack = [item.code,item.name,item.email,item.movie,(item.seats||[]).join(" ")].join(" ").toLocaleLowerCase();
       return matchesStatus && haystack.includes(query);
     });
+    filteredBookings = filtered;
     $("#bookingFilterCount").textContent = language==="lv"
       ? "Rādītas " + filtered.length + " no " + list.length + " rezervācijām"
       : "Showing " + filtered.length + " of " + list.length + " bookings";
@@ -701,9 +703,9 @@ async function renderAdminBookings(panel) {
   $("#bookingStatusFilter").onchange = draw;
   $("#exportBookings").onclick = () => {
     const headers = ["Booking code","Name","Email","Movie","Date","Time","Seats","Total EUR","Status"];
-    const rows = list.map((item)=>[item.code,item.name,item.email,item.movie,item.date,item.time,(item.seats||[]).join(" "),Number(item.total).toFixed(2),item.status]);
+    const rows = filteredBookings.map((item)=>[item.code,item.name,item.email,item.movie,item.date,item.time,(item.seats||[]).join(" "),Number(item.total).toFixed(2),item.status]);
     const csv = [headers,...rows].map((row)=>row.map((cell)=>'"'+String(cell??"").replace(/"/g,'""')+'"').join(",")).join("\r\n");
-    const url = URL.createObjectURL(new Blob(["\\uFEFF",csv],{type:"text/csv;charset=utf-8"}));
+    const url = URL.createObjectURL(new Blob(["\uFEFF",csv],{type:"text/csv;charset=utf-8"}));
     const link = document.createElement("a");
     link.href=url; link.download="dancing-fruit-cinema-bookings.csv";
     document.body.appendChild(link); link.click(); link.remove();
