@@ -46,6 +46,7 @@ let adminTab = "movies";
 let toastTimer = null;
 let revealObserver = null;
 function revealElement(element, delay) {
+  if (!revealObserver) return;
   element.classList.add("reveal");
   element.style.setProperty("--reveal-delay", Math.min(delay || 0, 320) + "ms");
   if (revealObserver && element.dataset.revealBound !== "true") {
