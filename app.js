@@ -235,7 +235,7 @@ function openBooking(movieId) {
   if (!movie || !showings.length) { toast(t("noShows")); return; }
   booking = {
     movieId, screeningId:showings[0].id, date:showings[0].date, time:showings[0].time,
-    count:1, mode:"auto", seats:[], seatMap:[], officeSeats:[], officeCount:0, waterCount:0, popcornCount:0
+    count:1, mode:"auto", seats:[], seatMap:[], officeSeats:[], waterCount:0, popcornCount:0
   };
   renderBookingDateStep();
 }
