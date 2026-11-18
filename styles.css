@@ -29,3 +29,46 @@
 .field textarea{background:#100b0c;color:white;border:1px solid #493034;border-radius:7px;padding:11px;outline:0;width:100%;font-size:12px;resize:vertical;font-family:monospace}.field textarea:focus{border-color:var(--gold)}
 .lookup{flex-wrap:wrap}.lookup input{flex:1;min-width:150px}
 @media(max-width:650px){.header-actions{gap:7px}.language-toggle{padding:9px}.lookup{flex-direction:column}.lookup input{width:100%}.nav-cta{display:none}}
+
+
+/* Motion and poster artwork upgrade */
+.hero-copy{animation:heroEnter .85s cubic-bezier(.2,.75,.25,1) both}
+.hero-visual .pineapple{animation:fruitFloat 4.8s ease-in-out infinite;transform-origin:50% 60%}
+.hero-visual .popcorn{animation:popcornFloat 5.8s ease-in-out infinite}
+.hero-visual .film-reel{animation:reelTurn 24s linear infinite}
+.hero-visual .visual-glow{animation:glowPulse 4s ease-in-out infinite}
+.ticket-sign{animation:signFloat 5.5s ease-in-out infinite}
+@keyframes heroEnter{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fruitFloat{0%,100%{transform:translateY(0) rotate(-7deg)}50%{transform:translateY(-13px) rotate(-3deg)}}
+@keyframes popcornFloat{0%,100%{transform:translateY(0) rotate(12deg)}50%{transform:translateY(-10px) rotate(5deg)}}
+@keyframes reelTurn{to{transform:rotate(360deg)}}
+@keyframes glowPulse{0%,100%{opacity:.55;transform:scale(.94)}50%{opacity:1;transform:scale(1.08)}}
+@keyframes signFloat{0%,100%{translate:0 0;rotate:-3deg}50%{translate:0 -7px;rotate:-1deg}}
+.reveal{opacity:0;transform:translateY(22px) scale(.99);transition:opacity .7s ease var(--reveal-delay,0ms),transform .7s cubic-bezier(.2,.75,.25,1) var(--reveal-delay,0ms)}
+.reveal.in-view{opacity:1;transform:translateY(0) scale(1)}
+.movie-card.reveal.in-view:hover{transform:translateY(-7px) scale(1.01)}
+.movie-card{transition:transform .35s cubic-bezier(.2,.75,.25,1),border-color .3s,box-shadow .3s}
+.poster-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .65s cubic-bezier(.2,.75,.25,1),filter .4s}
+.poster-shade{position:absolute;inset:0;background:linear-gradient(180deg,transparent 36%,rgba(15,8,10,.08) 56%,rgba(15,8,10,.86) 100%);pointer-events:none}
+.movie-card:hover .poster-image{transform:scale(1.07);filter:saturate(1.08)}
+.movie-card:hover .poster-title{transform:translateY(-3px)}
+.poster-title{z-index:2;transition:transform .3s}
+.poster:has(.poster-image):before,.poster:has(.poster-image):after{display:none}
+.poster-upload-tools{gap:10px}
+.poster-upload-tools input[type=file]{padding:10px;background:#211719;border:1px dashed #80565a}
+.poster-upload-tools small{color:var(--muted);font-size:10px;line-height:1.6}
+.poster-preview-wrap{display:flex;align-items:center;gap:13px;flex-wrap:wrap;padding:12px;border:1px solid var(--line);border-radius:9px;background:#100b0c}
+.poster-preview-wrap>span{font-size:10px;color:var(--muted);margin-right:auto}
+.poster-preview{width:74px;height:100px;border-radius:6px;overflow:hidden;background:#2b191d;display:grid;place-items:center;font-size:32px}
+.poster-preview img{width:100%;height:100%;object-fit:cover}
+.poster-preview-wrap button{padding:9px 11px}
+.admin-item{transition:border-color .25s,transform .25s}
+.admin-item:hover{border-color:#a75a60;transform:translateX(3px)}
+.button,.small-button,.nav-cta,.language-toggle,.filter,.admin-side button{transition:transform .2s ease,filter .2s ease,border-color .2s ease,background .2s ease}
+.button:active,.small-button:active,.nav-cta:active{transform:scale(.97)}
+.hero h1 em,.experience h2 em{background:linear-gradient(100deg,#ffc96b,#ffe2a7,#ffc96b);background-size:200% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:goldSweep 5s linear infinite}
+@keyframes goldSweep{to{background-position:200% center}}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  .reveal{opacity:1!important;transform:none!important}
+}
