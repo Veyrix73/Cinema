@@ -334,16 +334,21 @@ app.post("/api/admin/tickets/scan",adminOnly,async(req,res,next)=>{
   try{
     await client.query("BEGIN");
     const found=await client.query(
-      "SELECT b.id,b.booking_code,b.customer_name,b.status,b.checked_in,to_char(s.show_date,'YYYY-MM-DD') AS show_date,to_char(s.show_time,'HH24:MI') AS show_time,m.title AS movie_title,COALESCE(array_agg(bs.seat_number ORDER BY bs.seat_number) FILTER(WHERE bs.seat_number IS NOT NULL),'{}') AS seats FROM bookings b JOIN screenings s ON s.id=b.screening_id JOIN movies m ON m.id=s.movie_id LEFT JOIN booking_seats bs ON bs.booking_id=b.id WHERE upper(b.booking_code)=upper($1) GROUP BY b.id,s.id,m.id FOR UPDATE OF b",
+      "SELECT id,booking_code,customer_name,status,checked_in,screening_id FROM bookings WHERE upper(booking_code)=upper($1) FOR UPDATE",
       [code]
     );
     if(!found.rowCount){await client.query("ROLLBACK");return res.status(404).json({error:"Ticket code not found."});}
     const ticket=found.rows[0];
     if(ticket.status!=="confirmed"){await client.query("ROLLBACK");return res.status(409).json({error:"This booking has been cancelled."});}
     if(ticket.checked_in){await client.query("ROLLBACK");return res.status(409).json({error:"This ticket has already been scanned."});}
+    const details=await client.query(
+      "SELECT to_char(s.show_date,'YYYY-MM-DD') AS show_date,to_char(s.show_time,'HH24:MI') AS show_time,m.title AS movie_title,COALESCE(array_agg(bs.seat_number ORDER BY bs.seat_number) FILTER(WHERE bs.seat_number IS NOT NULL),'{}') AS seats FROM screenings s JOIN movies m ON m.id=s.movie_id LEFT JOIN booking_seats bs ON bs.screening_id=s.id AND bs.booking_id=$2 WHERE s.id=$1 GROUP BY s.id,m.id",
+      [ticket.screening_id,ticket.id]
+    );
+    if(!details.rowCount){await client.query("ROLLBACK");return res.status(404).json({error:"Screening details not found."});}
     await client.query("UPDATE bookings SET checked_in=TRUE,checked_in_at=NOW() WHERE id=$1",[ticket.id]);
     await client.query("COMMIT");
-    res.json({ok:true,ticket:{code:ticket.booking_code,name:ticket.customer_name,movie:ticket.movie_title,date:ticket.show_date,time:ticket.show_time,seats:ticket.seats}});
+    res.json({ok:true,ticket:{code:ticket.booking_code,name:ticket.customer_name,movie:details.rows[0].movie_title,date:details.rows[0].show_date,time:details.rows[0].show_time,seats:details.rows[0].seats}});
   }catch(error){await client.query("ROLLBACK").catch(()=>{});next(error);}
   finally{client.release();}
 });
