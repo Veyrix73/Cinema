@@ -204,7 +204,7 @@ app.get("/api/prices", async (req,res,next) => {
 app.get("/api/screenings/:id/seats", async (req,res,next) => {
   try {
     const result = await pool.query(
-      "SELECT seat_number,(booking_id IS NOT NULL) AS occupied,office_chair FROM screening_seats WHERE screening_id=$1 AND seat_number=ANY($2::text[]) ORDER BY CASE WHEN seat_number LIKE 'BED-%' THEN 0 ELSE 1 END,seat_number",
+      "SELECT ss.seat_number,(ss.booking_id IS NOT NULL) AS occupied,ss.office_chair FROM screening_seats ss JOIN screenings s ON s.id=ss.screening_id JOIN movies m ON m.id=s.movie_id WHERE ss.screening_id=$1 AND m.active=TRUE AND ss.seat_number=ANY($2::text[]) ORDER BY CASE WHEN ss.seat_number LIKE 'BED-%' THEN 0 ELSE 1 END,ss.seat_number",
       [req.params.id, SEAT_IDS]
     );
     if (!result.rowCount) return res.status(404).json({error:"Screening not found."});
@@ -292,7 +292,7 @@ app.post("/api/bookings",customerOnly, async (req,res,next) => {
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
-    const screening = await client.query("SELECT id,starts_at FROM screenings WHERE id=$1 FOR UPDATE",[body.screeningId]);
+    const screening = await client.query("SELECT s.id,s.starts_at FROM screenings s JOIN movies m ON m.id=s.movie_id WHERE s.id=$1 AND m.active=TRUE FOR UPDATE OF s,m",[body.screeningId]);
     if (!screening.rowCount) { await client.query("ROLLBACK"); return res.status(404).json({error:"Screening not found."}); }
     if (new Date(screening.rows[0].starts_at).getTime() <= Date.now()) {
       await client.query("ROLLBACK"); return res.status(409).json({error:"This screening has already started."});
