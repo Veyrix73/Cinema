@@ -31,7 +31,8 @@ Requirements: Node.js 20+ and a PostgreSQL database.
 4. Set a long random value for `SESSION_SECRET`.
 5. Set `ADMIN_USERNAME=admin` and choose a new, unique `ADMIN_PASSWORD` (at least 12 characters).
 6. Install dependencies with `npm install`.
-7. Start the server with `npm start`.
+7. Run `npm test` to check JavaScript syntax.
+8. Start the server with `npm start`.
 8. Open `http://localhost:3000`.
 
 The server automatically creates the database tables, default prices, initial admin account and demo movie screenings on first start. Existing occupied legacy seat records are preserved during seat-layout updates.
