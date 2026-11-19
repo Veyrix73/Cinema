@@ -72,7 +72,7 @@ async function initDatabase() {
     "CREATE TABLE IF NOT EXISTS customer_users (id UUID PRIMARY KEY, full_name TEXT NOT NULL, email TEXT NOT NULL UNIQUE, password_hash TEXT NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW())",
     "CREATE TABLE IF NOT EXISTS movies (id UUID PRIMARY KEY, title TEXT NOT NULL, genre TEXT NOT NULL DEFAULT 'Cits', duration INTEGER NOT NULL CHECK(duration>0), age TEXT NOT NULL DEFAULT 'U', year INTEGER NOT NULL, emoji TEXT NOT NULL DEFAULT '🎬', poster TEXT NOT NULL DEFAULT 'linear-gradient(135deg,#753039,#182838)', description TEXT NOT NULL DEFAULT '', active BOOLEAN NOT NULL DEFAULT TRUE, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW())",
     "CREATE TABLE IF NOT EXISTS screenings (id UUID PRIMARY KEY, movie_id UUID NOT NULL REFERENCES movies(id) ON DELETE RESTRICT, show_date DATE NOT NULL, show_time TIME NOT NULL, starts_at TIMESTAMPTZ NOT NULL, hall_name TEXT NOT NULL DEFAULT '1. zāle', created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), UNIQUE(movie_id,show_date,show_time))",
-    "CREATE TABLE IF NOT EXISTS bookings (id UUID PRIMARY KEY, booking_code TEXT NOT NULL UNIQUE, screening_id UUID NOT NULL REFERENCES screenings(id) ON DELETE RESTRICT, customer_name TEXT NOT NULL, customer_email TEXT NOT NULL, ticket_count INTEGER NOT NULL CHECK(ticket_count BETWEEN 1 AND 8), custom_selection BOOLEAN NOT NULL DEFAULT FALSE, water_count INTEGER NOT NULL DEFAULT 0 CHECK(water_count>=0), popcorn_count INTEGER NOT NULL DEFAULT 0 CHECK(popcorn_count>=0), total_cents INTEGER NOT NULL CHECK(total_cents>=0), status TEXT NOT NULL DEFAULT 'confirmed' CHECK(status IN ('confirmed','cancelled')), created_at TIMESTAMPTZ NOT NULL DEFAULT NOW())",
+    "CREATE TABLE IF NOT EXISTS bookings (id UUID PRIMARY KEY, booking_code TEXT NOT NULL UNIQUE, screening_id UUID NOT NULL REFERENCES screenings(id) ON DELETE RESTRICT, customer_name TEXT NOT NULL, customer_email TEXT NOT NULL, ticket_count INTEGER NOT NULL CHECK(ticket_count BETWEEN 1 AND 7), custom_selection BOOLEAN NOT NULL DEFAULT FALSE, water_count INTEGER NOT NULL DEFAULT 0 CHECK(water_count>=0), popcorn_count INTEGER NOT NULL DEFAULT 0 CHECK(popcorn_count>=0), total_cents INTEGER NOT NULL CHECK(total_cents>=0), status TEXT NOT NULL DEFAULT 'confirmed' CHECK(status IN ('confirmed','cancelled')), created_at TIMESTAMPTZ NOT NULL DEFAULT NOW())",
     "CREATE TABLE IF NOT EXISTS screening_seats (screening_id UUID NOT NULL REFERENCES screenings(id) ON DELETE CASCADE, seat_number TEXT NOT NULL, booking_id UUID REFERENCES bookings(id) ON DELETE SET NULL, office_chair BOOLEAN NOT NULL DEFAULT FALSE, PRIMARY KEY(screening_id,seat_number))",
     "CREATE TABLE IF NOT EXISTS booking_seats (booking_id UUID NOT NULL REFERENCES bookings(id) ON DELETE CASCADE, screening_id UUID NOT NULL REFERENCES screenings(id) ON DELETE RESTRICT, seat_number TEXT NOT NULL, office_chair BOOLEAN NOT NULL DEFAULT FALSE, PRIMARY KEY(booking_id,seat_number))",
     "CREATE TABLE IF NOT EXISTS cinema_settings (setting_key TEXT PRIMARY KEY, value_cents INTEGER NOT NULL CHECK(value_cents>=0))",
@@ -85,7 +85,7 @@ async function initDatabase() {
   await pool.query("ALTER TABLE bookings ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES customer_users(id) ON DELETE SET NULL");
   await pool.query("CREATE INDEX IF NOT EXISTS idx_bookings_user ON bookings(user_id,created_at DESC)");
   await pool.query("ALTER TABLE bookings DROP CONSTRAINT IF EXISTS bookings_ticket_count_check");
-  await pool.query("ALTER TABLE bookings ADD CONSTRAINT bookings_ticket_count_check CHECK(ticket_count BETWEEN 1 AND 10)");
+  await pool.query("ALTER TABLE bookings ADD CONSTRAINT bookings_ticket_count_check CHECK(ticket_count BETWEEN 1 AND 7)");
   await pool.query("ALTER TABLE bookings ADD COLUMN IF NOT EXISTS checked_in BOOLEAN NOT NULL DEFAULT FALSE");
   await pool.query("ALTER TABLE bookings ADD COLUMN IF NOT EXISTS checked_in_at TIMESTAMPTZ");
   await pool.query("DELETE FROM screening_seats WHERE booking_id IS NULL");
@@ -244,11 +244,11 @@ app.post("/api/bookings",customerOnly, async (req,res,next) => {
   const email = req.session.user.email;
   const name = req.session.user.name;
   if (!body.screeningId || !name || name.length > 70 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
-      !Number.isInteger(count) || count < 1 || count > 10 ||
+      !Number.isInteger(count) || count < 1 || count > 7 ||
       !Number.isInteger(water) || water < 0 || water > 20 ||
       !Number.isInteger(popcorn) || popcorn < 0 || popcorn > 20 ||
       new Set(office).size !== office.length || office.some((seat) => typeof seat !== "string") || !Number.isInteger(officeChairCount) || officeChairCount < 0 || officeChairCount > count) {
-    return res.status(400).json({error:"Check your details. A booking can contain 1–10 tickets."});
+    return res.status(400).json({error:"Check your details. A booking can contain 1–7 tickets."});
   }
   if (custom && (selected.length !== count || new Set(selected).size !== count)) {
     return res.status(400).json({error:"Choose exactly the number of seats in your booking."});
