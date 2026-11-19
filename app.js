@@ -729,8 +729,39 @@ async function renderAdminBookings(panel) {
     } catch(error) { toast(error.message); }
   });
 }
-function createScanAudio(){try{const Audio=window.AudioContext||window.webkitAudioContext;return Audio?new Audio():null;}catch{return null;}}
-function playScanBeep(valid,ctx){try{if(!ctx)return;if(ctx.state==="suspended")ctx.resume();const oscillator=ctx.createOscillator(),gain=ctx.createGain();oscillator.type="sine";oscillator.frequency.value=valid?880:240;gain.gain.setValueAtTime(0.0001,ctx.currentTime);gain.gain.exponentialRampToValueAtTime(0.16,ctx.currentTime+0.015);gain.gain.exponentialRampToValueAtTime(0.0001,ctx.currentTime+(valid?0.18:0.35));oscillator.connect(gain);gain.connect(ctx.destination);oscillator.start();oscillator.stop(ctx.currentTime+(valid?0.2:0.37));oscillator.onended=()=>ctx.close();}catch{}}
+function createScanAudio(){try{const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return null;const ctx=new Audio();if(ctx.state==="suspended")ctx.resume().catch(()=>{});return ctx;}catch{return null;}}
+function playScanBeep(valid,ctx){
+  try{
+    if(!ctx)return;
+    const now=ctx.currentTime;
+    if(valid){
+      // Īss, skaidrs pašapkalpošanās kases svītrkoda skenera signāls.
+      const master=ctx.createGain();
+      master.gain.setValueAtTime(0.0001,now);
+      master.gain.exponentialRampToValueAtTime(0.72,now+0.006);
+      master.gain.setValueAtTime(0.72,now+0.075);
+      master.gain.exponentialRampToValueAtTime(0.0001,now+0.12);
+      master.connect(ctx.destination);
+      [1046.5,2093].forEach((frequency,index)=>{
+        const tone=ctx.createOscillator(),level=ctx.createGain();
+        tone.type="sine";tone.frequency.value=frequency;
+        level.gain.value=index===0?1:0.12;
+        tone.connect(level);level.connect(master);
+        tone.start(now);tone.stop(now+0.125);
+      });
+      setTimeout(()=>ctx.close().catch(()=>{}),250);
+    }else{
+      const oscillator=ctx.createOscillator(),gain=ctx.createGain();
+      oscillator.type="triangle";oscillator.frequency.value=260;
+      gain.gain.setValueAtTime(0.0001,now);
+      gain.gain.exponentialRampToValueAtTime(0.42,now+0.012);
+      gain.gain.exponentialRampToValueAtTime(0.0001,now+0.32);
+      oscillator.connect(gain);gain.connect(ctx.destination);
+      oscillator.start(now);oscillator.stop(now+0.34);
+      oscillator.onended=()=>ctx.close().catch(()=>{});
+    }
+  }catch{try{ctx.close();}catch{}}
+}
 
 function renderTicketScanner(panel) {
   panel.innerHTML =
