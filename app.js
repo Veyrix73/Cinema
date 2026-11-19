@@ -866,12 +866,17 @@ async function renderAdminPrices(panel) {
       ticket:Number($("#priceTicket").value),custom:Number($("#priceCustom").value),office:Number($("#priceOffice").value),
       water:Number($("#priceWater").value),popcorn:Number($("#pricePopcorn").value)
     };
-    if (Object.values(updated).some((value)=>!Number.isFinite(value)||value<0)) { toast("Nederīga cena."); return; }
+    if (Object.values(updated).some((value)=>!Number.isFinite(value)||value<0||value>1000)) { toast("Katrai cenai jābūt robežās no 0 līdz 1000 €."); return; }
+    const button = $("#savePrices");
+    if (button.disabled) return;
+    button.disabled = true;
+    button.textContent = "Saglabā…";
     try {
       const saved = await api("/admin/prices",{method:"PUT",body:updated});
       prices = saved.prices; $("#statTicketPrice").textContent = formatMoney(prices.ticket); $("#heroTicketPrice").textContent = formatMoney(prices.ticket);
       renderMovies(); toast(t("pricesSaved"));
     } catch(error) { toast(error.message); }
+    finally { if ($("#savePrices")) { $("#savePrices").disabled = false; $("#savePrices").textContent = t("savePrices"); } }
   };
 }
 function priceField(id,key,label) {
@@ -883,14 +888,19 @@ function renderAdminAccount(panel) {
     '<div class="field full"><label for="newAdminPassword">' + t("newPassword") + '</label><input id="newAdminPassword" type="password" autocomplete="new-password"></div></div>' +
     '<button class="small-button" id="changePasswordButton" style="margin-top:13px">' + t("changePassword") + '</button>';
   $("#changePasswordButton").onclick = async () => {
+    const button = $("#changePasswordButton");
+    if (button.disabled) return;
     const currentPassword = $("#currentAdminPassword").value;
     const newPassword = $("#newAdminPassword").value;
     if (newPassword.length < 12) { toast(t("passwordMin")); return; }
+    button.disabled = true;
+    button.textContent = "Saglabā…";
     try {
       await api("/admin/password",{method:"POST",body:{currentPassword,newPassword}});
       $("#currentAdminPassword").value = ""; $("#newAdminPassword").value = "";
       toast(t("passwordChanged"));
     } catch(error) { toast(error.message); }
+    finally { button.disabled = false; button.textContent = t("changePassword"); }
   };
 }
 
