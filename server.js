@@ -46,6 +46,16 @@ const loginLimiter = rateLimit({
   standardHeaders: "draft-7", legacyHeaders: false,
   message: { error: "Too many login attempts. Try again later." }
 });
+const lookupLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, limit: 20,
+  standardHeaders: "draft-7", legacyHeaders: false,
+  message: { error: "Too many booking lookups. Try again later." }
+});
+
+const BED_SEAT_IDS = Object.freeze(Array.from({ length: 6 }, (_, index) => "BED-" + (index + 1)));
+const OFFICE_SEAT_IDS = Object.freeze(["CHAIR-L"]);
+const SEAT_IDS = Object.freeze([...BED_SEAT_IDS, ...OFFICE_SEAT_IDS]);
+const MAX_SEATS = SEAT_IDS.length;
 
 const defaultMovies = [
   { title: "Ron's Gone Wrong", genre: "Animācija", duration: 107, age: "7+", year: 2021, emoji: "🤖", poster: "linear-gradient(135deg,#164e65,#172b46)", description: "Sirsnīgs un jautrs piedzīvojums par zēnu un viņa neparasto robotu draugu." },
@@ -53,17 +63,30 @@ const defaultMovies = [
   { title: "Augļu lielais piedzīvojums", genre: "Piedzīvojumi", duration: 96, age: "U", year: 2026, emoji: "🍍", poster: "linear-gradient(135deg,#9b5623,#4c6a32)", description: "Jautrs ģimenes piedzīvojums — Dancing Fruit Cinema demonstrācijas filma." }
 ];
 
-async function createScreening(movieId, date, time, hallName) {
+async function createScreening(movieId, date, time, hallName, db = pool) {
+  const future = await db.query(
+    "SELECT (($1::date + $2::time) AT TIME ZONE 'Europe/Riga') > NOW() AS is_future",
+    [date, time]
+  );
+  if (!future.rows[0]?.is_future) {
+    const error = new Error("Screenings must be scheduled in the future.");
+    error.status = 400;
+    throw error;
+  }
   const id = crypto.randomUUID();
-  const result = await pool.query(
+  const result = await db.query(
     "INSERT INTO screenings(id,movie_id,show_date,show_time,starts_at,hall_name) " +
     "VALUES($1,$2,$3::date,$4::time,($3::date + $4::time) AT TIME ZONE 'Europe/Riga',$5) " +
     "ON CONFLICT(movie_id,show_date,show_time) DO NOTHING RETURNING id",
     [id, movieId, date, time, hallName || "1. zāle"]
   );
   if (!result.rowCount) return;
-  const seats = [...Array.from({length:8},(_,i)=>["BED-"+(i+1),false]),["CHAIR-L",true],["CHAIR-R",true]];
-  for (const [seat,officeChair] of seats) await pool.query("INSERT INTO screening_seats(screening_id,seat_number,office_chair) VALUES($1,$2,$3) ON CONFLICT DO NOTHING",[id,seat,officeChair]);
+  for (const seat of BED_SEAT_IDS) {
+    await db.query("INSERT INTO screening_seats(screening_id,seat_number,office_chair) VALUES($1,$2,FALSE) ON CONFLICT DO NOTHING", [id, seat]);
+  }
+  for (const seat of OFFICE_SEAT_IDS) {
+    await db.query("INSERT INTO screening_seats(screening_id,seat_number,office_chair) VALUES($1,$2,TRUE) ON CONFLICT DO NOTHING", [id, seat]);
+  }
 }
 
 async function initDatabase() {
@@ -88,8 +111,20 @@ async function initDatabase() {
   await pool.query("ALTER TABLE bookings ADD CONSTRAINT bookings_ticket_count_check CHECK(ticket_count BETWEEN 1 AND 7)");
   await pool.query("ALTER TABLE bookings ADD COLUMN IF NOT EXISTS checked_in BOOLEAN NOT NULL DEFAULT FALSE");
   await pool.query("ALTER TABLE bookings ADD COLUMN IF NOT EXISTS checked_in_at TIMESTAMPTZ");
-  await pool.query("DELETE FROM screening_seats WHERE booking_id IS NULL");
-  await pool.query("INSERT INTO screening_seats(screening_id,seat_number,office_chair) SELECT s.id,v.seat_number,v.office_chair FROM screenings s CROSS JOIN (VALUES ('BED-1',FALSE),('BED-2',FALSE),('BED-3',FALSE),('BED-4',FALSE),('BED-5',FALSE),('BED-6',FALSE),('BED-7',FALSE),('BED-8',FALSE),('CHAIR-L',TRUE),('CHAIR-R',TRUE)) AS v(seat_number,office_chair) ON CONFLICT DO NOTHING");
+  for (const seat of BED_SEAT_IDS) {
+    await pool.query(
+      "INSERT INTO screening_seats(screening_id,seat_number,office_chair) SELECT id,$1,FALSE FROM screenings ON CONFLICT DO NOTHING",
+      [seat]
+    );
+  }
+  for (const seat of OFFICE_SEAT_IDS) {
+    await pool.query(
+      "INSERT INTO screening_seats(screening_id,seat_number,office_chair) SELECT id,$1,TRUE FROM screenings ON CONFLICT DO NOTHING",
+      [seat]
+    );
+  }
+  // Preserve occupied legacy seats so existing tickets remain valid; remove only unused seats outside the current 7-seat layout.
+  await pool.query("DELETE FROM screening_seats WHERE NOT (seat_number = ANY($1::text[])) AND booking_id IS NULL", [SEAT_IDS]);
 
   const defaultPrices = { ticket: 10, custom: 10, office: 20, water: 20, popcorn: 50 };
   for (const entry of Object.entries(defaultPrices)) {
@@ -168,11 +203,16 @@ app.get("/api/prices", async (req,res,next) => {
 app.get("/api/screenings/:id/seats", async (req,res,next) => {
   try {
     const result = await pool.query(
-      "SELECT seat_number,(booking_id IS NOT NULL) AS occupied,office_chair FROM screening_seats WHERE screening_id=$1 AND seat_number IN ('BED-1','BED-2','BED-3','BED-4','BED-5','BED-6','BED-7','BED-8','CHAIR-L','CHAIR-R') ORDER BY CASE WHEN seat_number LIKE 'BED-%' THEN 0 WHEN seat_number='CHAIR-L' THEN 1 ELSE 2 END,seat_number",
-      [req.params.id]
+      "SELECT seat_number,(booking_id IS NOT NULL) AS occupied,office_chair FROM screening_seats WHERE screening_id=$1 AND seat_number=ANY($2::text[]) ORDER BY CASE WHEN seat_number LIKE 'BED-%' THEN 0 ELSE 1 END,seat_number",
+      [req.params.id, SEAT_IDS]
     );
     if (!result.rowCount) return res.status(404).json({error:"Screening not found."});
-    res.json({seats:result.rows});
+    const occupancy = await pool.query(
+      "SELECT COUNT(*)::int AS occupied FROM screening_seats WHERE screening_id=$1 AND booking_id IS NOT NULL",
+      [req.params.id]
+    );
+    const occupiedCount = occupancy.rows[0].occupied;
+    res.json({seats:result.rows,capacity:MAX_SEATS,occupiedCount,remainingCapacity:Math.max(0,MAX_SEATS-occupiedCount)});
   } catch(error) { next(error); }
 });
 
@@ -221,23 +261,14 @@ app.get("/api/account/bookings",customerOnly,async(req,res,next)=>{
   }catch(error){next(error);}
 });
 app.post("/api/account/bookings/:code/cancel",customerOnly,async(req,res,next)=>{
-  const client=await pool.connect();
-  try{
-    await client.query("BEGIN");
-    const found=await client.query("SELECT b.id,b.status,s.starts_at FROM bookings b JOIN screenings s ON s.id=b.screening_id WHERE upper(b.booking_code)=upper($1) AND b.user_id=$2 FOR UPDATE OF b",[req.params.code,req.session.user.id]);
-    if(!found.rowCount){await client.query("ROLLBACK");return res.status(404).json({error:"Booking not found in your account."});}
-    const item=found.rows[0];
-    if(item.status!=="confirmed"){await client.query("ROLLBACK");return res.status(409).json({error:"This booking is already cancelled."});}
-    if((new Date(item.starts_at).getTime()-Date.now())/3600000<24){await client.query("ROLLBACK");return res.status(403).json({error:"You can cancel online until 24 hours before the screening. Contact the cinema for later changes."});}
-    await client.query("UPDATE screening_seats SET booking_id=NULL,office_chair=FALSE WHERE booking_id=$1",[item.id]);
-    await client.query("UPDATE bookings SET status='cancelled' WHERE id=$1",[item.id]);
-    await client.query("COMMIT");res.json({ok:true});
-  }catch(error){await client.query("ROLLBACK").catch(()=>{});next(error);}
-  finally{client.release();}
+  try {
+    const result = await cancelReservation(req.params.code, req.session.user.email, false);
+    res.status(result.status).json(result);
+  } catch(error) { next(error); }
 });
 app.post("/api/bookings",customerOnly, async (req,res,next) => {
   const body = req.body || {};
-  const count = Number(body.ticketCount), water = Number(body.waterCount || 0), popcorn = Number(body.popcornCount || 0), officeChairCount = Number(body.officeChairCount || 0);
+  const count = Number(body.ticketCount), water = Number(body.waterCount || 0), popcorn = Number(body.popcornCount || 0);
   const selected = Array.isArray(body.selectedSeats) ? body.selectedSeats : [];
   const office = Array.isArray(body.officeSeats) ? body.officeSeats : [];
   const custom = Boolean(body.customSelection);
@@ -247,11 +278,11 @@ app.post("/api/bookings",customerOnly, async (req,res,next) => {
       !Number.isInteger(count) || count < 1 || count > 7 ||
       !Number.isInteger(water) || water < 0 || water > 20 ||
       !Number.isInteger(popcorn) || popcorn < 0 || popcorn > 20 ||
-      new Set(office).size !== office.length || office.some((seat) => typeof seat !== "string") || !Number.isInteger(officeChairCount) || officeChairCount < 0 || officeChairCount > count) {
+      new Set(office).size !== office.length || office.some((seat) => typeof seat !== "string" || !OFFICE_SEAT_IDS.includes(seat))) {
     return res.status(400).json({error:"Check your details. A booking can contain 1–7 tickets."});
   }
-  if (custom && (selected.length !== count || new Set(selected).size !== count)) {
-    return res.status(400).json({error:"Choose exactly the number of seats in your booking."});
+  if (custom && (selected.length !== count || new Set(selected).size !== count || selected.some((seat) => !SEAT_IDS.includes(seat)))) {
+    return res.status(400).json({error:"Choose exactly the number of available seats in your booking."});
   }
   if (!custom && (selected.length || office.length)) return res.status(400).json({error:"Custom seat details are not valid for automatic allocation."});
   if (custom && office.some((seat) => !selected.includes(seat))) return res.status(400).json({error:"Office chair upgrades must match selected seats."});
@@ -265,6 +296,14 @@ app.post("/api/bookings",customerOnly, async (req,res,next) => {
     if (new Date(screening.rows[0].starts_at).getTime() <= Date.now()) {
       await client.query("ROLLBACK"); return res.status(409).json({error:"This screening has already started."});
     }
+    const occupancy = await client.query(
+      "SELECT COUNT(*)::int AS occupied FROM screening_seats WHERE screening_id=$1 AND booking_id IS NOT NULL",
+      [body.screeningId]
+    );
+    if (occupancy.rows[0].occupied + count > MAX_SEATS) {
+      await client.query("ROLLBACK");
+      return res.status(409).json({error:"This screening has reached its 7-seat capacity."});
+    }
 
     let allocated;
     if (custom) {
@@ -275,8 +314,8 @@ app.post("/api/bookings",customerOnly, async (req,res,next) => {
       allocated = result.rows.map((row) => row.seat_number);
     } else {
       const result = await client.query(
-        "SELECT seat_number FROM screening_seats WHERE screening_id=$1 AND booking_id IS NULL ORDER BY seat_number LIMIT $2 FOR UPDATE SKIP LOCKED",
-        [body.screeningId,count]
+        "SELECT seat_number FROM screening_seats WHERE screening_id=$1 AND seat_number=ANY($2::text[]) AND booking_id IS NULL ORDER BY CASE WHEN seat_number LIKE 'BED-%' THEN 0 ELSE 1 END,seat_number LIMIT $3 FOR UPDATE SKIP LOCKED",
+        [body.screeningId,SEAT_IDS,count]
       );
       allocated = result.rows.map((row) => row.seat_number);
     }
@@ -286,7 +325,7 @@ app.post("/api/bookings",customerOnly, async (req,res,next) => {
     }
 
     const p = await getPrices(client);
-    const officeAllocated = custom ? office : allocated.filter((seat) => seat === "CHAIR-L" || seat === "CHAIR-R");
+    const officeAllocated = custom ? office : allocated.filter((seat) => OFFICE_SEAT_IDS.includes(seat));
     const total = count*p.ticket + (custom ? p.custom : 0) + officeAllocated.length*p.office + water*p.water + popcorn*p.popcorn;
     const id = crypto.randomUUID();
     const code = "Dncngfrt-" + Array.from({length:3},()=>crypto.randomBytes(2).toString("hex").slice(0,3).toUpperCase()).join("-") + "-" + String(crypto.randomInt(0,1000000)).padStart(6,"0");
@@ -310,7 +349,7 @@ app.post("/api/bookings",customerOnly, async (req,res,next) => {
   } finally { client.release(); }
 });
 
-app.post("/api/bookings/lookup", async (req,res,next) => {
+app.post("/api/bookings/lookup", lookupLimiter, async (req,res,next) => {
   try {
     const code = String(req.body?.bookingCode || "").trim().toUpperCase();
     const email = String(req.body?.customerEmail || "").trim().toLowerCase();
@@ -321,7 +360,7 @@ app.post("/api/bookings/lookup", async (req,res,next) => {
       "COALESCE(array_agg(ss.seat_number ORDER BY ss.seat_number) FILTER(WHERE ss.seat_number IS NOT NULL),'{}') AS seats," +
       "COALESCE(array_agg(ss.seat_number ORDER BY ss.seat_number) FILTER(WHERE ss.office_chair=TRUE),'{}') AS office_seats " +
       "FROM bookings b JOIN screenings s ON s.id=b.screening_id JOIN movies m ON m.id=s.movie_id " +
-      "LEFT JOIN booking_seats ss ON ss.booking_id=b.id WHERE b.booking_code=$1 AND lower(b.customer_email)=lower($2) GROUP BY b.id,s.id,m.id",
+      "LEFT JOIN booking_seats ss ON ss.booking_id=b.id WHERE upper(b.booking_code)=upper($1) AND lower(b.customer_email)=lower($2) GROUP BY b.id,s.id,m.id",
       [code,email]
     );
     if (!result.rowCount) return res.status(404).json({error:"No booking found for that code and email."});
@@ -338,7 +377,7 @@ async function cancelReservation(code,email,isAdmin) {
   try {
     await client.query("BEGIN");
     const result = await client.query(
-      "SELECT b.id,b.customer_email,b.status,s.starts_at FROM bookings b JOIN screenings s ON s.id=b.screening_id WHERE upper(b.booking_code)=upper($1) FOR UPDATE OF b",
+      "SELECT b.id,b.customer_email,b.status,b.checked_in,s.starts_at FROM bookings b JOIN screenings s ON s.id=b.screening_id WHERE upper(b.booking_code)=upper($1) FOR UPDATE OF b",
       [String(code).trim()]
     );
     if (!result.rowCount || (!isAdmin && result.rows[0].customer_email !== String(email || "").trim().toLowerCase())) {
@@ -346,18 +385,21 @@ async function cancelReservation(code,email,isAdmin) {
     }
     const booking = result.rows[0];
     if (booking.status === "cancelled") { await client.query("ROLLBACK"); return {status:409,error:"Booking already cancelled."}; }
+    if (booking.checked_in) { await client.query("ROLLBACK"); return {status:409,error:"A checked-in booking cannot be cancelled."}; }
     if (!isAdmin && (new Date(booking.starts_at).getTime()-Date.now())/3600000 < 24) {
       await client.query("ROLLBACK"); return {status:403,error:"Customer cancellations close 24 hours before the screening."};
     }
-    await client.query("UPDATE screening_seats SET booking_id=NULL,office_chair=FALSE WHERE booking_id=$1",[booking.id]);
+    await client.query("UPDATE screening_seats SET booking_id=NULL,office_chair=(seat_number=ANY($2::text[])) WHERE booking_id=$1",[booking.id,OFFICE_SEAT_IDS]);
     await client.query("UPDATE bookings SET status='cancelled' WHERE id=$1",[booking.id]);
     await client.query("COMMIT"); return {status:200,ok:true};
   } catch(error) {
     await client.query("ROLLBACK").catch(()=>{}); throw error;
   } finally { client.release(); }
 }
-app.post("/api/bookings/:code/cancel", customerOnly, async (req,res,next) => {
-  try { const result=await cancelReservation(req.params.code,req.session.user.email,false); res.status(result.status).json(result); }
+app.post("/api/bookings/:code/cancel", async (req,res,next) => {
+  const email = String(req.body?.customerEmail || "").trim().toLowerCase();
+  if (!email) return res.status(400).json({error:"Enter the email address used for this booking."});
+  try { const result=await cancelReservation(req.params.code,email,false); res.status(result.status).json(result); }
   catch(error) { next(error); }
 });
 
@@ -423,66 +465,78 @@ app.post("/api/admin/bookings/:code/cancel",adminOnly,async(req,res,next)=>{
   catch(error) { next(error); }
 });
 
-async function addShowings(client,movieId,showings) {
-  if(!Array.isArray(showings)) throw new Error("Screenings must be an array.");
-  for(const showing of showings) {
-    const date=String(showing.date||"");
-    const times=Array.isArray(showing.times)?showing.times:[];
-    if(!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error("Invalid screening date.");
-    for(const time of times) {
-      if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) throw new Error("Invalid screening time.");
-      await createScreening(client,movieId,date,time,"1. zāle");
+function isValidDateString(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const [year, month, day] = value.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
+}
+async function addShowings(client, movieId, showings) {
+  if (!Array.isArray(showings)) {
+    const error = new Error("Screenings must be an array.");
+    error.status = 400;
+    throw error;
+  }
+  const seen = new Set();
+  for (const showing of showings) {
+    const date = String(showing.date || "");
+    const times = Array.isArray(showing.times) ? showing.times : [];
+    if (!isValidDateString(date)) {
+      const error = new Error("Invalid screening date.");
+      error.status = 400;
+      throw error;
+    }
+    for (const timeValue of times) {
+      const time = String(timeValue || "");
+      if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) {
+        const error = new Error("Invalid screening time.");
+        error.status = 400;
+        throw error;
+      }
+      const key = date + " " + time;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      await createScreening(movieId, date, time, "1. zāle", client);
     }
   }
 }
-// createScreening uses the shared pool. This helper is used only during admin writes.
-// A nested transaction is avoided; all screening records are still inserted on the same database.
 app.post("/api/admin/movies",adminOnly,async(req,res,next)=>{
   const m=req.body||{};
-  if(!m.title||!m.description||!Number.isInteger(Number(m.duration))||Number(m.duration)<1)
+  const title = String(m.title || "").trim();
+  const description = String(m.description || "").trim();
+  const duration = Number(m.duration);
+  if (!title || title.length > 100 || !description || description.length > 1000 || !Number.isInteger(duration) || duration < 1 || duration > 500) {
     return res.status(400).json({error:"Movie title, description and valid duration are required."});
+  }
   const poster=String(m.poster||"linear-gradient(135deg,#753039,#182838)").trim();
   if(!validPoster(poster)) return res.status(400).json({error:"Use an HTTPS poster image URL or upload a JPG, PNG or WebP image under 1 MB."});
   const id=crypto.randomUUID(),client=await pool.connect();
   try {
     await client.query("BEGIN");
     await client.query("INSERT INTO movies(id,title,genre,duration,age,year,emoji,poster,description) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)",
-      [id,String(m.title).slice(0,100),String(m.genre||"Cits"),Number(m.duration),String(m.age||"U"),Number(m.year)||new Date().getFullYear(),String(m.emoji||"🎬"),poster,String(m.description).slice(0,1000)]);
-    for(const showing of (Array.isArray(m.screenings)?m.screenings:[])) {
-      const date=String(showing.date||""),times=Array.isArray(showing.times)?showing.times:[];
-      if(!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error("Invalid screening date.");
-      for(const time of times) {
-        if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) throw new Error("Invalid screening time.");
-        const sid=crypto.randomUUID();
-        const inserted=await client.query("INSERT INTO screenings(id,movie_id,show_date,show_time,starts_at,hall_name) VALUES($1,$2,$3::date,$4::time,($3::date + $4::time) AT TIME ZONE 'Europe/Riga',$5) ON CONFLICT(movie_id,show_date,show_time) DO NOTHING RETURNING id",[sid,id,date,time,"1. zāle"]);
-        if(inserted.rowCount) for(const [seat,chair] of [...Array.from({length:8},(_,i)=>["BED-"+(i+1),false]),["CHAIR-L",true],["CHAIR-R",true]]) await client.query("INSERT INTO screening_seats(screening_id,seat_number,office_chair) VALUES($1,$2,$3)",[sid,seat,chair]);
-      }
-    }
+      [id,title,String(m.genre||"Cits"),duration,String(m.age||"U").slice(0,12),Math.min(2100,Math.max(1900,Number(m.year)||new Date().getFullYear())),String(m.emoji||"🎬").slice(0,20),poster,description]);
+    await addShowings(client, id, m.screenings || []);
     await client.query("COMMIT");res.status(201).json({id});
   } catch(error) {await client.query("ROLLBACK").catch(()=>{});next(error);}
   finally {client.release();}
 });
 app.put("/api/admin/movies/:id",adminOnly,async(req,res,next)=>{
   const m=req.body||{};
+  const title = String(m.title || "").trim();
+  const description = String(m.description || "").trim();
+  const duration = Number(m.duration);
+  if (!title || title.length > 100 || !description || description.length > 1000 || !Number.isInteger(duration) || duration < 1 || duration > 500) {
+    return res.status(400).json({error:"Movie title, description and valid duration are required."});
+  }
   const poster=String(m.poster||"linear-gradient(135deg,#753039,#182838)").trim();
   if(!validPoster(poster)) return res.status(400).json({error:"Use an HTTPS poster image URL or upload a JPG, PNG or WebP image under 1 MB."});
   const client=await pool.connect();
   try {
     await client.query("BEGIN");
     const result=await client.query("UPDATE movies SET title=$2,genre=$3,duration=$4,age=$5,year=$6,emoji=$7,poster=$8,description=$9 WHERE id=$1 RETURNING id",
-      [req.params.id,String(m.title||"").slice(0,100),String(m.genre||"Cits"),Number(m.duration),String(m.age||"U"),Number(m.year)||new Date().getFullYear(),String(m.emoji||"🎬"),poster,String(m.description||"").slice(0,1000)]);
+      [req.params.id,title,String(m.genre||"Cits"),duration,String(m.age||"U").slice(0,12),Math.min(2100,Math.max(1900,Number(m.year)||new Date().getFullYear())),String(m.emoji||"🎬").slice(0,20),poster,description]);
     if(!result.rowCount){await client.query("ROLLBACK");return res.status(404).json({error:"Movie not found."});}
-    const showings=Array.isArray(m.screenings)?m.screenings:[];
-    for(const showing of showings) {
-      const date=String(showing.date||""),times=Array.isArray(showing.times)?showing.times:[];
-      if(!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error("Invalid screening date.");
-      for(const time of times) {
-        if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) throw new Error("Invalid screening time.");
-        const sid=crypto.randomUUID();
-        const inserted=await client.query("INSERT INTO screenings(id,movie_id,show_date,show_time,starts_at,hall_name) VALUES($1,$2,$3::date,$4::time,($3::date + $4::time) AT TIME ZONE 'Europe/Riga',$5) ON CONFLICT(movie_id,show_date,show_time) DO NOTHING RETURNING id",[sid,req.params.id,date,time,"1. zāle"]);
-        if(inserted.rowCount) for(let row=1;row<=6;row++) for(let col=0;col<6;col++) await client.query("INSERT INTO screening_seats(screening_id,seat_number) VALUES($1,$2)",[sid,"R"+row+"-"+String.fromCharCode(65+col)]);
-      }
-    }
+    await addShowings(client, req.params.id, m.screenings || []);
     await client.query("COMMIT");res.json({ok:true});
   } catch(error) {await client.query("ROLLBACK").catch(()=>{});next(error);}
   finally {client.release();}
@@ -531,7 +585,8 @@ app.get("*",(req,res)=>res.sendFile(path.join(__dirname,"index.html")));
 app.use((error,req,res,next)=>{
   console.error(error);
   if(res.headersSent)return next(error);
-  res.status(500).json({error:production?"An unexpected server error occurred.":error.message});
+  const status = Number.isInteger(error.status) && error.status >= 400 && error.status < 500 ? error.status : 500;
+  res.status(status).json({error:status < 500 || !production ? error.message : "An unexpected server error occurred."});
 });
 
 const port=Number(process.env.PORT||3000);
