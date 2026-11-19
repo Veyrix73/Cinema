@@ -438,41 +438,31 @@ function renderCustomerDetailsStep() {
   };
 }
 function code39Svg(value) {
-  const patterns={ "0":"nnnwwnwnn","1":"wnnwnnnnw","2":"nnwwnnnnw","3":"wnwwnnnnn","4":"nnnwwnnnw","5":"wnnwwnnnn","6":"nnwwwnnnn","7":"nnnwnnwnw","8":"wnnwnnwnn","9":"nnwwnnwnn","A":"wnnnnwnnw","B":"nnwnnwnnw","C":"wnwnnwnnn","D":"nnnnwwnnw","E":"wnnnwwnnn","F":"nnwnwwnnn","G":"nnnnnwwnw","H":"wnnnnwwnn","I":"nnwnnwwnn","J":"nnnnwwwnn","K":"wnnnnnnww","L":"nnwnnnnww","M":"wnwnnnnwn","N":"nnnnwnnww","O":"wnnnwnnwn","P":"nnwnwnnwn","Q":"nnnnnnwww","R":"wnnnnnwwn","S":"nnwnnnwwn","T":"nnnnwnwwn","U":"wwnnnnnnw","V":"nwwnnnnnw","W":"wwwnnnnnn","X":"nwnnwnnnw","Y":"wwnnwnnnn","Z":"nwwnwnnnn","-":"nwnnnnwnw"};
+  const patterns={ "0":"nnnwwnwnn","1":"wnnwnnnnw","2":"nnwwnnnnw","3":"wnwwnnnnn","4":"nnnwwnnnw","5":"wnnwwnnnn","6":"nnwwwnnnn","7":"nnnwnnwnw","8":"wnnwnnwnn","9":"nnwwnnwnn","A":"wnnnnwnnw","B":"nnwnnwnnw","C":"wnwnnwnnn","D":"nnnnwwnnw","E":"wnnnwwnnn","F":"nnwnwwnnn","G":"nnnnnwwnw","H":"wnnnnwwnn","I":"nnwnnwwnn","J":"nnnnwwwnn","K":"wnnnnnnww","L":"nnwnnnnww","M":"wnwnnnnwn","N":"nnnnwnnww","O":"wnnnwnnwn","P":"nnwnwnnwn","Q":"nnnnnnwww","R":"wnnnnnwwn","S":"nnwnnnwwn","T":"nnnnwnwwn","U":"wwnnnnnnw","V":"nwwnnnnnw","W":"wwwnnnnnn","X":"nwnnwnnnw","Y":"wwnnwnnnn","Z":"nwwnwnnnn","-":"nwnnnnwnw","*":"nwnnwnwnn"};
   const text="*"+String(value).toUpperCase()+"*";let x=8,rects="";
   for(const char of text){const pattern=patterns[char];if(!pattern)continue;for(let i=0;i<pattern.length;i++){const width=pattern[i]==="w"?3:1;if(i%2===0)rects+='<rect x="'+x+'" y="0" width="'+width+'" height="62" fill="#111"/>';x+=width;}x+=1;}
   return '<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ticket barcode" viewBox="0 0 '+(x+8)+' 62" preserveAspectRatio="none">'+rects+'</svg>';
 }
 function printTicket(item,movie,bookingState,user) {
   const barcode=code39Svg(item.code);
-  const html='<!doctype html><html><head><meta charset="utf-8"><title>Cinema ticket</title><style>*{box-sizing:border-box}body{font-family:Arial,sans-serif;background:#eee;padding:24px}.ticket{max-width:720px;margin:auto;background:white;color:#161616;border:2px solid #222;border-radius:16px;padding:28px}.top{display:flex;justify-content:space-between;border-bottom:2px dashed #aaa;padding-bottom:14px;font-weight:bold;letter-spacing:2px}.ticket h1{font-size:30px;margin:22px 0}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.grid span{display:block;font-size:11px;color:#666}.grid b{display:block;margin-top:5px;overflow-wrap:anywhere}.barcode{margin:28px auto 8px;max-width:620px}.barcode svg{width:100%;height:110px}.code{text-align:center;font: bold 18px monospace;letter-spacing:2px}.pay{text-align:center;margin-top:20px;padding:12px;border:1px dashed #555;font-weight:bold}@media print{body{background:white;padding:0}.ticket{border:1px solid #111;break-inside:avoid}}</style></head><body><article class="ticket"><div class="top"><b>DANCING FRUIT CINEMA</b><span>ADMIT ONE</span></div><h1>'+escapeHTML(movie?.title||"Cinema")+'</h1><div class="grid"><div><span>NAME / VĀRDS</span><b>'+escapeHTML(user.name)+'</b></div><div><span>EMAIL / E-PASTS</span><b>'+escapeHTML(user.email)+'</b></div><div><span>DATE / DATUMS</span><b>'+escapeHTML(bookingState.date)+'</b></div><div><span>TIME / LAIKS</span><b>'+escapeHTML(bookingState.time)+'</b></div><div><span>SEATS / VIETAS</span><b>'+item.seats.map(escapeHTML).join(", ")+'</b></div></div><div class="barcode">'+barcode+'</div><div class="code">'+escapeHTML(item.code)+'</div><div class="pay">PAY AT CINEMA · APMAKSA UZ VIETAS</div></article><script>window.onload=()=>window.print()<\\/script></body></html>';
-  const win=window.open("","_blank","noopener,noreferrer");
+  const html='<!doctype html><html><head><meta charset="utf-8"><title>Cinema ticket</title><style>*{box-sizing:border-box}body{font-family:Arial,sans-serif;background:#eee;padding:24px}.ticket{max-width:720px;margin:auto;background:white;color:#161616;border:2px solid #222;border-radius:16px;padding:28px}.top{display:flex;justify-content:space-between;border-bottom:2px dashed #aaa;padding-bottom:14px;font-weight:bold;letter-spacing:2px}.ticket h1{font-size:30px;margin:22px 0}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.grid span{display:block;font-size:11px;color:#666}.grid b{display:block;margin-top:5px;overflow-wrap:anywhere}.barcode{margin:28px auto 8px;max-width:620px}.barcode svg{width:100%;height:110px}.code{text-align:center;font: bold 18px monospace;letter-spacing:2px}.pay{text-align:center;margin-top:20px;padding:12px;border:1px dashed #555;font-weight:bold}@media print{body{background:white;padding:0}.ticket{border:1px solid #111;break-inside:avoid}}</style></head><body><article class="ticket"><div class="top"><b>DANCING FRUIT CINEMA</b><span>ADMIT ONE</span></div><h1>'+escapeHTML(movie?.title||"Cinema")+'</h1><div class="grid"><div><span>NAME / VĀRDS</span><b>'+escapeHTML(user.name)+'</b></div><div><span>EMAIL / E-PASTS</span><b>'+escapeHTML(user.email)+'</b></div><div><span>DATE / DATUMS</span><b>'+escapeHTML(bookingState.date)+'</b></div><div><span>TIME / LAIKS</span><b>'+escapeHTML(bookingState.time)+'</b></div><div><span>SEATS / VIETAS</span><b>'+item.seats.map(escapeHTML).join(", ")+'</b></div></div><div class="barcode">'+barcode+'</div><div class="code">'+escapeHTML(item.code)+'</div><div class="pay">PAY AT CINEMA · APMAKSA UZ VIETAS</div></article></body></html>';
+  const win=window.open("","_blank");
   if(!win){toast(language==="lv"?"Atļauj uznirstošos logus, lai drukātu biļeti.":"Allow pop-ups to print the ticket.");return;}
-  win.document.open();win.document.write(html);win.document.close();
+  win.document.open();win.document.write(html);win.document.close();win.onload=()=>win.print();
 }
 function renderConfirmation(item) {
-  const movie = movies.find((entry) => entry.id === booking.movieId);
-  const seats = item.seats || [];
-  const barcode = code39Svg(item.code);
+  const movie=movies.find(entry=>entry.id===booking.movieId);
+  const seats=item.seats||[];
   showModal(
-    '<div class="ticket-confirmation"><p class="eyebrow">' + t("confirmedEyebrow") + '</p><h2 id="modalTitle">' + t("confirmed") + '</h2>' +
-    '<div class="print-ticket" id="printTicket"><div class="ticket-top"><b>DANCING FRUIT CINEMA</b><span>ADMIT ONE / KINO BIĻETE</span></div>' +
-    '<h3>' + escapeHTML(movie?.title || "") + '</h3><div class="ticket-details"><span><small>NAME / VĀRDS</small><b>' + escapeHTML(currentUser.name) + '</b></span><span><small>EMAIL / E-PASTS</small><b>' + escapeHTML(currentUser.email) + '</b></span><span><small>DATE / DATUMS</small><b>' + formatDate(booking.date) + '</b></span><span><small>TIME / LAIKS</small><b>' + escapeHTML(booking.time) + '</b></span><span><small>SEATS / VIETAS</small><b>' + seats.map(escapeHTML).join(", ") + '</b></span></div>' +
-    '<div class="ticket-barcode">' + barcode + '</div><div class="ticket-code-text">' + escapeHTML(item.code) + '</div><div class="ticket-pay">PAY AT CINEMA · APMAKSA UZ VIETAS</div></div>' +
-    '<p class="modal-intro">' + (language==="lv"?"Biļete automātiski saglabāta tavā kontā. Vari to izdrukāt vai atstāt kontā un atvērt vēlāk.":"Your ticket is saved in your account. Print it now or leave it there and open it later.") + '</p>' +
-    '<div class="ticket-actions"><button class="small-button" id="printTicketButton">' + (language==="lv"?"Drukāt biļeti":"Print ticket") + '</button><button class="button button-secondary" id="keepTicketButton">' + (language==="lv"?"Atstāt manā kontā":"Keep in my account") + '</button></div>' +
-    '<div style="display:none">' +
-    '<p class="eyebrow">' + t("confirmedEyebrow") + '</p><h2 id="modalTitle">' + t("confirmed") + '</h2>' +
-    '<p class="modal-intro">' + t("savedBrowser") + '</p><div class="summary-box" style="text-align:left">' +
-    '<div class="summary-line"><span>' + t("bookingNumber") + '</span><b class="ticket-code">' + escapeHTML(item.code) + '</b></div>' +
-    '<div class="summary-line"><span>' + t("email") + '</span><b>' + escapeHTML(item.customerEmail) + '</b></div>' +
-    '<div class="summary-line"><span>' + t("screening") + '</span><b>' + escapeHTML(movie?.title || "") + ' · ' + formatDate(booking.date) + ' · ' + escapeHTML(booking.time) + '</b></div>' +
-    '<div class="summary-line"><span>' + t("chosenSeats") + '</span><b>' + seats.map(escapeHTML).join(", ") + '</b></div>' +
-    '<div class="summary-line total"><span>' + t("total") + '</span><b>' + formatMoney(item.total) + '</b></div></div>' +
-    '</div></div>'
+    '<div class="ticket-confirmation"><p class="eyebrow">'+t("confirmedEyebrow")+'</p><h2 id="modalTitle">'+t("confirmed")+'</h2>'+
+    '<div class="print-ticket" id="printTicket"><div class="ticket-top"><b>DANCING FRUIT CINEMA</b><span>ADMIT ONE / KINO BIĻETE</span></div>'+
+    '<h3>'+escapeHTML(movie?.title||"")+'</h3><div class="ticket-details"><span><small>NAME / VĀRDS</small><b>'+escapeHTML(currentUser.name)+'</b></span><span><small>EMAIL / E-PASTS</small><b>'+escapeHTML(currentUser.email)+'</b></span><span><small>DATE / DATUMS</small><b>'+formatDate(booking.date)+'</b></span><span><small>TIME / LAIKS</small><b>'+escapeHTML(booking.time)+'</b></span><span><small>SEATS / VIETAS</small><b>'+seats.map(escapeHTML).join(", ")+'</b></span></div>'+
+    '<div class="ticket-barcode">'+code39Svg(item.code)+'</div><div class="ticket-code-text">'+escapeHTML(item.code)+'</div><div class="ticket-pay">PAY AT CINEMA · APMAKSA UZ VIETAS</div></div>'+
+    '<p class="modal-intro">'+(language==="lv"?"Biļete automātiski saglabāta tavā kontā. Vari to izdrukāt vai atstāt kontā un atvērt vēlāk.":"Your ticket is saved in your account. Print it now or leave it there and open it later.")+'</p>'+
+    '<div class="ticket-actions"><button class="small-button" id="printTicketButton">'+(language==="lv"?"Drukāt biļeti":"Print ticket")+'</button><button class="button button-secondary" id="keepTicketButton">'+(language==="lv"?"Atstāt manā kontā":"Keep in my account")+'</button></div></div>'
   );
-  $("#printTicketButton").onclick = () => printTicket(item,movie,booking,currentUser);
-  $("#keepTicketButton").onclick = () => { closeModal(); loadAccountBookings(); document.querySelector("#my-bookings").scrollIntoView({behavior:"smooth"}); };
+  $("#printTicketButton").onclick=()=>printTicket(item,movie,booking,currentUser);
+  $("#keepTicketButton").onclick=()=>{closeModal();loadAccountBookings();document.querySelector("#my-bookings").scrollIntoView({behavior:"smooth"});};
   loadAccountBookings();
 }
 async function showLookupResult(code,email) {
