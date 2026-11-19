@@ -8,15 +8,15 @@ A Latvian-language cinema booking website with a Node.js API and PostgreSQL data
 - Movie catalogue with search, genre filters, poster thumbnails and animated page transitions.
 - Admin movie editor accepts HTTPS poster URLs or JPG/PNG/WebP image uploads (automatically resized before saving).
 - Four-step booking flow: screening, seating, upgrades/snacks and contact details.
-- 36 bed-style seats per screening (6 rows × 6 seats).
+- Seven seats per screening: six bed-style seats and one office chair.
 - Automatic seat assignment or custom seat selection (€0.10 per booking).
-- Optional office-chair upgrades (default €0.20 per seat).
+- One office chair is available as a premium seat (default €0.20 upgrade).
 - Water and popcorn add-ons.
-- Maximum 8 tickets per booking.
+- Maximum 7 tickets per booking; the server enforces this limit.
 - Server-side bookings shared by all visitors.
 - PostgreSQL transaction and row locks to prevent double-booking a seat.
 - Booking lookup with booking reference + email.
-- Customer cancellation up to 24 hours before the screening.
+- Customer cancellation up to 24 hours before the screening, with the booking code and booking email. Checked-in tickets cannot be cancelled.
 - Hidden admin login shortcut: **Ctrl + Shift + Alt + P**.
 - Admin tools to add/edit movies and screening dates/times, view bookings, cancel reservations, update prices and change the admin password.
 - Admin login uses a server-side password hash and an HTTP-only session cookie.
@@ -34,7 +34,7 @@ Requirements: Node.js 20+ and a PostgreSQL database.
 7. Start the server with `npm start`.
 8. Open `http://localhost:3000`.
 
-The server automatically creates the database tables, default prices, initial admin account and demo movie screenings on first start.
+The server automatically creates the database tables, default prices, initial admin account and demo movie screenings on first start. Existing occupied legacy seat records are preserved during seat-layout updates.
 
 ## Publicēšana internetā
 
