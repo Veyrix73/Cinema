@@ -151,6 +151,7 @@ const SERVER_ERROR_LV = {
   "Enter the email address used for this booking.":"Ievadi rezervācijā izmantoto e-pasta adresi.",
   "A checked-in booking cannot be cancelled.":"Izmantotu biļeti vairs nevar atcelt.",
   "Choose exactly the number of seats in your booking.":"Izvēlies tieši tik sēdvietu, cik biļešu ir rezervācijā.",
+  "Choose exactly the number of available seats in your booking.":"Izvēlies tieši tik brīvu sēdvietu, cik biļešu ir rezervācijā.",
   "Custom seat details are not valid for automatic allocation.":"Izvēlētās sēdvietas nav derīgas automātiskai vietu piešķiršanai.",
   "Office chair upgrades must match selected seats.":"Biroja krēslu skaitam jāatbilst izvēlētajām sēdvietām.",
   "Too many office chair upgrades.":"Izvēlēts pārāk daudz biroja krēslu uzlabojumu.",
@@ -380,7 +381,7 @@ async function renderSeatStep() {
     const chosen = booking.seats.includes(seat.seat_number);
     const klass = (seat.occupied ? "occupied " : "") + (chosen ? "selected " : "") + (seat.office_chair ? "office-seat" : "bed-seat");
     const disabled = seat.occupied || booking.mode === "auto";
-    const label = seat.office_chair ? (seat.seat_number === "CHAIR-L" ? "KRĒSLS" : "KRĒSLS") : "VIETA " + seat.seat_number.split("-")[1];
+    const label = seat.office_chair ? "BIROJA KRĒSLS" : "VIETA " + seat.seat_number.split("-")[1];
     return '<button class="seat ' + klass + '" data-seat="' + escapeHTML(seat.seat_number) + '"' + (disabled ? " disabled" : "") + '>' +
       (seat.office_chair ? "🪑" : "▰") + '<small>' + label + '</small></button>';
   };
@@ -424,8 +425,8 @@ function currentTotal() {
 }
 function renderExtrasStep() {
   const chairOptions = '<div class="seat-actions">Biroja krēsla vieta: ' +
-    (booking.officeSeats.length ? booking.officeSeats.join(", ") : "nav izvēlēti") +
-    ' · ' + formatMoney(prices.office) + ' par katru rezervēto krēslu.</div>';
+    (booking.officeSeats.length ? booking.officeSeats.join(", ") : "nav izvēlēta") +
+    ' · ' + formatMoney(prices.office) + ' par šo vietu.</div>';
   showModal(
     '<p class="eyebrow">' + t("step3") + '</p><h2 id="modalTitle">' + t("extras") + '</h2><p class="modal-intro">' + t("extrasIntro") + '</p>' +
     chairOptions +
