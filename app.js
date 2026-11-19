@@ -355,13 +355,11 @@ function renderExtrasStep() {
     $("#snackPrice").textContent = formatMoney(booking.waterCount * prices.water + booking.popcornCount * prices.popcorn);
     $("#grandTotal").textContent = formatMoney(currentTotal());
   }
-  if ($("#officeCount")) $("#officeCount").onchange = refreshCosts;
   $("#waterCount").oninput = refreshCosts;
   $("#popcornCount").oninput = refreshCosts;
   
   $("#backToSeats").onclick = renderSeatStep;
   $("#toCustomerDetails").onclick = () => {
-    if (booking.mode === "auto") booking.officeCount = Number($("#officeCount").value);
     booking.waterCount = Number($("#waterCount").value)||0;
     booking.popcornCount = Number($("#popcornCount").value)||0;
     renderCustomerDetailsStep();
@@ -386,7 +384,7 @@ function renderCustomerDetailsStep() {
     const name = $("#customerName").value.trim();
     const email = $("#customerEmail").value.trim();
     if (!name || !$("#customerEmail").checkValidity()) { toast(t("validDetails")); return; }
-    const officeSeats = booking.officeSeats;
+    const officeSeats = booking.mode === "custom" ? booking.officeSeats : [];
     try {
       const result = await api("/bookings", {
         method:"POST",
