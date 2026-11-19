@@ -36,9 +36,10 @@ app.use(session({
   name: "dfc.sid",
   store: new PgSession({ pool, tableName: "user_sessions", createTableIfMissing: true }),
   secret: process.env.SESSION_SECRET,
+  proxy: production,
   resave: false,
   saveUninitialized: false,
-  cookie: { httpOnly: true, secure: production, sameSite: "lax", maxAge: 8 * 60 * 60 * 1000 }
+  cookie: { httpOnly: true, secure: "auto", sameSite: "lax", path: "/", maxAge: 8 * 60 * 60 * 1000 }
 }));
 
 const loginLimiter = rateLimit({
