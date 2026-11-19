@@ -10,7 +10,7 @@ const DICT = {
     featureBeds:"Gultas tipa vietas",featureBedsDesc:"Iekļautas biļetes cenā",featureSelect:"Vietas izvēle",featureSelectDesc:"0,10 € par rezervāciju",featureChair:"Biroja krēsls",featureChairDesc:"No 0,20 € par vietu",
     bookingEyebrow:"TAVAS BIĻETES VIENUViet",bookingTitle:"Manas rezervācijas",bookingLookupHelp:"Ievadi rezervācijas kodu un e-pastu, ko izmantoji rezervācijā.",bookingCode:"Rezervācijas kods",yourEmail:"Tavs e-pasts",lookupButton:"Apskatīt rezervāciju",
     footerText:"Dancing Fruit Cinema © 2026 · Visas tiesības aizsargātas.",
-    noShows:"Šai filmai pašlaik nav pieejamu seansu.",step1:"1. SOLIS NO 4",step2:"2. SOLIS NO 4",step3:"3. SOLIS NO 4",step4:"4. SOLIS NO 4",bookTickets:"Rezervē biļetes",date:"Seansa datums",time:"Seansa laiks",ticketCount:"Biļešu skaits (maksimums 8)",continue:"Turpināt →",cancel:"Atcelt",chooseSeats:"Izvēlies sēdvietas",
+    noShows:"Šai filmai pašlaik nav pieejamu seansu.",step1:"1. SOLIS NO 4",step2:"2. SOLIS NO 4",step3:"3. SOLIS NO 4",step4:"4. SOLIS NO 4",bookTickets:"Rezervē biļetes",date:"Seansa datums",time:"Seansa laiks",ticketCount:"Biļešu skaits (maksimums 7)",continue:"Turpināt →",cancel:"Atcelt",chooseSeats:"Izvēlies sēdvietas",
     seatIntro:"Standarta vietas ir plašas gultas tipa sēdvietas. Vari ļaut sistēmai piešķirt vietas bez maksas vai izvēlēties konkrētas vietas par",auto:"Automātiska izvēle",autoDesc:"Bez papildu maksas",custom:"Izvēlēties pašam",customDesc:"par rezervāciju",screen:"KINOTEĀTRA EKRĀNS",available:"Brīva",occupied:"Aizņemta",selected:"Izvēlēta",bedSeat:"Gultas tipa vieta",chosenSeats:"Izvēlētās vietas",needSeats:"Jāizvēlas tieši",seats:"vietas.",selectOnly:"Vari izvēlēties tikai",seats2:"vietas.",notEnough:"Šajā seansā nav pietiekami daudz brīvu vietu.",
     extras:"Papildu iespējas",extrasIntro:"Izvēlies, kuras vietas vēlies uzlabot uz biroja krēslu. Pārējās paliks gultas tipa vietas.",chairUpgrade:"Biroja krēsls",water:"Ūdens",popcorn:"Popkorns",portion:"porcija",beds:"Gultas tipa vieta",summary:"Kopsavilkums",tickets:"Biļetes",seatSelection:"Vietas izvēle",officeChairs:"Biroja krēsli",snacks:"Ūdens un popkorns",total:"Kopā",
     details:"Tavi dati un apstiprinājums",detailsIntro:"Ievadi kontaktinformāciju rezervācijas apstiprinājumam.",name:"Vārds",email:"E-pasts",cancellationRule:"Klients var atcelt rezervāciju līdz 24 stundām pirms seansa sākuma. Pēc šī termiņa atcelšanu var veikt tikai administrators.",back:"← Atpakaļ",confirm:"Apstiprināt rezervāciju",validDetails:"Lūdzu, ievadi derīgu vārdu un e-pastu.",seatRace:"Viena no vietām tikko tika rezervēta. Izvēlies vietas vēlreiz.",confirmedEyebrow:"REZERVĀCIJA APSTIPRINĀTA",confirmed:"Tiekamies kinoteātrī!",savedBrowser:"Tava rezervācija ir saglabāta serverī.",bookingNumber:"Rezervācijas numurs",screening:"Seanss",close:"Aizvērt",demoPayment:"Šī ir rezervācija bez tiešsaistes maksājuma. Biļetes apmaksa šobrīd netiek veikta.",
@@ -27,7 +27,7 @@ const DICT = {
     featureBeds:"Bed-style seats",featureBedsDesc:"Included with the ticket",featureSelect:"Custom seat selection",featureSelectDesc:"€0.10 per booking",featureChair:"Office chair",featureChairDesc:"From €0.20 per seat",
     bookingEyebrow:"YOUR TICKETS IN ONE PLACE",bookingTitle:"My bookings",bookingLookupHelp:"Enter the booking code and the email address used for the reservation.",bookingCode:"Booking code",yourEmail:"Your email",lookupButton:"Find booking",
     footerText:"Dancing Fruit Cinema © 2026 · All rights reserved.",
-    noShows:"There are no available screenings for this movie.",step1:"STEP 1 OF 4",step2:"STEP 2 OF 4",step3:"STEP 3 OF 4",step4:"STEP 4 OF 4",bookTickets:"Book tickets",date:"Screening date",time:"Screening time",ticketCount:"Number of tickets (maximum 8)",continue:"Continue →",cancel:"Cancel",chooseSeats:"Choose your seats",
+    noShows:"There are no available screenings for this movie.",step1:"STEP 1 OF 4",step2:"STEP 2 OF 4",step3:"STEP 3 OF 4",step4:"STEP 4 OF 4",bookTickets:"Book tickets",date:"Screening date",time:"Screening time",ticketCount:"Number of tickets (maximum 7)",continue:"Continue →",cancel:"Cancel",chooseSeats:"Choose your seats",
     seatIntro:"Standard seats are spacious bed-style loungers. Let the system assign seats for free, or choose exact seats for",auto:"Automatic assignment",autoDesc:"No extra charge",custom:"Choose seats myself",customDesc:"per booking",screen:"CINEMA SCREEN",available:"Available",occupied:"Occupied",selected:"Selected",bedSeat:"Bed-style seat",chosenSeats:"Selected seats",needSeats:"Choose exactly",seats:"seats.",selectOnly:"You can select only",seats2:"seats.",notEnough:"There are not enough available seats for this screening.",
     extras:"Optional extras",extrasIntro:"Choose which seats you want to upgrade to office chairs. All other seats remain bed-style.",chairUpgrade:"Office chair",water:"Water",popcorn:"Popcorn",portion:"portion",beds:"Bed-style seat",summary:"Summary",tickets:"Tickets",seatSelection:"Seat selection",officeChairs:"Office chairs",snacks:"Water and popcorn",total:"Total",
     details:"Your details and confirmation",detailsIntro:"Enter your contact details for the booking confirmation.",name:"Name",email:"Email",cancellationRule:"Customers can cancel up to 24 hours before the screening starts. After that, only an administrator can cancel.",back:"← Back",confirm:"Confirm booking",validDetails:"Please enter a valid name and email address.",seatRace:"One of those seats was just booked. Please choose seats again.",confirmedEyebrow:"BOOKING CONFIRMED",confirmed:"See you at the cinema!",savedBrowser:"Your reservation has been saved on the server.",bookingNumber:"Booking reference",screening:"Screening",close:"Close",demoPayment:"This booking does not take an online payment. No ticket payment has been collected.",
@@ -319,7 +319,7 @@ function renderBookingDateStep() {
     '<div class="form-grid">' +
       '<div class="field"><label for="bookDate">' + t("date") + '</label><select id="bookDate">' + dates.map((date) => '<option value="' + date + '"' + (date === booking.date ? " selected" : "") + '>' + formatDate(date) + '</option>').join("") + '</select></div>' +
       '<div class="field"><label for="bookTime">' + t("time") + '</label><select id="bookTime">' + dayShowings.map((item) => '<option value="' + item.id + '"' + (item.id === booking.screeningId ? " selected" : "") + '>' + escapeHTML(item.time) + '</option>').join("") + '</select></div>' +
-      '<div class="field full"><label for="ticketCount">' + t("ticketCount") + '</label><select id="ticketCount">' + Array.from({length:10},(_,index)=>'<option value="'+(index+1)+'"'+(index===0?" selected":"")+'>'+(index+1)+'</option>').join("") + '</select></div>' +
+      '<div class="field full"><label for="ticketCount">' + t("ticketCount") + '</label><select id="ticketCount">' + Array.from({length:7},(_,index)=>'<option value="'+(index+1)+'"'+(index===0?" selected":"")+'>'+(index+1)+'</option>').join("") + '</select></div>' +
     '</div><div class="modal-actions"><button class="button button-secondary" data-close>' + t("cancel") + '</button><button class="small-button" id="toSeats">' + t("continue") + '</button></div>';
   showModal(html);
   $("#bookDate").onchange = (event) => {
@@ -332,11 +332,32 @@ function renderBookingDateStep() {
     booking.screeningId = event.target.value;
     booking.time = showingsFor(booking.movieId).find((item) => item.id === booking.screeningId).time;
   };
-  $("#ticketCount").onchange = (event) => booking.count = Math.min(10,Math.max(1,Number(event.target.value)));
-  $("#toSeats").onclick = () => {
-    booking.count = Number($("#ticketCount").value);
-    booking.time = showingsFor(booking.movieId).find((item) => item.id === booking.screeningId).time;
-    renderSeatStep();
+  $("#ticketCount").onchange = (event) => booking.count = Math.min(7,Math.max(1,Number(event.target.value)));
+  $("#toSeats").type = "button";
+  $("#toSeats").onclick = async (event) => {
+    event.preventDefault();
+    const selectedCount = Number($("#ticketCount")?.value);
+    const selectedShowing = showingsFor(booking.movieId).find((item) => item.id === booking.screeningId);
+    if (!Number.isInteger(selectedCount) || selectedCount < 1 || selectedCount > 7 || !selectedShowing) {
+      toast("Pārbaudi seansa laiku un biļešu skaitu.");
+      return;
+    }
+    booking.count = selectedCount;
+    booking.date = selectedShowing.date;
+    booking.time = selectedShowing.time;
+    const button = $("#toSeats");
+    button.disabled = true;
+    button.textContent = "Ielādē vietas…";
+    try {
+      await renderSeatStep();
+    } catch (error) {
+      toast(error.message || "Neizdevās ielādēt sēdvietas. Mēģini vēlreiz.");
+    } finally {
+      if ($("#toSeats")) {
+        $("#toSeats").disabled = false;
+        $("#toSeats").textContent = t("continue");
+      }
+    }
   };
 }
 async function renderSeatStep() {
