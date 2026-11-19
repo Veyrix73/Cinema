@@ -457,7 +457,8 @@ function renderExtrasStep() {
   }
   $("#waterCount").oninput = refreshCosts;
   $("#popcornCount").oninput = refreshCosts;
-  
+  refreshCosts();
+
   $("#backToSeats").onclick = renderSeatStep;
   $("#toCustomerDetails").onclick = () => {
     refreshCosts();
@@ -558,7 +559,7 @@ async function showLookupResult(code,email) {
     $("#customerBookings").innerHTML =
       '<div class="booking-card"><div><strong>' + escapeHTML(item.movieTitle) + ' · ' + escapeHTML(item.code) + '</strong>' +
       '<small>' + formatDate(item.date) + ' · ' + escapeHTML(item.time) + ' · ' + item.seats.map(escapeHTML).join(", ") + ' · ' + formatMoney(item.total) + '</small>' +
-      '<small>' + t("statusConfirmed") + ': ' + (item.status === "cancelled" ? t("statusCancelled") : t("statusConfirmed")) + '</small></div>' +
+      '<small>' + (item.status === "cancelled" ? t("statusCancelled") : t("statusConfirmed")) + '</small></div>' +
       (item.status === "confirmed" ? '<button class="danger-button" id="customerCancel">' + t("cancelBooking") + '</button>' : '') + '</div>';
     if ($("#customerCancel")) $("#customerCancel").onclick = async () => {
       if (!confirm(t("cancelConfirm"))) return;
@@ -754,7 +755,7 @@ async function renderAdminBookings(panel) {
   panel.innerHTML = '<h3>' + t("bookingList") + '</h3>' + (list.length ? list.map((item) =>
     '<div class="admin-item"><div><b>' + escapeHTML(item.code) + ' · ' + escapeHTML(item.name) + '</b><small>' +
     escapeHTML(item.movie) + ' · ' + formatDate(item.date) + ' · ' + escapeHTML(item.time) + ' · ' + item.seats.map(escapeHTML).join(", ") +
-    '</small><small>' + escapeHTML(item.email) + ' · ' + formatMoney(item.total) + ' · ' + (item.checkedIn ? (language === "lv" ? "Ienākusi" : "Checked in") : (language === "lv" ? "Nav skenēta" : "Not scanned")) + ' · ' + (item.status === "cancelled" ? t("statusCancelled") : t("statusConfirmed")) +
+    '</small><small>' + escapeHTML(item.email) + ' · ' + formatMoney(item.total) + ' · ' + (item.checkedIn ? (language === "lv" ? "Biļete izmantota" : "Checked in") : (language === "lv" ? "Nav skenēta" : "Not scanned")) + ' · ' + (item.status === "cancelled" ? t("statusCancelled") : t("statusConfirmed")) +
     '</small></div>' + (item.status === "confirmed" ? '<button class="danger-button" data-admin-cancel="' + escapeHTML(item.code) + '">' + t("cancelBooking") + '</button>' : "") + '</div>'
   ).join("") : '<p class="admin-note">' + t("noBookings") + '</p>');
   document.querySelectorAll("[data-admin-cancel]").forEach((button) => button.onclick = async () => {
