@@ -108,7 +108,8 @@ async function initDatabase() {
   await pool.query("ALTER TABLE bookings ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES customer_users(id) ON DELETE SET NULL");
   await pool.query("CREATE INDEX IF NOT EXISTS idx_bookings_user ON bookings(user_id,created_at DESC)");
   await pool.query("ALTER TABLE bookings DROP CONSTRAINT IF EXISTS bookings_ticket_count_check");
-  await pool.query("ALTER TABLE bookings ADD CONSTRAINT bookings_ticket_count_check CHECK(ticket_count BETWEEN 1 AND 7)");
+  // Keep room for older reservations with up to 10 tickets; the API strictly limits all new bookings to 7.
+  await pool.query("ALTER TABLE bookings ADD CONSTRAINT bookings_ticket_count_check CHECK(ticket_count BETWEEN 1 AND 10)");
   await pool.query("ALTER TABLE bookings ADD COLUMN IF NOT EXISTS checked_in BOOLEAN NOT NULL DEFAULT FALSE");
   await pool.query("ALTER TABLE bookings ADD COLUMN IF NOT EXISTS checked_in_at TIMESTAMPTZ");
   for (const seat of BED_SEAT_IDS) {
