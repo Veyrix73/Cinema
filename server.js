@@ -489,9 +489,9 @@ app.put("/api/admin/movies/:id",adminOnly,async(req,res,next)=>{
 });
 app.delete("/api/admin/movies/:id",adminOnly,async(req,res,next)=>{
   try {
-    const used=await pool.query("SELECT 1 FROM bookings b JOIN screenings s ON s.id=b.screening_id WHERE s.movie_id=$1 LIMIT 1",[req.params.id]);
-    if(used.rowCount)return res.status(409).json({error:"This movie has booking history and cannot be deleted."});
-    await pool.query("UPDATE movies SET active=FALSE WHERE id=$1",[req.params.id]);res.json({ok:true});
+    const result=await pool.query("UPDATE movies SET active=FALSE WHERE id=$1 RETURNING id",[req.params.id]);
+    if(!result.rowCount)return res.status(404).json({error:"Movie not found."});
+    res.json({ok:true});
   } catch(error) {next(error);}
 });
 app.delete("/api/admin/screenings/:id",adminOnly,async(req,res,next)=>{
