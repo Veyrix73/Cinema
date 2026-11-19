@@ -203,7 +203,7 @@ function renderMovies() {
     return matchesGenre && matchesText;
   });
   $("#movieGrid").innerHTML = visible.map((movie) =>
-    '<article class="movie-card">' +
+    '<article class="movie-card" data-movie-details="' + escapeHTML(movie.id) + '" tabindex="0" role="button" aria-label="' + escapeHTML(movie.title) + '">' +
       '<div class="poster" style="background:' + posterBackground(movie.poster) + '">' +
         moviePosterContent(movie) + '<strong class="poster-title">' + escapeHTML(movie.title) + '</strong>' +
       '</div><div class="movie-info"><div class="movie-meta"><span>' + escapeHTML(genreName(movie.genre)) + '</span><span>•</span><span>' + escapeHTML(movie.duration) + " " + t("min") + '</span><span>•</span><span>' + escapeHTML(movie.age) + '</span></div>' +
@@ -212,6 +212,35 @@ function renderMovies() {
   ).join("");
   $("#movieGrid").querySelectorAll(".movie-card").forEach((card, index) => revealElement(card, index * 75));
   $("#emptyMovies").classList.toggle("hidden", visible.length > 0);
+}
+function openMovieDetails(movieId) {
+  const movie = movies.find((item) => item.id === movieId);
+  if (!movie) return;
+  const showings = showingsFor(movieId);
+  const dates = [...new Set(showings.map((item) => item.date))];
+  showModal(
+    '<div class="movie-detail">' +
+      '<div class="movie-detail-poster" style="background:' + posterBackground(movie.poster) + '">' + moviePosterContent(movie) + '</div>' +
+      '<p class="eyebrow">' + escapeHTML(genreName(movie.genre)) + ' · ' + escapeHTML(movie.duration) + ' ' + t("min") + ' · ' + escapeHTML(movie.age) + '</p>' +
+      '<h2 id="modalTitle">' + escapeHTML(movie.title) + '</h2><p class="movie-detail-description">' + escapeHTML(movie.description) + '</p>' +
+      '<div class="movie-detail-facts"><span>' + escapeHTML(String(movie.year)) + '</span><span>' + escapeHTML(movie.age) + '</span><span>' + escapeHTML(movie.duration) + ' min</span></div>' +
+      '<h3>' + (language === "lv" ? "Pieejamie seansi" : "Available screenings") + '</h3>' +
+      (showings.length ? dates.map((date) => '<div class="movie-showing-day"><b>' + formatDate(date) + '</b><div class="movie-showing-times">' + showings.filter((item) => item.date === date).map((item) => '<button class="showtime-chip" data-detail-book="' + escapeHTML(movie.id) + '" data-showing="' + escapeHTML(item.id) + '">' + escapeHTML(item.time) + '</button>').join("") + '</div></div>').join("") : '<p class="admin-note">' + t("noShows") + '</p>') +
+      '<div class="movie-detail-footer"><strong>' + formatMoney(prices.ticket) + ' <small>/ ' + (language === "lv" ? "biļete" : "ticket") + '</small></strong><button class="small-button" data-detail-buy="' + escapeHTML(movie.id) + '">' + t("bookNow") + '</button></div>' +
+    '</div>'
+  );
+  document.querySelectorAll("[data-detail-book]").forEach((button) => button.onclick = () => {
+    const id = button.dataset.detailBook, showingId = button.dataset.showing;
+    openBooking(id);
+    if (booking) {
+      booking.screeningId = showingId;
+      const selected = showingsFor(id).find((item) => item.id === showingId);
+      if (selected) { booking.date = selected.date; booking.time = selected.time; }
+      renderBookingDateStep();
+    }
+  });
+  const buy = $("[data-detail-buy]");
+  if (buy) buy.onclick = () => openBooking(movieId);
 }
 function setGenre(genre) {
   selectedGenre = genre;
@@ -415,7 +444,7 @@ function renderConfirmation(item) {
     '<div style="text-align:center;padding:12px 0"><div style="font-size:46px">🎟️</div>' +
     '<p class="eyebrow">' + t("confirmedEyebrow") + '</p><h2 id="modalTitle">' + t("confirmed") + '</h2>' +
     '<p class="modal-intro">' + t("savedBrowser") + '</p><div class="summary-box" style="text-align:left">' +
-    '<div class="summary-line"><span>' + t("bookingNumber") + '</span><b>' + escapeHTML(item.code) + '</b></div>' +
+    '<div class="summary-line"><span>' + t("bookingNumber") + '</span><b class="ticket-code">' + escapeHTML(item.code) + '</b></div>' +
     '<div class="summary-line"><span>' + t("email") + '</span><b>' + escapeHTML(item.customerEmail) + '</b></div>' +
     '<div class="summary-line"><span>' + t("screening") + '</span><b>' + escapeHTML(movie?.title || "") + ' · ' + formatDate(booking.date) + ' · ' + escapeHTML(booking.time) + '</b></div>' +
     '<div class="summary-line"><span>' + t("chosenSeats") + '</span><b>' + seats.map(escapeHTML).join(", ") + '</b></div>' +
@@ -478,7 +507,7 @@ async function renderAdminDashboard() {
     '<p class="eyebrow">DANCING FRUIT CINEMA · ADMIN</p><h2 id="modalTitle">' + t("adminTitle") + '</h2><p class="modal-intro">' + t("adminIntro2") + '</p>' +
     '<div class="admin-wrap"><aside class="admin-side">' +
     '<button class="active" data-admin-tab="movies">' + t("tabMovies") + '</button><button data-admin-tab="bookings">' + t("tabBookings") + '</button>' +
-    '<button data-admin-tab="prices">' + t("tabPrices") + '</button><button data-admin-tab="account">' + t("tabAccount") + '</button></aside>' +
+    '<button data-admin-tab="scan">🎫 ' + (language === "lv" ? "Skenēt biļetes" : "Scan tickets") + '</button><button data-admin-tab="prices">' + t("tabPrices") + '</button><button data-admin-tab="account">' + t("tabAccount") + '</button></aside>' +
     '<div class="admin-panel" id="adminPanel">' + t("loading") + '</div></div>' +
     '<div class="modal-actions"><span class="admin-note">' + t("adminSession") + '</span><button class="button button-secondary" id="adminLogout">' + t("logout") + '</button></div>'
   );
@@ -500,6 +529,7 @@ async function renderAdminTab() {
   try {
     if (adminTab === "movies") await renderAdminMovies(panel);
     if (adminTab === "bookings") await renderAdminBookings(panel);
+    if (adminTab === "scan") renderTicketScanner(panel);
     if (adminTab === "prices") await renderAdminPrices(panel);
     if (adminTab === "account") renderAdminAccount(panel);
   } catch(error) { panel.innerHTML = '<p class="admin-note">' + escapeHTML(error.message) + '</p>'; }
@@ -630,7 +660,7 @@ async function renderAdminBookings(panel) {
   panel.innerHTML = '<h3>' + t("bookingList") + '</h3>' + (list.length ? list.map((item) =>
     '<div class="admin-item"><div><b>' + escapeHTML(item.code) + ' · ' + escapeHTML(item.name) + '</b><small>' +
     escapeHTML(item.movie) + ' · ' + formatDate(item.date) + ' · ' + escapeHTML(item.time) + ' · ' + item.seats.map(escapeHTML).join(", ") +
-    '</small><small>' + escapeHTML(item.email) + ' · ' + formatMoney(item.total) + ' · ' + (item.status === "cancelled" ? t("statusCancelled") : t("statusConfirmed")) +
+    '</small><small>' + escapeHTML(item.email) + ' · ' + formatMoney(item.total) + ' · ' + (item.checkedIn ? (language === "lv" ? "Ienākusi" : "Checked in") : (language === "lv" ? "Nav skenēta" : "Not scanned")) + ' · ' + (item.status === "cancelled" ? t("statusCancelled") : t("statusConfirmed")) +
     '</small></div>' + (item.status === "confirmed" ? '<button class="danger-button" data-admin-cancel="' + escapeHTML(item.code) + '">' + t("cancelBooking") + '</button>' : "") + '</div>'
   ).join("") : '<p class="admin-note">' + t("noBookings") + '</p>');
   document.querySelectorAll("[data-admin-cancel]").forEach((button) => button.onclick = async () => {
@@ -640,6 +670,30 @@ async function renderAdminBookings(panel) {
       toast(t("cancelled")); await renderAdminBookings($("#adminPanel"));
     } catch(error) { toast(error.message); }
   });
+}
+function renderTicketScanner(panel) {
+  panel.innerHTML =
+    '<div class="scanner-heading"><div><p class="eyebrow">DANCING FRUIT CINEMA</p><h3>' + (language === "lv" ? "Biļešu pārbaude" : "Ticket check-in") + '</h3><p class="admin-note">' + (language === "lv" ? "Ievadi vai noskenē biļetes kodu. Skenētājs, kas darbojas kā tastatūra, ievadīs kodu automātiski." : "Type or scan a ticket code. A keyboard-style barcode scanner can enter the code automatically.") + '</p></div><span class="scanner-icon">▣</span></div>' +
+    '<div class="scanner-form"><label for="ticketScanCode">' + (language === "lv" ? "Biļetes kods" : "Ticket code") + '</label><div class="scanner-input-row"><input id="ticketScanCode" autocomplete="off" placeholder="Dncngfrt-XXX-XXX-XXX-000000"><button class="small-button" id="scanTicketButton">' + (language === "lv" ? "Pārbaudīt" : "Check ticket") + '</button></div></div>' +
+    '<div id="ticketScanResult" class="ticket-scan-result"><span class="scan-idle">▣</span><p>' + (language === "lv" ? "Gatavs pārbaudīt biļeti" : "Ready to check a ticket") + '</p></div>';
+  const input=$("#ticketScanCode"), button=$("#scanTicketButton"), result=$("#ticketScanResult");
+  const scan=async()=>{
+    const code=input.value.trim();
+    if(!code){input.focus();return;}
+    button.disabled=true;button.textContent=language==="lv"?"Pārbauda…":"Checking…";
+    result.innerHTML='<p>'+(language==="lv"?"Pārbauda kodu…":"Checking code…")+'</p>';
+    try{
+      const data=await api("/admin/tickets/scan",{method:"POST",body:{code}});
+      const item=data.ticket;
+      result.innerHTML='<div class="scan-success">✓</div><p class="scan-status">'+(language==="lv"?"BIĻETE DERĪGA":"TICKET VALID")+'</p><h3>'+escapeHTML(item.movie)+'</h3><p>'+escapeHTML(item.name)+' · '+escapeHTML(item.date)+' · '+escapeHTML(item.time)+'</p><p>'+(language==="lv"?"Vietas":"Seats")+': '+item.seats.map(escapeHTML).join(", ")+'</p><strong>'+escapeHTML(item.code)+'</strong><small>'+(language==="lv"?"Atzīmēta kā izmantota":"Marked as checked in")+'</small>';
+      input.value="";
+    }catch(error){
+      result.innerHTML='<div class="scan-error">×</div><p class="scan-status">'+(language==="lv"?"BIĻETE NAV DERĪGA":"TICKET NOT VALID")+'</p><p>'+escapeHTML(error.message)+'</p>';
+    }finally{button.disabled=false;button.textContent=language==="lv"?"Pārbaudīt":"Check ticket";input.focus();}
+  };
+  button.onclick=scan;
+  input.onkeydown=(event)=>{if(event.key==="Enter"){event.preventDefault();scan();}};
+  input.focus();
 }
 async function renderAdminPrices(panel) {
   const data = await api("/prices");
@@ -683,8 +737,14 @@ function renderAdminAccount(panel) {
 
 document.addEventListener("click",(event)=>{
   const bookButton = event.target.closest("[data-book]");
-  if (bookButton) openBooking(bookButton.dataset.book);
+  const detailCard = event.target.closest("[data-movie-details]");
+  if (bookButton) { event.stopPropagation(); openBooking(bookButton.dataset.book); return; }
+  if (detailCard) openMovieDetails(detailCard.dataset.movieDetails);
   if (event.target.closest("[data-close]")) closeModal();
+});
+document.querySelector("#movieGrid").addEventListener("keydown",(event)=>{
+  const card=event.target.closest("[data-movie-details]");
+  if(card && (event.key==="Enter" || event.key===" ")){event.preventDefault();openMovieDetails(card.dataset.movieDetails);}
 });
 document.addEventListener("keydown",(event)=>{
   // The Fn key is usually handled by the keyboard hardware and is not exposed to browser JavaScript.
