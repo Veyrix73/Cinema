@@ -72,3 +72,50 @@
   *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
   .reveal{opacity:1!important;transform:none!important}
 }
+
+/* Mobile usability: comfortable layouts, controls and admin panel */
+@media (max-width: 650px) {
+  html { scroll-padding-top: 72px; }
+  body { overflow-x: hidden; }
+  .topbar { gap: 8px; }
+  .brand { min-width: 0; }
+  .brand > span:last-child { white-space: nowrap; }
+  .hero h1 { font-size: clamp(38px, 11vw, 54px); }
+  .hero-visual { max-width: 100%; overflow: hidden; }
+  .stats strong { font-size: 19px; }
+  .stats span { line-height: 1.45; }
+  .section, .experience { padding-left: 18px; padding-right: 18px; }
+  .movie-grid { grid-template-columns: minmax(0, 1fr); }
+  .movie-card { min-width: 0; }
+  .movie-info h3 { overflow-wrap: anywhere; }
+  .lookup { padding: 10px; }
+  .lookup input, .lookup button { width: 100%; min-height: 44px; }
+  .modal-backdrop { place-items: start center; padding: 8px; }
+  .modal { width: 100%; max-height: calc(100dvh - 16px); padding: 25px 14px 16px; border-radius: 12px; }
+  .modal h2 { font-size: 22px; }
+  .modal-close { position: sticky; float: right; top: 0; margin-top: -8px; z-index: 3; }
+  .admin-wrap { display: flex; flex-direction: column; gap: 14px; }
+  .admin-side { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+  .admin-side button { min-height: 42px; text-align: center; overflow-wrap: anywhere; }
+  .admin-panel { width: 100%; }
+  .admin-item, .booking-card { align-items: stretch; flex-direction: column; gap: 10px; overflow-wrap: anywhere; }
+  .admin-item > div:last-child { display: flex; flex-wrap: wrap; gap: 7px; }
+  .admin-item button, .booking-card button { min-height: 40px; }
+  .form-grid { grid-template-columns: minmax(0, 1fr); }
+  .field.full { grid-column: 1; }
+  .seat-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 5px; }
+  .seat { min-width: 0; min-height: 42px; padding: 5px 1px; }
+  .choice-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .choice-card { min-width: 0; }
+  .summary-line { align-items: flex-start; }
+  .summary-line b { text-align: right; overflow-wrap: anywhere; }
+  .modal-actions { gap: 8px; }
+  .modal-actions button { min-height: 44px; }
+  .footer { padding: 24px 18px; }
+  .toast { left: 12px; right: 12px; bottom: 12px; text-align: center; }
+}
+@media (min-width: 651px) and (max-width: 900px) {
+  .admin-wrap { grid-template-columns: 135px minmax(0, 1fr); }
+  .admin-side button { overflow-wrap: anywhere; }
+  .modal { width: min(740px, calc(100vw - 28px)); }
+}
