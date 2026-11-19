@@ -949,10 +949,38 @@ async function loadAccountBookings(){
     const data=await api("/account/bookings");
     target.innerHTML='<div class="account-dashboard"><div class="account-heading"><div><p class="eyebrow">'+(language==="lv"?"TAVS KINO KONTS":"YOUR CINEMA ACCOUNT")+'</p><h3>'+escapeHTML(currentUser.name)+'</h3><p>'+escapeHTML(currentUser.email)+'</p></div><button class="button button-secondary" id="accountLogout">'+(language==="lv"?"Izrakstīties":"Sign out")+'</button></div><h3>'+(language==="lv"?"Manas biļetes":"My tickets")+'</h3>'+
       ((data.bookings||[]).length?data.bookings.map(item=>'<article class="account-ticket"><div><b>'+escapeHTML(item.movie)+'</b><small>'+formatDate(item.date)+' · '+escapeHTML(item.time)+' · '+item.seats.map(escapeHTML).join(", ")+'</small><small>'+escapeHTML(item.code)+' · '+(item.status==="cancelled"?(language==="lv"?"Atcelta":"Cancelled"):(item.checkedIn?(language==="lv"?"Izmantota":"Checked in"):(language==="lv"?"Apstiprināta":"Confirmed")))+'</small></div><div class="account-ticket-actions">'+(item.status==="confirmed"?'<button class="small-button" data-account-ticket="'+escapeHTML(item.code)+'">'+(language==="lv"?"Atvērt biļeti":"Open ticket")+'</button>'+(new Date(item.startsAt).getTime()-Date.now()>24*3600000?'<button class="danger-button" data-account-cancel="'+escapeHTML(item.code)+'">'+(language==="lv"?"Atcelt":"Cancel")+'</button>':''):'')+'</div></article>').join(""):'<p class="admin-note">'+(language==="lv"?"Vēl nav rezervāciju.":"No bookings yet.")+'</p>')+'</div>';
-    $("#accountLogout").onclick=async()=>{await api("/account/logout",{method:"POST"});currentUser=null;updateAccountButton();target.innerHTML="";const lookup=$("#bookingLookup");if(lookup)lookup.classList.remove("hidden");const legacy=$("#customerBookings");if(legacy)legacy.classList.remove("hidden");toast(language==="lv"?"Izrakstījies.":"Signed out.");};
-    document.querySelectorAll("[data-account-cancel]").forEach(button=>button.onclick=async()=>{if(!confirm(t("cancelConfirm")))return;try{await api("/account/bookings/"+encodeURIComponent(button.dataset.accountCancel)+"/cancel",{method:"POST"});toast(t("cancelled"));loadAccountBookings();}catch(error){toast(error.message);}});
+    $("#accountLogout").onclick=async()=>{
+      const button=$("#accountLogout");
+      if(button.disabled)return;
+      button.disabled=true;
+      button.textContent="Izrakstās…";
+      try{
+        await api("/account/logout",{method:"POST"});
+        currentUser=null;updateAccountButton();target.innerHTML="";
+        const lookup=$("#bookingLookup");if(lookup)lookup.classList.remove("hidden");
+        const legacy=$("#customerBookings");if(legacy)legacy.classList.remove("hidden");
+        toast("Izrakstījies.");
+      }catch(error){
+        toast(error.message);
+        button.disabled=false;
+        button.textContent="Izrakstīties";
+      }
+    };
+    document.querySelectorAll("[data-account-cancel]").forEach(button=>button.onclick=async()=>{
+      if(button.disabled||!confirm(t("cancelConfirm")))return;
+      button.disabled=true;button.textContent=t("loading");
+      try{await api("/account/bookings/"+encodeURIComponent(button.dataset.accountCancel)+"/cancel",{method:"POST"});toast(t("cancelled"));loadAccountBookings();}
+      catch(error){toast(error.message);button.disabled=false;button.textContent="Atcelt";}
+    });
     document.querySelectorAll("[data-account-ticket]").forEach(button=>button.onclick=()=>openSavedTicket(button.dataset.accountTicket));
-  }catch(error){target.innerHTML='<p class="admin-note">'+escapeHTML(error.message)+'</p>';}
+  }catch(error){
+    if(error.status===401){
+      currentUser=null;updateAccountButton();
+      const lookup=$("#bookingLookup");if(lookup)lookup.classList.remove("hidden");
+      const legacy=$("#customerBookings");if(legacy)legacy.classList.remove("hidden");
+    }
+    target.innerHTML='<p class="admin-note">'+escapeHTML(error.message)+'</p>';
+  }
 }
 async function openSavedTicket(code){
   const data=await api("/account/bookings"),item=data.bookings.find(row=>row.code===code);
@@ -993,7 +1021,11 @@ $("#bookingLookup").addEventListener("submit",async(event)=>{
   event.preventDefault();
   const code = $("#lookupCode").value.trim();
   const email = $("#lookupEmail").value.trim();
+  const lookupButton = $("#bookingLookup button[type=submit]");
   if (!code || !email) { toast(t("lookupMissing")); return; }
+  if (!lookupButton || lookupButton.disabled) return;
+  lookupButton.disabled = true;
+  lookupButton.textContent = "Meklē…";
   try {
     if(currentUser){await loadAccountBookings();return;}
     const result = await api("/bookings/lookup",{method:"POST",body:{bookingCode:code,customerEmail:email}});
@@ -1014,6 +1046,11 @@ $("#bookingLookup").addEventListener("submit",async(event)=>{
     };
   } catch(error) {
     $("#customerBookings").innerHTML = '<p class="admin-note">' + escapeHTML(error.message || t("lookupNo")) + '</p>';
+  } finally {
+    if (lookupButton) {
+      lookupButton.disabled = false;
+      lookupButton.textContent = t("lookupButton");
+    }
   }
 });
 $("#menuToggle").addEventListener("click",()=>$("#mainNav").classList.toggle("open"));
