@@ -145,7 +145,11 @@ const SERVER_ERROR_LV = {
   "Booking not found in your account.":"Tavā kontā šāda rezervācija nav atrasta.",
   "This booking is already cancelled.":"Šī rezervācija jau ir atcelta.",
   "You can cancel online until 24 hours before the screening. Contact the cinema for later changes.":"Rezervāciju internetā var atcelt līdz 24 stundām pirms seansa. Vēlākām izmaiņām sazinies ar kinoteātri.",
-  "Check your details. A booking can contain 1–10 tickets.":"Pārbaudi ievadītos datus. Vienā rezervācijā var būt no 1 līdz 10 biļetēm.",
+  "Check your details. A booking can contain 1–7 tickets.":"Pārbaudi ievadītos datus. Vienā rezervācijā var būt no 1 līdz 7 biļetēm.",
+  "This screening has reached its 7-seat capacity.":"Šajā seansā visas 7 vietas jau ir aizņemtas.",
+  "Screenings must be scheduled in the future.":"Seansam jābūt ieplānotam nākotnē.",
+  "Enter the email address used for this booking.":"Ievadi rezervācijā izmantoto e-pasta adresi.",
+  "A checked-in booking cannot be cancelled.":"Izmantotu biļeti vairs nevar atcelt.",
   "Choose exactly the number of seats in your booking.":"Izvēlies tieši tik sēdvietu, cik biļešu ir rezervācijā.",
   "Custom seat details are not valid for automatic allocation.":"Izvēlētās sēdvietas nav derīgas automātiskai vietu piešķiršanai.",
   "Office chair upgrades must match selected seats.":"Biroja krēslu skaitam jāatbilst izvēlētajām sēdvietām.",
@@ -364,12 +368,13 @@ async function renderSeatStep() {
   try {
     const response = await api("/screenings/" + encodeURIComponent(booking.screeningId) + "/seats");
     booking.seatMap = response.seats;
+    booking.remainingCapacity = Number(response.remainingCapacity ?? response.seats.filter((seat) => !seat.occupied).length);
   } catch (error) { toast(error.message); return; }
   const available = booking.seatMap.filter((seat) => !seat.occupied);
-  if (available.length < booking.count) { toast(t("notEnough")); return; }
+  if (available.length < booking.count || booking.remainingCapacity < booking.count) { toast(t("notEnough")); return; }
   if (booking.mode === "auto") booking.seats = available.slice(0,booking.count).map((seat) => seat.seat_number);
   else booking.seats = booking.seats.filter((seat) => available.some((entry) => entry.seat_number === seat));
-  booking.officeSeats = booking.seats.filter((id) => id === "CHAIR-L" || id === "CHAIR-R");
+  booking.officeSeats = booking.seats.filter((id) => id === "CHAIR-L");
   booking.officeCount = booking.officeSeats.length;
   const makeSeat = (seat) => {
     const chosen = booking.seats.includes(seat.seat_number);
@@ -382,7 +387,6 @@ async function renderSeatStep() {
   const bedSeats = booking.seatMap.filter((seat) => !seat.office_chair).map(makeSeat).join("");
   const sideChairs = booking.seatMap.filter((seat) => seat.office_chair);
   const leftChair = sideChairs.find((seat) => seat.seat_number === "CHAIR-L");
-  const rightChair = sideChairs.find((seat) => seat.seat_number === "CHAIR-R");
   showModal(
     '<p class="eyebrow">' + t("step2") + '</p><h2 id="modalTitle">' + t("chooseSeats") + '</h2>' +
     '<p class="modal-intro">' + t("seatIntro") + ' ' + formatMoney(prices.custom) + '.</p>' +
@@ -390,10 +394,9 @@ async function renderSeatStep() {
     '<button class="choice-card ' + (booking.mode === "custom" ? "active" : "") + '" id="customMode"><b>' + t("custom") + '</b><small>' + formatMoney(prices.custom) + ' ' + t("customDesc") + '</small></button></div>' +
     '<div class="screen-label">' + t("screen") + '</div>' +
     '<div class="bedroom-map"><div class="side-chair"><span>BIROJA KRĒSLS</span>' + makeSeat(leftChair) + '</div>' +
-    '<div class="cinema-bed"><div class="bed-pillows"><i></i><i></i></div><div class="bed-caption">8 VIETU KINO GULTA</div><div class="bed-seat-grid">' + bedSeats + '</div></div>' +
-    '<div class="side-chair"><span>BIROJA KRĒSLS</span>' + makeSeat(rightChair) + '</div></div>' +
+    '<div class="cinema-bed"><div class="bed-pillows"><i></i><i></i></div><div class="bed-caption">6 VIETU KINO GULTA</div><div class="bed-seat-grid">' + bedSeats + '</div></div>' +
     '<div class="seat-legend"><span><i class="legend-box" style="background:#183d30"></i>' + t("available") + '</span><span><i class="legend-box" style="background:#63272b"></i>' + t("occupied") + '</span><span><i class="legend-box" style="background:#8e6421"></i>' + t("selected") + '</span><span>▰ Gultas vieta</span><span>🪑 Biroja krēsls</span></div>' +
-    '<div class="seat-actions">' + t("chosenSeats") + ': <b>' + (booking.mode === "auto" ? t("autoDesc") : booking.seats.map(escapeHTML).join(", ")) + '</b><br>' + t("needSeats") + ' ' + booking.count + ' ' + t("seats") + '</div>' +
+    '<div class="seat-actions">' + t("chosenSeats") + ': <b>' + (booking.mode === "auto" ? t("autoDesc") : booking.seats.map(escapeHTML).join(", ")) + '</b><br>' + t("needSeats") + ' ' + booking.count + ' ' + t("seats") + '<br>Atlikušas ' + booking.remainingCapacity + ' no 7 vietām.</div>' +
     '<div class="modal-actions"><button class="button button-secondary" id="backToDates">' + t("back") + '</button><button class="small-button" id="toExtras">' + t("continue") + '</button></div>'
   );
   $("#autoMode").onclick = () => { booking.mode = "auto"; booking.seats = []; renderSeatStep(); };
@@ -408,10 +411,8 @@ async function renderSeatStep() {
   $("#backToDates").onclick = renderBookingDateStep;
   $("#toExtras").onclick = () => {
     if (booking.mode === "custom" && booking.seats.length !== booking.count) { toast(t("needSeats") + " " + booking.count + " " + t("seats")); return; }
-    booking.officeSeats = booking.seats.filter((id) => id === "CHAIR-L" || id === "CHAIR-R");
+    booking.officeSeats = booking.seats.filter((id) => id === "CHAIR-L");
     booking.officeCount = booking.officeSeats.length;
-    booking.waterCount = 0;
-    booking.popcornCount = 0;
     renderExtrasStep();
   };
 }
@@ -428,8 +429,8 @@ function renderExtrasStep() {
   showModal(
     '<p class="eyebrow">' + t("step3") + '</p><h2 id="modalTitle">' + t("extras") + '</h2><p class="modal-intro">' + t("extrasIntro") + '</p>' +
     chairOptions +
-    '<div class="form-grid" style="margin-top:18px"><div class="field"><label for="waterCount">' + t("water") + ' (' + formatMoney(prices.water) + ')</label><input id="waterCount" type="number" min="0" max="20" value="0"></div>' +
-    '<div class="field"><label for="popcornCount">' + t("popcorn") + ' (' + formatMoney(prices.popcorn) + ')</label><input id="popcornCount" type="number" min="0" max="20" value="0"></div></div>' +
+    '<div class="form-grid" style="margin-top:18px"><div class="field"><label for="waterCount">' + t("water") + ' (' + formatMoney(prices.water) + ')</label><input id="waterCount" type="number" min="0" max="20" step="1" value="' + booking.waterCount + '"></div>' +
+    '<div class="field"><label for="popcornCount">' + t("popcorn") + ' (' + formatMoney(prices.popcorn) + ')</label><input id="popcornCount" type="number" min="0" max="20" step="1" value="' + booking.popcornCount + '"></div></div>' +
     '<div class="summary-box">' +
       '<div class="summary-line"><span>' + t("tickets") + ' (' + booking.count + ')</span><b>' + formatMoney(booking.count * prices.ticket) + '</b></div>' +
       '<div class="summary-line"><span>' + t("seatSelection") + '</span><b>' + formatMoney(booking.mode === "custom" ? prices.custom : 0) + '</b></div>' +
@@ -440,8 +441,15 @@ function renderExtrasStep() {
   );
   function refreshCosts() {
     if (booking.mode === "auto") booking.officeCount = booking.officeSeats.length;
-    booking.waterCount = Math.max(0,Math.min(20,Number($("#waterCount").value)||0));
-    booking.popcornCount = Math.max(0,Math.min(20,Number($("#popcornCount").value)||0));
+    const normalizeCount = (selector) => {
+      const input = $(selector);
+      const value = Number(input.value);
+      const normalized = Number.isFinite(value) ? Math.max(0, Math.min(20, Math.trunc(value))) : 0;
+      input.value = String(normalized);
+      return normalized;
+    };
+    booking.waterCount = normalizeCount("#waterCount");
+    booking.popcornCount = normalizeCount("#popcornCount");
     const officeCount = booking.mode === "custom" ? booking.officeSeats.length : booking.officeCount;
     $("#officePrice").textContent = formatMoney(officeCount * prices.office);
     $("#snackPrice").textContent = formatMoney(booking.waterCount * prices.water + booking.popcornCount * prices.popcorn);
@@ -452,8 +460,7 @@ function renderExtrasStep() {
   
   $("#backToSeats").onclick = renderSeatStep;
   $("#toCustomerDetails").onclick = () => {
-    booking.waterCount = Number($("#waterCount").value)||0;
-    booking.popcornCount = Number($("#popcornCount").value)||0;
+    refreshCosts();
     renderCustomerDetailsStep();
   };
 }
