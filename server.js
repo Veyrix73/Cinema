@@ -381,7 +381,7 @@ async function cancelReservation(code,email,isAdmin) {
       "SELECT b.id,b.customer_email,b.status,b.checked_in,s.starts_at FROM bookings b JOIN screenings s ON s.id=b.screening_id WHERE upper(b.booking_code)=upper($1) FOR UPDATE OF b",
       [String(code).trim()]
     );
-    if (!result.rowCount || (!isAdmin && result.rows[0].customer_email !== String(email || "").trim().toLowerCase())) {
+    if (!result.rowCount || (!isAdmin && String(result.rows[0].customer_email || "").trim().toLowerCase() !== String(email || "").trim().toLowerCase())) {
       await client.query("ROLLBACK"); return {status:404,error:"Booking not found."};
     }
     const booking = result.rows[0];
