@@ -132,6 +132,49 @@ function compressPosterFile(file) {
     image.src = objectUrl;
   });
 }
+const SERVER_ERROR_LV = {
+  "Too many login attempts. Try again later.":"Pārāk daudz pieslēgšanās mēģinājumu. Mēģini vēlāk.",
+  "Administrator login required.":"Nepieciešama administratora pieslēgšanās.",
+  "Please sign in to your customer account.":"Lūdzu, pieslēdzies savam klienta kontam.",
+  "Database unavailable.":"Datubāze pašlaik nav pieejama.",
+  "Screening not found.":"Seanss nav atrasts.",
+  "Enter a valid name and email. Password must be at least 8 characters.":"Ievadi derīgu vārdu un e-pastu. Parolei jābūt vismaz 8 rakstzīmēm.",
+  "An account with this email already exists. Sign in instead.":"Konts ar šo e-pasta adresi jau pastāv. Tā vietā pieslēdzies.",
+  "Incorrect email or password.":"Nepareizs e-pasts vai parole.",
+  "Not signed in.":"Nav veikta pieslēgšanās.",
+  "Booking not found in your account.":"Tavā kontā šāda rezervācija nav atrasta.",
+  "This booking is already cancelled.":"Šī rezervācija jau ir atcelta.",
+  "You can cancel online until 24 hours before the screening. Contact the cinema for later changes.":"Rezervāciju internetā var atcelt līdz 24 stundām pirms seansa. Vēlākām izmaiņām sazinies ar kinoteātri.",
+  "Check your details. A booking can contain 1–10 tickets.":"Pārbaudi ievadītos datus. Vienā rezervācijā var būt no 1 līdz 10 biļetēm.",
+  "Choose exactly the number of seats in your booking.":"Izvēlies tieši tik sēdvietu, cik biļešu ir rezervācijā.",
+  "Custom seat details are not valid for automatic allocation.":"Izvēlētās sēdvietas nav derīgas automātiskai vietu piešķiršanai.",
+  "Office chair upgrades must match selected seats.":"Biroja krēslu skaitam jāatbilst izvēlētajām sēdvietām.",
+  "Too many office chair upgrades.":"Izvēlēts pārāk daudz biroja krēslu uzlabojumu.",
+  "This screening has already started.":"Šis seanss jau ir sācies.",
+  "One or more seats are no longer available. Refresh the seat map and try again.":"Viena vai vairākas sēdvietas vairs nav pieejamas. Atjauno sēdvietu plānu un mēģini vēlreiz.",
+  "Enter the booking code and email address.":"Ievadi rezervācijas kodu un e-pasta adresi.",
+  "No booking found for that code and email.":"Rezervācija ar šādu kodu un e-pasta adresi nav atrasta.",
+  "Booking not found.":"Rezervācija nav atrasta.",
+  "Booking already cancelled.":"Rezervācija jau ir atcelta.",
+  "Customer cancellations close 24 hours before the screening.":"Klients var atcelt rezervāciju līdz 24 stundām pirms seansa.",
+  "Incorrect username or password.":"Nepareizs lietotājvārds vai parole.",
+  "Invalid ticket code format.":"Nederīgs biļetes koda formāts.",
+  "Ticket code not found.":"Biļetes kods nav atrasts.",
+  "This booking has been cancelled.":"Šī rezervācija ir atcelta.",
+  "This ticket has already been scanned.":"Šī biļete jau ir pārbaudīta.",
+  "Screening details not found.":"Seansa informācija nav atrasta.",
+  "Movie title, description and valid duration are required.":"Jānorāda filmas nosaukums, apraksts un derīgs ilgums.",
+  "Use an HTTPS poster image URL or upload a JPG, PNG or WebP image under 1 MB.":"Izmanto HTTPS plakāta attēla saiti vai augšupielādē JPG, PNG vai WebP attēlu, kas ir mazāks par 1 MB.",
+  "Movie not found.":"Filma nav atrasta.",
+  "This movie has booking history and cannot be deleted.":"Šo filmu nevar dzēst, jo tai ir rezervāciju vēsture.",
+  "This screening has booking history and cannot be removed.":"Šo seansu nevar dzēst, jo tam ir rezervāciju vēsture.",
+  "Invalid price.":"Nederīga cena.",
+  "New password must be at least 12 characters.":"Jaunajai parolei jābūt vismaz 12 rakstzīmēm garai.",
+  "Current password is incorrect.":"Pašreizējā parole nav pareiza."
+};
+function localizeServerError(message) {
+  return SERVER_ERROR_LV[message] || (language === "lv" ? "Radās kļūda. Lūdzu, mēģini vēlreiz." : message);
+}
 async function api(path, options) {
   const config = Object.assign({ method:"GET", headers:{} }, options || {});
   if (config.body && typeof config.body !== "string") {
@@ -141,7 +184,7 @@ async function api(path, options) {
   const response = await fetch(API + path, config);
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const error = new Error(data.error || ("Request failed: " + response.status));
+    const error = new Error(localizeServerError(data.error || ("Request failed: " + response.status)));
     error.status = response.status;
     throw error;
   }
