@@ -37,7 +37,7 @@ const DICT = {
   }
 };
 
-let language = localStorage.getItem("dfc_language") || "lv";
+let language = "lv";
 let movies = [];
 let prices = { ticket: 0.10, custom: 0.10, office: 0.20, water: 0.20, popcorn: 0.50 };
 let selectedGenre = "all";
@@ -172,8 +172,6 @@ function applyLanguage() {
   document.querySelectorAll("[data-i18n-placeholder]").forEach((element) => {
     element.placeholder = t(element.dataset.i18nPlaceholder);
   });
-  $("#languageToggle").textContent = language === "lv" ? "EN" : "LV";
-  $("#languageToggle").setAttribute("aria-label", language === "lv" ? "Switch to English" : "Pārslēgt uz latviešu valodu");
   renderMovies();
   $("#statTicketPrice").textContent = formatMoney(prices.ticket);
   $("#heroTicketPrice").textContent = formatMoney(prices.ticket);
@@ -853,11 +851,6 @@ $("#bookingLookup").addEventListener("submit",async(event)=>{
   } catch(error) {
     $("#customerBookings").innerHTML = '<p class="admin-note">' + escapeHTML(error.message || t("lookupNo")) + '</p>';
   }
-});
-$("#languageToggle").addEventListener("click",()=>{
-  language = language === "lv" ? "en" : "lv";
-  localStorage.setItem("dfc_language",language);
-  applyLanguage();
 });
 $("#menuToggle").addEventListener("click",()=>$("#mainNav").classList.toggle("open"));
 document.querySelectorAll("#mainNav a").forEach((link)=>link.addEventListener("click",()=>$("#mainNav").classList.remove("open")));
