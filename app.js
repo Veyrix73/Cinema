@@ -447,7 +447,9 @@ async function showLookupResult(code,email) {
       try {
         await api("/bookings/" + encodeURIComponent(item.code) + "/cancel",{method:"POST",body:{customerEmail:email}});
         toast(t("cancelled"));
-        showLookupResult(code,email);
+        $("#customerBookings").innerHTML = "";
+        delete $("#customerBookings").dataset.code;
+        delete $("#customerBookings").dataset.email;
       } catch(error) { toast(error.message); }
     };
   } catch(error) {
@@ -629,7 +631,7 @@ function renderMovieEditor(movie) {
 }
 async function renderAdminBookings(panel) {
   const data = await api("/admin/bookings");
-  const list = data.bookings || [];
+  const list = (data.bookings || []).filter((item) => item.status === "confirmed");
   panel.innerHTML = '<h3>' + t("bookingList") + '</h3>' + (list.length ? list.map((item) =>
     '<div class="admin-item"><div><b>' + escapeHTML(item.code) + ' · ' + escapeHTML(item.name) + '</b><small>' +
     escapeHTML(item.movie) + ' · ' + formatDate(item.date) + ' · ' + escapeHTML(item.time) + ' · ' + item.seats.map(escapeHTML).join(", ") +
@@ -722,7 +724,7 @@ $("#bookingLookup").addEventListener("submit",async(event)=>{
       if (!confirm(t("cancelConfirm"))) return;
       try {
         await api("/bookings/"+encodeURIComponent(code)+"/cancel",{method:"POST",body:{customerEmail:email}});
-        toast(t("cancelled")); $("#bookingLookup").requestSubmit();
+        toast(t("cancelled")); $("#customerBookings").innerHTML = ""; $("#bookingLookup").requestSubmit();
       } catch(error) { toast(error.message); }
     };
   } catch(error) {
