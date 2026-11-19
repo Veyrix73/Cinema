@@ -638,12 +638,18 @@ async function renderAdminMovies(panel) {
   $("#addMovieButton").onclick = () => renderMovieEditor(null);
   document.querySelectorAll("[data-edit-movie]").forEach((button) => button.onclick = () => renderMovieEditor(list.find((movie) => movie.id === button.dataset.editMovie)));
   document.querySelectorAll("[data-delete-movie]").forEach((button) => button.onclick = async () => {
-    if (!confirm(t("deleteMovieConfirm"))) return;
+    if (button.disabled || !confirm(t("deleteMovieConfirm"))) return;
+    button.disabled = true;
+    button.textContent = t("loading");
     try {
       await api("/admin/movies/" + encodeURIComponent(button.dataset.deleteMovie), {method:"DELETE"});
       const refreshed = await api("/movies"); movies = refreshed.movies || [];
       renderMovies(); await renderAdminMovies($("#adminPanel")); toast(t("movieDeleted"));
-    } catch(error) { toast(error.message); }
+    } catch(error) {
+      toast(error.message);
+      button.disabled = false;
+      button.textContent = t("delete");
+    }
   });
 }
 function renderMovieEditor(movie) {
@@ -708,7 +714,9 @@ function renderMovieEditor(movie) {
   };
   $("#cancelMovieEdit").onclick = renderAdminTab;
   document.querySelectorAll("[data-remove-screening]").forEach((button) => button.onclick = async () => {
-    if (!confirm(language === "lv" ? "Noņemt šo seansu?" : "Remove this screening?")) return;
+    if (button.disabled || !confirm(language === "lv" ? "Noņemt šo seansu?" : "Remove this screening?")) return;
+    button.disabled = true;
+    button.textContent = t("loading");
     try {
       await api("/admin/screenings/" + encodeURIComponent(button.dataset.removeScreening), { method:"DELETE" });
       const refreshed = await api("/movies");
@@ -716,7 +724,11 @@ function renderMovieEditor(movie) {
       renderMovies();
       renderMovieEditor(movies.find((item) => item.id === movie?.id) || null);
       toast(language === "lv" ? "Seanss noņemts." : "Screening removed.");
-    } catch(error) { toast(error.message); }
+    } catch(error) {
+      toast(error.message);
+      button.disabled = false;
+      button.textContent = language === "lv" ? "Noņemt seansu" : "Remove screening";
+    }
   });
   $("#saveMovie").onclick = async () => {
     const title = $("#movieTitle").value.trim();
@@ -743,10 +755,18 @@ function renderMovieEditor(movie) {
         year:Number($("#movieYear").value)||new Date().getFullYear(),emoji:$("#movieEmoji").value||"🎬",
         poster:uploadedPosterData || (posterUrlValue || (removeMoviePoster ? defaultPoster : (movie?.poster || defaultPoster))),screenings
       };
+      const saveButton = $("#saveMovie");
+      if (!saveButton || saveButton.disabled) return;
+      saveButton.disabled = true;
+      saveButton.textContent = t("loading");
       await api(movie ? "/admin/movies/"+encodeURIComponent(movie.id) : "/admin/movies",{method:movie?"PUT":"POST",body});
       const data = await api("/movies"); movies = data.movies || []; renderMovies();
       toast(t("movieSaved")); await renderAdminMovies($("#adminPanel"));
-    } catch(error) { toast(error.message); }
+    } catch(error) {
+      toast(error.message);
+      const saveButton = $("#saveMovie");
+      if (saveButton) { saveButton.disabled = false; saveButton.textContent = t("save"); }
+    }
   };
 }
 async function renderAdminBookings(panel) {
@@ -759,11 +779,17 @@ async function renderAdminBookings(panel) {
     '</small></div>' + (item.status === "confirmed" ? '<button class="danger-button" data-admin-cancel="' + escapeHTML(item.code) + '">' + t("cancelBooking") + '</button>' : "") + '</div>'
   ).join("") : '<p class="admin-note">' + t("noBookings") + '</p>');
   document.querySelectorAll("[data-admin-cancel]").forEach((button) => button.onclick = async () => {
-    if (!confirm(t("cancelConfirm"))) return;
+    if (button.disabled || !confirm(t("cancelConfirm"))) return;
+    button.disabled = true;
+    button.textContent = t("loading");
     try {
       await api("/admin/bookings/"+encodeURIComponent(button.dataset.adminCancel)+"/cancel",{method:"POST"});
       toast(t("cancelled")); await renderAdminBookings($("#adminPanel"));
-    } catch(error) { toast(error.message); }
+    } catch(error) {
+      toast(error.message);
+      button.disabled = false;
+      button.textContent = t("cancelBooking");
+    }
   });
 }
 function createScanAudio(){try{const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return null;const ctx=new Audio();if(ctx.state==="suspended")ctx.resume().catch(()=>{});return ctx;}catch{return null;}}
