@@ -112,6 +112,7 @@ async function initDatabase() {
   await pool.query("ALTER TABLE bookings ADD CONSTRAINT bookings_ticket_count_check CHECK(ticket_count BETWEEN 1 AND 10)");
   await pool.query("ALTER TABLE bookings ADD COLUMN IF NOT EXISTS checked_in BOOLEAN NOT NULL DEFAULT FALSE");
   await pool.query("ALTER TABLE bookings ADD COLUMN IF NOT EXISTS checked_in_at TIMESTAMPTZ");
+  await pool.query("CREATE TABLE IF NOT EXISTS booking_passengers (booking_id UUID NOT NULL REFERENCES bookings(id) ON DELETE CASCADE, seat_number TEXT NOT NULL, passenger_name TEXT NOT NULL CHECK(length(passenger_name) BETWEEN 1 AND 70), PRIMARY KEY(booking_id,seat_number))");
   for (const seat of BED_SEAT_IDS) {
     await pool.query(
       "INSERT INTO screening_seats(screening_id,seat_number,office_chair) SELECT id,$1,FALSE FROM screenings ON CONFLICT DO NOTHING",
@@ -255,10 +256,10 @@ app.post("/api/account/logout",customerOnly,(req,res,next)=>req.session.destroy(
 app.get("/api/account/bookings",customerOnly,async(req,res,next)=>{
   try{
     const result=await pool.query(
-      "SELECT b.booking_code,b.customer_name,b.customer_email,b.ticket_count,b.total_cents,b.status,b.checked_in,to_char(s.show_date,'YYYY-MM-DD') AS show_date,to_char(s.show_time,'HH24:MI') AS show_time,s.starts_at,m.title AS movie_title,COALESCE(array_agg(bs.seat_number ORDER BY bs.seat_number) FILTER(WHERE bs.seat_number IS NOT NULL),'{}') AS seats FROM bookings b JOIN screenings s ON s.id=b.screening_id JOIN movies m ON m.id=s.movie_id LEFT JOIN booking_seats bs ON bs.booking_id=b.id WHERE b.user_id=$1 GROUP BY b.id,s.id,m.id ORDER BY b.created_at DESC",
+      "SELECT b.booking_code,b.customer_name,b.customer_email,b.ticket_count,b.total_cents,b.status,b.checked_in,to_char(s.show_date,'YYYY-MM-DD') AS show_date,to_char(s.show_time,'HH24:MI') AS show_time,s.starts_at,m.title AS movie_title,COALESCE(array_agg(bs.seat_number ORDER BY bs.seat_number) FILTER(WHERE bs.seat_number IS NOT NULL),'{}') AS seats,COALESCE((SELECT json_agg(json_build_object('seat_number',bp.seat_number,'name',bp.passenger_name) ORDER BY bp.seat_number) FROM booking_passengers bp WHERE bp.booking_id=b.id),'[]'::json) AS passengers FROM bookings b JOIN screenings s ON s.id=b.screening_id JOIN movies m ON m.id=s.movie_id LEFT JOIN booking_seats bs ON bs.booking_id=b.id WHERE b.user_id=$1 GROUP BY b.id,s.id,m.id ORDER BY b.created_at DESC",
       [req.session.user.id]
     );
-    res.json({bookings:result.rows.map(row=>({code:row.booking_code,name:row.customer_name,email:row.customer_email,count:row.ticket_count,total:row.total_cents/100,status:row.status,checkedIn:row.checked_in,date:row.show_date,time:row.show_time,startsAt:row.starts_at,movie:row.movie_title,seats:row.seats}))});
+    res.json({bookings:result.rows.map(row=>({code:row.booking_code,name:row.customer_name,email:row.customer_email,count:row.ticket_count,total:row.total_cents/100,status:row.status,checkedIn:row.checked_in,date:row.show_date,time:row.show_time,startsAt:row.starts_at,movie:row.movie_title,seats:row.seats,passengers:row.passengers}))});
   }catch(error){next(error);}
 });
 app.post("/api/account/bookings/:code/cancel",customerOnly,async(req,res,next)=>{
@@ -272,11 +273,14 @@ app.post("/api/bookings",customerOnly, async (req,res,next) => {
   const count = Number(body.ticketCount), water = Number(body.waterCount || 0), popcorn = Number(body.popcornCount || 0);
   const selected = Array.isArray(body.selectedSeats) ? body.selectedSeats : [];
   const office = Array.isArray(body.officeSeats) ? body.officeSeats : [];
+  const passengers = Array.isArray(body.passengers) ? body.passengers : [];
   const custom = Boolean(body.customSelection);
   const email = req.session.user.email;
   const name = req.session.user.name;
   if (!body.screeningId || !name || name.length > 70 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
       !Number.isInteger(count) || count < 1 || count > 7 ||
+      passengers.length !== count || passengers.some(person => !person || typeof person.seat !== "string" || typeof person.name !== "string" || !person.name.trim() || person.name.trim().length > 70) ||
+      new Set(passengers.map(person => person.seat)).size !== count ||
       !Number.isInteger(water) || water < 0 || water > 20 ||
       !Number.isInteger(popcorn) || popcorn < 0 || popcorn > 20 ||
       new Set(office).size !== office.length || office.some((seat) => typeof seat !== "string" || !OFFICE_SEAT_IDS.includes(seat))) {
@@ -324,6 +328,11 @@ app.post("/api/bookings",customerOnly, async (req,res,next) => {
       await client.query("ROLLBACK");
       return res.status(409).json({error:"One or more seats are no longer available. Refresh the seat map and try again."});
     }
+    const passengerBySeat = new Map(passengers.map(person => [person.seat, person.name.trim()]));
+    if (allocated.some(seat => !passengerBySeat.has(seat)) || passengers.some(person => !allocated.includes(person.seat))) {
+      await client.query("ROLLBACK");
+      return res.status(409).json({error:"Seat assignments changed. Please review the guest names and try again."});
+    }
 
     const p = await getPrices(client);
     const officeAllocated = custom ? office : allocated.filter((seat) => OFFICE_SEAT_IDS.includes(seat));
@@ -341,9 +350,10 @@ app.post("/api/bookings",customerOnly, async (req,res,next) => {
     if (update.rowCount !== count) throw new Error("Seat allocation changed before commit.");
     for (const seat of allocated) {
       await client.query("INSERT INTO booking_seats(booking_id,screening_id,seat_number,office_chair) VALUES($1,$2,$3,$4)",[id,body.screeningId,seat,officeAllocated.includes(seat)]);
+      await client.query("INSERT INTO booking_passengers(booking_id,seat_number,passenger_name) VALUES($1,$2,$3)",[id,seat,passengerBySeat.get(seat)]);
     }
     await client.query("COMMIT");
-    res.status(201).json({booking:{code,customerName:name,customerEmail:email,screeningId:body.screeningId,ticketCount:count,seats:allocated,officeSeats:officeAllocated,waterCount:water,popcornCount:popcorn,total:total/100,status:"confirmed"}});
+    res.status(201).json({booking:{code,customerName:name,customerEmail:email,screeningId:body.screeningId,ticketCount:count,seats:allocated,passengers:allocated.map(seat=>({seat,name:passengerBySeat.get(seat)})),officeSeats:officeAllocated,waterCount:water,popcornCount:popcorn,total:total/100,status:"confirmed"}});
   } catch(error) {
     await client.query("ROLLBACK").catch(()=>{});
     next(error);
@@ -359,7 +369,8 @@ app.post("/api/bookings/lookup", lookupLimiter, async (req,res,next) => {
       "SELECT b.booking_code,b.customer_name,b.customer_email,b.ticket_count,b.water_count,b.popcorn_count,b.total_cents,b.status," +
       "to_char(s.show_date,'YYYY-MM-DD') AS show_date,to_char(s.show_time,'HH24:MI') AS show_time,s.starts_at,m.title AS movie_title," +
       "COALESCE(array_agg(ss.seat_number ORDER BY ss.seat_number) FILTER(WHERE ss.seat_number IS NOT NULL),'{}') AS seats," +
-      "COALESCE(array_agg(ss.seat_number ORDER BY ss.seat_number) FILTER(WHERE ss.office_chair=TRUE),'{}') AS office_seats " +
+      "COALESCE(array_agg(ss.seat_number ORDER BY ss.seat_number) FILTER(WHERE ss.office_chair=TRUE),'{}') AS office_seats," +
+      "COALESCE((SELECT json_agg(json_build_object('seat_number',bp.seat_number,'name',bp.passenger_name) ORDER BY bp.seat_number) FROM booking_passengers bp WHERE bp.booking_id=b.id),'[]'::json) AS passengers " +
       "FROM bookings b JOIN screenings s ON s.id=b.screening_id JOIN movies m ON m.id=s.movie_id " +
       "LEFT JOIN booking_seats ss ON ss.booking_id=b.id WHERE upper(b.booking_code)=upper($1) AND lower(b.customer_email)=lower($2) GROUP BY b.id,s.id,m.id",
       [code,email]
@@ -369,7 +380,7 @@ app.post("/api/bookings/lookup", lookupLimiter, async (req,res,next) => {
     res.json({booking:{code:row.booking_code,customerName:row.customer_name,customerEmail:row.customer_email,
       ticketCount:row.ticket_count,waterCount:row.water_count,popcornCount:row.popcorn_count,total:row.total_cents/100,
       status:row.status,date:row.show_date,time:row.show_time,startsAt:row.starts_at,movieTitle:row.movie_title,
-      seats:row.seats,officeSeats:row.office_seats}});
+      seats:row.seats,officeSeats:row.office_seats,passengers:row.passengers}});
   } catch(error) { next(error); }
 });
 
@@ -427,12 +438,13 @@ app.get("/api/admin/bookings",adminOnly,async(req,res,next)=>{
     const result=await pool.query(
       "SELECT b.booking_code,b.customer_name,b.customer_email,b.ticket_count,b.total_cents,b.status,b.checked_in,b.checked_in_at,"+
       "to_char(s.show_date,'YYYY-MM-DD') AS show_date,to_char(s.show_time,'HH24:MI') AS show_time,m.title AS movie_title,"+
-      "COALESCE(array_agg(ss.seat_number ORDER BY ss.seat_number) FILTER(WHERE ss.seat_number IS NOT NULL),'{}') AS seats "+
+      "COALESCE(array_agg(ss.seat_number ORDER BY ss.seat_number) FILTER(WHERE ss.seat_number IS NOT NULL),'{}') AS seats,"+
+      "COALESCE((SELECT json_agg(json_build_object('seat_number',bp.seat_number,'name',bp.passenger_name) ORDER BY bp.seat_number) FROM booking_passengers bp WHERE bp.booking_id=b.id),'[]'::json) AS passengers "+
       "FROM bookings b JOIN screenings s ON s.id=b.screening_id JOIN movies m ON m.id=s.movie_id "+
       "LEFT JOIN booking_seats ss ON ss.booking_id=b.id GROUP BY b.id,s.id,m.id ORDER BY b.created_at DESC"
     );
     res.json({bookings:result.rows.map(row=>({code:row.booking_code,name:row.customer_name,email:row.customer_email,
-      count:row.ticket_count,total:row.total_cents/100,status:row.status,checkedIn:row.checked_in,checkedInAt:row.checked_in_at,date:row.show_date,time:row.show_time,movie:row.movie_title,seats:row.seats}))});
+      count:row.ticket_count,total:row.total_cents/100,status:row.status,checkedIn:row.checked_in,checkedInAt:row.checked_in_at,date:row.show_date,time:row.show_time,movie:row.movie_title,seats:row.seats,passengers:row.passengers}))});
   } catch(error) { next(error); }
 });
 app.post("/api/admin/tickets/scan",adminOnly,async(req,res,next)=>{
