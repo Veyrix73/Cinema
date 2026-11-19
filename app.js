@@ -43,6 +43,7 @@ let prices = { ticket: 0.10, custom: 0.10, office: 0.20, water: 0.20, popcorn: 0
 let selectedGenre = "all";
 let booking = null;
 let adminTab = "movies";
+let currentUser = null;
 let toastTimer = null;
 let revealObserver = null;
 function revealElement(element, delay) {
@@ -395,32 +396,31 @@ function renderExtrasStep() {
   };
 }
 function renderCustomerDetailsStep() {
+  if (!currentUser) { openAccountModal("register",true); return; }
   const movie = movies.find((item) => item.id === booking.movieId);
   const officeCount = booking.mode === "custom" ? booking.officeSeats.length : booking.officeCount;
   showModal(
     '<p class="eyebrow">' + t("step4") + '</p><h2 id="modalTitle">' + t("details") + '</h2><p class="modal-intro">' + t("detailsIntro") + '</p>' +
-    '<div class="form-grid"><div class="field"><label for="customerName">' + t("name") + '</label><input id="customerName" maxlength="70" required></div>' +
-    '<div class="field"><label for="customerEmail">' + t("email") + '</label><input id="customerEmail" type="email" required></div></div>' +
+    '<div class="account-identity"><b>' + escapeHTML(currentUser.name) + '</b><span>' + escapeHTML(currentUser.email) + '</span><small>' + (language==="lv"?"Rezervācija tiks saglabāta tavā kontā.":"This booking will be saved to your account.") + '</small></div>' +
     '<div class="summary-box"><div class="summary-line"><span>' + t("screening") + '</span><b>' + escapeHTML(movie.title) + ' · ' + formatDate(booking.date) + ' · ' + escapeHTML(booking.time) + '</b></div>' +
     '<div class="summary-line"><span>' + t("chosenSeats") + '</span><b>' + (booking.mode === "custom" ? booking.seats.map(escapeHTML).join(", ") : t("auto")) + '</b></div>' +
     '<div class="summary-line"><span>' + t("officeChairs") + ' / ' + t("snacks") + '</span><b>' + officeCount + ' · ' + booking.waterCount + ' ' + t("water").toLowerCase() + ' · ' + booking.popcornCount + ' ' + t("popcorn").toLowerCase() + '</b></div>' +
     '<div class="summary-line total"><span>' + t("total") + '</span><b>' + formatMoney(currentTotal()) + '</b></div></div>' +
+    '<div class="payment-arrival"><b>' + (language==="lv"?"APMAKSA UZ VIETAS":"PAY AT THE CINEMA") + '</b><span>' + (language==="lv"?"Par rezervāciju maksāsi, ierodoties kinoteātrī. Tiešsaistē nekas netiek iekasēts.":"Pay when you arrive at the cinema. No online payment is taken.") + '</span></div>' +
     '<p class="admin-note">' + t("cancellationRule") + '</p>' +
     '<div class="modal-actions"><button class="button button-secondary" id="backToExtras">' + t("back") + '</button><button class="small-button" id="confirmBooking">' + t("confirm") + '</button></div>'
   );
   $("#backToExtras").onclick = renderExtrasStep;
   $("#confirmBooking").onclick = async () => {
-    const name = $("#customerName").value.trim();
-    const email = $("#customerEmail").value.trim();
-    if (!name || !$("#customerEmail").checkValidity()) { toast(t("validDetails")); return; }
+    const name = currentUser?.name || "";
+    const email = currentUser?.email || "";
+    if (!currentUser) { openAccountModal("login",true); return; }
     const officeSeats = booking.mode === "custom" ? booking.officeSeats : [];
     try {
       const result = await api("/bookings", {
         method:"POST",
         body:{
           screeningId:booking.screeningId,
-          customerName:name,
-          customerEmail:email,
           ticketCount:booking.count,
           customSelection:booking.mode === "custom",
           selectedSeats:booking.mode === "custom" ? booking.seats : [],
@@ -437,11 +437,31 @@ function renderCustomerDetailsStep() {
     }
   };
 }
+function code39Svg(value) {
+  const patterns={ "0":"nnnwwnwnn","1":"wnnwnnnnw","2":"nnwwnnnnw","3":"wnwwnnnnn","4":"nnnwwnnnw","5":"wnnwwnnnn","6":"nnwwwnnnn","7":"nnnwnnwnw","8":"wnnwnnwnn","9":"nnwwnnwnn","A":"wnnnnwnnw","B":"nnwnnwnnw","C":"wnwnnwnnn","D":"nnnnwwnnw","E":"wnnnwwnnn","F":"nnwnwwnnn","G":"nnnnnwwnw","H":"wnnnnwwnn","I":"nnwnnwwnn","J":"nnnnwwwnn","K":"wnnnnnnww","L":"nnwnnnnww","M":"wnwnnnnwn","N":"nnnnwnnww","O":"wnnnwnnwn","P":"nnwnwnnwn","Q":"nnnnnnwww","R":"wnnnnnwwn","S":"nnwnnnwwn","T":"nnnnwnwwn","U":"wwnnnnnnw","V":"nwwnnnnnw","W":"wwwnnnnnn","X":"nwnnwnnnw","Y":"wwnnwnnnn","Z":"nwwnwnnnn","-":"nwnnnnwnw"};
+  const text="*"+String(value).toUpperCase()+"*";let x=8,rects="";
+  for(const char of text){const pattern=patterns[char];if(!pattern)continue;for(let i=0;i<pattern.length;i++){const width=pattern[i]==="w"?3:1;if(i%2===0)rects+='<rect x="'+x+'" y="0" width="'+width+'" height="62" fill="#111"/>';x+=width;}x+=1;}
+  return '<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ticket barcode" viewBox="0 0 '+(x+8)+' 62" preserveAspectRatio="none">'+rects+'</svg>';
+}
+function printTicket(item,movie,bookingState,user) {
+  const barcode=code39Svg(item.code);
+  const html='<!doctype html><html><head><meta charset="utf-8"><title>Cinema ticket</title><style>*{box-sizing:border-box}body{font-family:Arial,sans-serif;background:#eee;padding:24px}.ticket{max-width:720px;margin:auto;background:white;color:#161616;border:2px solid #222;border-radius:16px;padding:28px}.top{display:flex;justify-content:space-between;border-bottom:2px dashed #aaa;padding-bottom:14px;font-weight:bold;letter-spacing:2px}.ticket h1{font-size:30px;margin:22px 0}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.grid span{display:block;font-size:11px;color:#666}.grid b{display:block;margin-top:5px;overflow-wrap:anywhere}.barcode{margin:28px auto 8px;max-width:620px}.barcode svg{width:100%;height:110px}.code{text-align:center;font: bold 18px monospace;letter-spacing:2px}.pay{text-align:center;margin-top:20px;padding:12px;border:1px dashed #555;font-weight:bold}@media print{body{background:white;padding:0}.ticket{border:1px solid #111;break-inside:avoid}}</style></head><body><article class="ticket"><div class="top"><b>DANCING FRUIT CINEMA</b><span>ADMIT ONE</span></div><h1>'+escapeHTML(movie?.title||"Cinema")+'</h1><div class="grid"><div><span>NAME / VĀRDS</span><b>'+escapeHTML(user.name)+'</b></div><div><span>EMAIL / E-PASTS</span><b>'+escapeHTML(user.email)+'</b></div><div><span>DATE / DATUMS</span><b>'+escapeHTML(bookingState.date)+'</b></div><div><span>TIME / LAIKS</span><b>'+escapeHTML(bookingState.time)+'</b></div><div><span>SEATS / VIETAS</span><b>'+item.seats.map(escapeHTML).join(", ")+'</b></div></div><div class="barcode">'+barcode+'</div><div class="code">'+escapeHTML(item.code)+'</div><div class="pay">PAY AT CINEMA · APMAKSA UZ VIETAS</div></article><script>window.onload=()=>window.print()<\\/script></body></html>';
+  const win=window.open("","_blank","noopener,noreferrer");
+  if(!win){toast(language==="lv"?"Atļauj uznirstošos logus, lai drukātu biļeti.":"Allow pop-ups to print the ticket.");return;}
+  win.document.open();win.document.write(html);win.document.close();
+}
 function renderConfirmation(item) {
   const movie = movies.find((entry) => entry.id === booking.movieId);
   const seats = item.seats || [];
+  const barcode = code39Svg(item.code);
   showModal(
-    '<div style="text-align:center;padding:12px 0"><div style="font-size:46px">🎟️</div>' +
+    '<div class="ticket-confirmation"><p class="eyebrow">' + t("confirmedEyebrow") + '</p><h2 id="modalTitle">' + t("confirmed") + '</h2>' +
+    '<div class="print-ticket" id="printTicket"><div class="ticket-top"><b>DANCING FRUIT CINEMA</b><span>ADMIT ONE / KINO BIĻETE</span></div>' +
+    '<h3>' + escapeHTML(movie?.title || "") + '</h3><div class="ticket-details"><span><small>NAME / VĀRDS</small><b>' + escapeHTML(currentUser.name) + '</b></span><span><small>EMAIL / E-PASTS</small><b>' + escapeHTML(currentUser.email) + '</b></span><span><small>DATE / DATUMS</small><b>' + formatDate(booking.date) + '</b></span><span><small>TIME / LAIKS</small><b>' + escapeHTML(booking.time) + '</b></span><span><small>SEATS / VIETAS</small><b>' + seats.map(escapeHTML).join(", ") + '</b></span></div>' +
+    '<div class="ticket-barcode">' + barcode + '</div><div class="ticket-code-text">' + escapeHTML(item.code) + '</div><div class="ticket-pay">PAY AT CINEMA · APMAKSA UZ VIETAS</div></div>' +
+    '<p class="modal-intro">' + (language==="lv"?"Biļete automātiski saglabāta tavā kontā. Vari to izdrukāt vai atstāt kontā un atvērt vēlāk.":"Your ticket is saved in your account. Print it now or leave it there and open it later.") + '</p>' +
+    '<div class="ticket-actions"><button class="small-button" id="printTicketButton">' + (language==="lv"?"Drukāt biļeti":"Print ticket") + '</button><button class="button button-secondary" id="keepTicketButton">' + (language==="lv"?"Atstāt manā kontā":"Keep in my account") + '</button></div>' +
+    '<div style="display:none">' +
     '<p class="eyebrow">' + t("confirmedEyebrow") + '</p><h2 id="modalTitle">' + t("confirmed") + '</h2>' +
     '<p class="modal-intro">' + t("savedBrowser") + '</p><div class="summary-box" style="text-align:left">' +
     '<div class="summary-line"><span>' + t("bookingNumber") + '</span><b class="ticket-code">' + escapeHTML(item.code) + '</b></div>' +
@@ -449,11 +469,11 @@ function renderConfirmation(item) {
     '<div class="summary-line"><span>' + t("screening") + '</span><b>' + escapeHTML(movie?.title || "") + ' · ' + formatDate(booking.date) + ' · ' + escapeHTML(booking.time) + '</b></div>' +
     '<div class="summary-line"><span>' + t("chosenSeats") + '</span><b>' + seats.map(escapeHTML).join(", ") + '</b></div>' +
     '<div class="summary-line total"><span>' + t("total") + '</span><b>' + formatMoney(item.total) + '</b></div></div>' +
-    '<p class="admin-note">' + t("demoPayment") + ' ' + t("bookingLookupHelp") + '</p>' +
-    '<button class="small-button" data-close style="width:100%;margin-top:12px">' + t("close") + '</button></div>'
+    '</div></div>'
   );
-  $("#lookupCode").value = item.code;
-  $("#lookupEmail").value = item.customerEmail;
+  $("#printTicketButton").onclick = () => printTicket(item,movie,booking,currentUser);
+  $("#keepTicketButton").onclick = () => { closeModal(); loadAccountBookings(); document.querySelector("#my-bookings").scrollIntoView({behavior:"smooth"}); };
+  loadAccountBookings();
 }
 async function showLookupResult(code,email) {
   try {
@@ -671,6 +691,16 @@ async function renderAdminBookings(panel) {
     } catch(error) { toast(error.message); }
   });
 }
+function playScanBeep(valid){
+  try{
+    const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;
+    const ctx=new Audio();const oscillator=ctx.createOscillator(),gain=ctx.createGain();
+    oscillator.type="sine";oscillator.frequency.value=valid?880:240;
+    gain.gain.setValueAtTime(0.0001,ctx.currentTime);gain.gain.exponentialRampToValueAtTime(0.16,ctx.currentTime+0.015);gain.gain.exponentialRampToValueAtTime(0.0001,ctx.currentTime+(valid?0.18:0.35));
+    oscillator.connect(gain);gain.connect(ctx.destination);oscillator.start();oscillator.stop(ctx.currentTime+(valid?0.2:0.37));
+    oscillator.onended=()=>ctx.close();
+  }catch{}
+}
 function renderTicketScanner(panel) {
   panel.innerHTML =
     '<div class="scanner-heading"><div><p class="eyebrow">DANCING FRUIT CINEMA</p><h3>' + (language === "lv" ? "Biļešu pārbaude" : "Ticket check-in") + '</h3><p class="admin-note">' + (language === "lv" ? "Ievadi vai noskenē biļetes kodu. Skenētājs, kas darbojas kā tastatūra, ievadīs kodu automātiski." : "Type or scan a ticket code. A keyboard-style barcode scanner can enter the code automatically.") + '</p></div><span class="scanner-icon">▣</span></div>' +
@@ -684,10 +714,12 @@ function renderTicketScanner(panel) {
     result.innerHTML='<p>'+(language==="lv"?"Pārbauda kodu…":"Checking code…")+'</p>';
     try{
       const data=await api("/admin/tickets/scan",{method:"POST",body:{code}});
+      playScanBeep(true);
       const item=data.ticket;
       result.innerHTML='<div class="scan-success">✓</div><p class="scan-status">'+(language==="lv"?"BIĻETE DERĪGA":"TICKET VALID")+'</p><h3>'+escapeHTML(item.movie)+'</h3><p>'+escapeHTML(item.name)+' · '+escapeHTML(item.date)+' · '+escapeHTML(item.time)+'</p><p>'+(language==="lv"?"Vietas":"Seats")+': '+item.seats.map(escapeHTML).join(", ")+'</p><strong>'+escapeHTML(item.code)+'</strong><small>'+(language==="lv"?"Atzīmēta kā izmantota":"Marked as checked in")+'</small>';
       input.value="";
     }catch(error){
+      playScanBeep(false);
       result.innerHTML='<div class="scan-error">×</div><p class="scan-status">'+(language==="lv"?"BIĻETE NAV DERĪGA":"TICKET NOT VALID")+'</p><p>'+escapeHTML(error.message)+'</p>';
     }finally{button.disabled=false;button.textContent=language==="lv"?"Pārbaudīt":"Check ticket";input.focus();}
   };
@@ -735,6 +767,45 @@ function renderAdminAccount(panel) {
   };
 }
 
+function openAccountModal(mode,returnToBooking=false) {
+  const register=mode==="register";
+  showModal('<p class="eyebrow">DANCING FRUIT CINEMA</p><h2 id="modalTitle">'+(register?(language==="lv"?"Izveidot kontu":"Create account"):(language==="lv"?"Pieslēgties":"Sign in"))+'</h2><p class="modal-intro">'+(language==="lv"?"Tavs konts glabā rezervācijas un biļetes.":"Your account keeps your bookings and tickets.")+'</p>'+
+    (register?'<div class="field"><label for="accountName">'+(language==="lv"?"Vārds":"Name")+'</label><input id="accountName" maxlength="70" autocomplete="name"></div>':'')+
+    '<div class="field"><label for="accountEmail">E-pasts / Email</label><input id="accountEmail" type="email" autocomplete="email"></div><div class="field"><label for="accountPassword">'+(language==="lv"?"Parole":"Password")+'</label><input id="accountPassword" type="password" autocomplete="'+(register?"new-password":"current-password")+'"></div>'+
+    (register?'<p class="admin-note">'+(language==="lv"?"Parolei jābūt vismaz 8 rakstzīmes garai.":"Password must be at least 8 characters.")+'</p>':'')+
+    '<button class="small-button" id="accountSubmit" style="width:100%;margin-top:15px">'+(register?(language==="lv"?"Izveidot kontu":"Create account"):(language==="lv"?"Pieteikties":"Sign in"))+'</button>'+
+    '<p class="account-switch">'+(register?(language==="lv"?"Jau ir konts?":"Already have an account?"):(language==="lv"?"Nav konta?":"Need an account?"))+' <button id="accountSwitch">'+(register?(language==="lv"?"Pieslēgties":"Sign in"):(language==="lv"?"Reģistrēties":"Create account"))+'</button></p>');
+  $("#accountSwitch").onclick=()=>openAccountModal(register?"login":"register",returnToBooking);
+  $("#accountSubmit").onclick=async()=>{
+    const body={email:$("#accountEmail").value.trim(),password:$("#accountPassword").value};
+    if(register)body.name=$("#accountName").value.trim();
+    try{
+      const result=await api(register?"/account/register":"/account/login",{method:"POST",body});
+      currentUser=result.user;updateAccountButton();closeModal();loadAccountBookings();
+      if(returnToBooking&&booking)renderCustomerDetailsStep();else toast(language==="lv"?"Konts gatavs!":"You're signed in!");
+    }catch(error){toast(error.message);}
+  };
+}
+function updateAccountButton(){const button=$("#accountButton");if(button)button.textContent=currentUser?(language==="lv"?"Mans konts":"My account"):(language==="lv"?"Pieteikties":"Sign in");}
+async function loadAccountBookings(){
+  const target=$("#accountBookings");if(!target)return;
+  if(!currentUser){target.innerHTML="";return;}
+  try{
+    const data=await api("/account/bookings");
+    target.innerHTML='<div class="account-dashboard"><div class="account-heading"><div><p class="eyebrow">'+(language==="lv"?"TAVS KINO KONTs":"YOUR CINEMA ACCOUNT")+'</p><h3>'+escapeHTML(currentUser.name)+'</h3><p>'+escapeHTML(currentUser.email)+'</p></div><button class="button button-secondary" id="accountLogout">'+(language==="lv"?"Izrakstīties":"Sign out")+'</button></div><h3>'+(language==="lv"?"Manas biļetes":"My tickets")+'</h3>'+
+      ((data.bookings||[]).length?data.bookings.map(item=>'<article class="account-ticket"><div><b>'+escapeHTML(item.movie)+'</b><small>'+formatDate(item.date)+' · '+escapeHTML(item.time)+' · '+item.seats.map(escapeHTML).join(", ")+'</small><small>'+escapeHTML(item.code)+' · '+(item.status==="cancelled"?(language==="lv"?"Atcelta":"Cancelled"):(item.checkedIn?(language==="lv"?"Izmantota":"Checked in"):(language==="lv"?"Apstiprināta":"Confirmed")))+'</small></div><div class="account-ticket-actions">'+(item.status==="confirmed"?'<button class="small-button" data-account-ticket="'+escapeHTML(item.code)+'">'+(language==="lv"?"Atvērt biļeti":"Open ticket")+'</button>'+(new Date(item.startsAt).getTime()-Date.now()>24*3600000?'<button class="danger-button" data-account-cancel="'+escapeHTML(item.code)+'">'+(language==="lv"?"Atcelt":"Cancel")+'</button>':''):'')+'</div></article>').join(""):'<p class="admin-note">'+(language==="lv"?"Vēl nav rezervāciju.":"No bookings yet.")+'</p>')+'</div>';
+    $("#accountLogout").onclick=async()=>{await api("/account/logout",{method:"POST"});currentUser=null;updateAccountButton();target.innerHTML="";toast(language==="lv"?"Izrakstījies.":"Signed out.");};
+    document.querySelectorAll("[data-account-cancel]").forEach(button=>button.onclick=async()=>{if(!confirm(t("cancelConfirm")))return;try{await api("/account/bookings/"+encodeURIComponent(button.dataset.accountCancel)+"/cancel",{method:"POST"});toast(t("cancelled"));loadAccountBookings();}catch(error){toast(error.message);}});
+    document.querySelectorAll("[data-account-ticket]").forEach(button=>button.onclick=()=>openSavedTicket(button.dataset.accountTicket));
+  }catch(error){target.innerHTML='<p class="admin-note">'+escapeHTML(error.message)+'</p>';}
+}
+async function openSavedTicket(code){
+  const data=await api("/account/bookings"),item=data.bookings.find(row=>row.code===code);
+  if(!item)return;
+  const movie={title:item.movie};const state={date:item.date,time:item.time};
+  showModal('<div class="ticket-confirmation"><h2 id="modalTitle">'+(language==="lv"?"Tava biļete":"Your ticket")+'</h2><div class="print-ticket" id="printTicket"><div class="ticket-top"><b>DANCING FRUIT CINEMA</b><span>ADMIT ONE / KINO BIĻETE</span></div><h3>'+escapeHTML(item.movie)+'</h3><div class="ticket-details"><span><small>NAME / VĀRDS</small><b>'+escapeHTML(item.name)+'</b></span><span><small>EMAIL / E-PASTS</small><b>'+escapeHTML(item.email)+'</b></span><span><small>DATE / DATUMS</small><b>'+formatDate(item.date)+'</b></span><span><small>TIME / LAIKS</small><b>'+escapeHTML(item.time)+'</b></span><span><small>SEATS / VIETAS</small><b>'+item.seats.map(escapeHTML).join(", ")+'</b></span></div><div class="ticket-barcode">'+code39Svg(item.code)+'</div><div class="ticket-code-text">'+escapeHTML(item.code)+'</div><div class="ticket-pay">PAY AT CINEMA · APMAKSA UZ VIETAS</div></div><button class="small-button" id="printSavedTicket">'+(language==="lv"?"Drukāt biļeti":"Print ticket")+'</button></div>');
+  $("#printSavedTicket").onclick=()=>printTicket({code:item.code,seats:item.seats},movie,state,{name:item.name,email:item.email});
+}
 document.addEventListener("click",(event)=>{
   const bookButton = event.target.closest("[data-book]");
   const detailCard = event.target.closest("[data-movie-details]");
@@ -754,6 +825,7 @@ document.addEventListener("keydown",(event)=>{
   if (event.key === "Escape" && !$("#modalBackdrop").classList.contains("hidden")) closeModal();
 });
 $("#modalClose").addEventListener("click",closeModal);
+$("#accountButton").addEventListener("click",()=>currentUser?loadAccountBookings().then(()=>document.querySelector("#my-bookings").scrollIntoView({behavior:"smooth"})):openAccountModal("login"));
 $("#modalBackdrop").addEventListener("click",(event)=>{if(event.target === $("#modalBackdrop")) closeModal();});
 $("#movieSearch").addEventListener("input",renderMovies);
 $("#genreFilters").addEventListener("click",(event)=>{
@@ -766,6 +838,7 @@ $("#bookingLookup").addEventListener("submit",async(event)=>{
   const email = $("#lookupEmail").value.trim();
   if (!code || !email) { toast(t("lookupMissing")); return; }
   try {
+    if(currentUser){await loadAccountBookings();return;}
     const result = await api("/bookings/lookup",{method:"POST",body:{bookingCode:code,customerEmail:email}});
     const item = result.booking;
     $("#customerBookings").innerHTML =
@@ -796,4 +869,5 @@ document.querySelectorAll("#mainNav a").forEach((link)=>link.addEventListener("c
 
 setupMotion();
 applyLanguage();
+api("/account/me").then(data=>{currentUser=data.user;updateAccountButton();loadAccountBookings();}).catch(()=>updateAccountButton());
 loadData();
