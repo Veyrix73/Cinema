@@ -134,6 +134,15 @@ function compressPosterFile(file) {
 }
 const SERVER_ERROR_LV = {
   "Too many login attempts. Try again later.":"Pārāk daudz pieslēgšanās mēģinājumu. Mēģini vēlāk.",
+  "Too many booking lookups. Try again later.":"Pārāk daudz rezervāciju meklēšanas mēģinājumu. Mēģini vēlāk.",
+  "No booking found for that code and email.":"Rezervācija ar norādīto kodu un e-pastu nav atrasta.",
+  "Customer cancellations close 24 hours before the screening.":"Rezervāciju internetā var atcelt līdz 24 stundām pirms seansa sākuma.",
+  "Invalid ticket code format.":"Nederīgs biļetes koda formāts.",
+  "Ticket code not found.":"Biļetes kods nav atrasts.",
+  "This booking has been cancelled.":"Šī rezervācija ir atcelta.",
+  "Invalid price.":"Nederīga cena.",
+  "Too many office chair upgrades.":"Izvēlēts pārāk daudz biroja krēslu vietu.",
+  "An unexpected server error occurred.":"Radās neparedzēta servera kļūda. Mēģini vēlreiz.",
   "Administrator login required.":"Nepieciešama administratora pieslēgšanās.",
   "Please sign in to your customer account.":"Lūdzu, pieslēdzies savam klienta kontam.",
   "Database unavailable.":"Datubāze pašlaik nav pieejama.",
