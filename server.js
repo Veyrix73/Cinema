@@ -62,15 +62,8 @@ async function createScreening(movieId, date, time, hallName) {
     [id, movieId, date, time, hallName || "1. zāle"]
   );
   if (!result.rowCount) return;
-  for (let row = 1; row <= 6; row++) {
-    for (let col = 0; col < 6; col++) {
-      const seat = "R" + row + "-" + String.fromCharCode(65 + col);
-      await pool.query(
-        "INSERT INTO screening_seats(screening_id,seat_number) VALUES($1,$2) ON CONFLICT DO NOTHING",
-        [id, seat]
-      );
-    }
-  }
+  const seats = [...Array.from({length:8},(_,i)=>["BED-"+(i+1),false]),["CHAIR-L",true],["CHAIR-R",true]];
+  for (const [seat,officeChair] of seats) await pool.query("INSERT INTO screening_seats(screening_id,seat_number,office_chair) VALUES($1,$2,$3) ON CONFLICT DO NOTHING",[id,seat,officeChair]);
 }
 
 async function initDatabase() {
@@ -88,6 +81,10 @@ async function initDatabase() {
     "CREATE INDEX IF NOT EXISTS idx_screening_seats_booking ON screening_seats(booking_id)"
   ];
   for (const statement of schema) await pool.query(statement);
+  await pool.query("ALTER TABLE bookings DROP CONSTRAINT IF EXISTS bookings_ticket_count_check");
+  await pool.query("ALTER TABLE bookings ADD CONSTRAINT bookings_ticket_count_check CHECK(ticket_count BETWEEN 1 AND 10)");
+  await pool.query("DELETE FROM screening_seats WHERE booking_id IS NULL");
+  await pool.query("INSERT INTO screening_seats(screening_id,seat_number,office_chair) SELECT s.id,v.seat_number,v.office_chair FROM screenings s CROSS JOIN (VALUES ('BED-1',FALSE),('BED-2',FALSE),('BED-3',FALSE),('BED-4',FALSE),('BED-5',FALSE),('BED-6',FALSE),('BED-7',FALSE),('BED-8',FALSE),('CHAIR-L',TRUE),('CHAIR-R',TRUE)) AS v(seat_number,office_chair) ON CONFLICT DO NOTHING");
 
   const defaultPrices = { ticket: 10, custom: 10, office: 20, water: 20, popcorn: 50 };
   for (const entry of Object.entries(defaultPrices)) {
@@ -162,7 +159,7 @@ app.get("/api/prices", async (req,res,next) => {
 app.get("/api/screenings/:id/seats", async (req,res,next) => {
   try {
     const result = await pool.query(
-      "SELECT seat_number,(booking_id IS NOT NULL) AS occupied,office_chair FROM screening_seats WHERE screening_id=$1 ORDER BY seat_number",
+      "SELECT seat_number,(booking_id IS NOT NULL) AS occupied,office_chair FROM screening_seats WHERE screening_id=$1 AND seat_number IN ('BED-1','BED-2','BED-3','BED-4','BED-5','BED-6','BED-7','BED-8','CHAIR-L','CHAIR-R') ORDER BY CASE WHEN seat_number LIKE 'BED-%' THEN 0 WHEN seat_number='CHAIR-L' THEN 1 ELSE 2 END,seat_number",
       [req.params.id]
     );
     if (!result.rowCount) return res.status(404).json({error:"Screening not found."});
@@ -179,11 +176,11 @@ app.post("/api/bookings", async (req,res,next) => {
   const email = String(body.customerEmail || "").trim().toLowerCase();
   const name = String(body.customerName || "").trim();
   if (!body.screeningId || !name || name.length > 70 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
-      !Number.isInteger(count) || count < 1 || count > 8 ||
+      !Number.isInteger(count) || count < 1 || count > 10 ||
       !Number.isInteger(water) || water < 0 || water > 20 ||
       !Number.isInteger(popcorn) || popcorn < 0 || popcorn > 20 ||
       new Set(office).size !== office.length || office.some((seat) => typeof seat !== "string") || !Number.isInteger(officeChairCount) || officeChairCount < 0 || officeChairCount > count) {
-    return res.status(400).json({error:"Check your details. A booking can contain 1–8 tickets."});
+    return res.status(400).json({error:"Check your details. A booking can contain 1–10 tickets."});
   }
   if (custom && (selected.length !== count || new Set(selected).size !== count)) {
     return res.status(400).json({error:"Choose exactly the number of seats in your booking."});
@@ -221,7 +218,7 @@ app.post("/api/bookings", async (req,res,next) => {
     }
 
     const p = await getPrices(client);
-    const officeAllocated = custom ? office : allocated.slice(0, officeChairCount);
+    const officeAllocated = custom ? office : allocated.filter((seat) => seat === "CHAIR-L" || seat === "CHAIR-R");
     const total = count*p.ticket + (custom ? p.custom : 0) + officeAllocated.length*p.office + water*p.water + popcorn*p.popcorn;
     const id = crypto.randomUUID();
     const code = "DFC-" + crypto.randomBytes(4).toString("hex").toUpperCase();
