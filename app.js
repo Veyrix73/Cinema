@@ -691,7 +691,7 @@ function renderMovieEditor(movie) {
   const posterPreview = $("#posterPreview");
   const showPosterPreview = (source) => {
     posterPreview.innerHTML = source
-      ? '<img src="' + escapeHTML(source) + '" alt="Poster preview">'
+      ? '<img src="' + escapeHTML(source) + '" alt="Filmas plakāta priekšskatījums">'
       : '<span>' + escapeHTML(movie?.emoji || "🎬") + '</span>';
   };
   posterFile.onchange = async () => {
