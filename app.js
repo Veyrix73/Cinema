@@ -195,7 +195,7 @@ async function api(path, options) {
     config.headers["Content-Type"] = "application/json";
     config.body = JSON.stringify(config.body);
   }
-  const response = await fetch(API + path, Object.assign({credentials:"same-origin"}, config));
+  const response = await fetch(API + path, Object.assign({credentials:"include"}, config));
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
     const error = new Error(localizeServerError(data.error || ("Request failed: " + response.status)));
