@@ -180,7 +180,7 @@ app.post("/api/account/register",loginLimiter,async(req,res,next)=>{
   const name=String(req.body?.name||"").trim();
   const email=String(req.body?.email||"").trim().toLowerCase();
   const password=String(req.body?.password||"");
-  if(name.length<2||name.length>70||! /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)||password.length<8||password.length>100)
+  if(name.length<2||name.length>70||! /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||password.length<8||password.length>100)
     return res.status(400).json({error:"Enter a valid name and email. Password must be at least 8 characters."});
   try{
     const exists=await pool.query("SELECT id FROM customer_users WHERE email=$1",[email]);
