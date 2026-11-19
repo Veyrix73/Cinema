@@ -1,10 +1,10 @@
 # Dancing Fruit Cinema
 
-A bilingual (Latvian / English) cinema booking website with a Node.js API and PostgreSQL database.
+A Latvian-language cinema booking website with a Node.js API and PostgreSQL database.
 
 ## What's included
 
-- Latvian and English language switch.
+- Entire customer and administrator interface in Latvian.
 - Movie catalogue with search, genre filters, poster thumbnails and animated page transitions.
 - Admin movie editor accepts HTTPS poster URLs or JPG/PNG/WebP image uploads (automatically resized before saving).
 - Four-step booking flow: screening, seating, upgrades/snacks and contact details.
@@ -21,7 +21,7 @@ A bilingual (Latvian / English) cinema booking website with a Node.js API and Po
 - Admin tools to add/edit movies and screening dates/times, view bookings, cancel reservations, update prices and change the admin password.
 - Admin login uses a server-side password hash and an HTTP-only session cookie.
 
-## Run locally
+## Darbināšana datorā
 
 Requirements: Node.js 20+ and a PostgreSQL database.
 
@@ -36,7 +36,7 @@ Requirements: Node.js 20+ and a PostgreSQL database.
 
 The server automatically creates the database tables, default prices, initial admin account and demo movie screenings on first start.
 
-## Deploy online
+## Publicēšana internetā
 
 This project needs a Node.js host and a managed PostgreSQL database. GitHub Pages alone will **not** run the booking API.
 
@@ -56,7 +56,7 @@ For a Render-style deployment:
 
 Never commit `.env`, database passwords, session secrets or admin passwords to GitHub. The `.gitignore` file excludes local environment files.
 
-## Admin
+## Administrācija
 
 Open the website and press **Ctrl + Shift + Alt + P**. Log in with the administrator credentials configured in the hosting environment.
 
@@ -64,7 +64,7 @@ Fn is handled by many keyboards before browser JavaScript receives the event, so
 
 The initial administrator is created from `ADMIN_USERNAME` and `ADMIN_PASSWORD` when the database is first initialized. Changing those environment variables later does not automatically reset an existing admin account. Use the admin password-change section instead.
 
-## Booking behaviour
+## Rezervāciju darbība
 
 When a customer books, the server:
 1. Checks the screening and its remaining seats.
@@ -75,7 +75,7 @@ When a customer books, the server:
 
 A booking reference and email address are required to look up a reservation. Customers can cancel more than 24 hours before the screening; after that, only an administrator can cancel it. When a booking is cancelled, seats are released for other visitors while the booking history remains recorded.
 
-## Important limitations
+## Svarīgi ierobežojumi
 
 - The backend and shared booking system are implemented, but the service is **not online until you deploy it and configure PostgreSQL and the environment variables**.
 - The site records reservations; it does not currently take card payments or send confirmation emails.
