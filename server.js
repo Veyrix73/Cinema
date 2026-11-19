@@ -223,7 +223,7 @@ app.post("/api/account/bookings/:code/cancel",customerOnly,async(req,res,next)=>
   const client=await pool.connect();
   try{
     await client.query("BEGIN");
-    const found=await client.query("SELECT id,status,starts_at FROM bookings b JOIN screenings s ON s.id=b.screening_id WHERE upper(b.booking_code)=upper($1) AND b.user_id=$2 FOR UPDATE OF b",[req.params.code,req.session.user.id]);
+    const found=await client.query("SELECT b.id,b.status,s.starts_at FROM bookings b JOIN screenings s ON s.id=b.screening_id WHERE upper(b.booking_code)=upper($1) AND b.user_id=$2 FOR UPDATE OF b",[req.params.code,req.session.user.id]);
     if(!found.rowCount){await client.query("ROLLBACK");return res.status(404).json({error:"Booking not found in your account."});}
     const item=found.rows[0];
     if(item.status!=="confirmed"){await client.query("ROLLBACK");return res.status(409).json({error:"This booking is already cancelled."});}
