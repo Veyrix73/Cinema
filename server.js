@@ -69,6 +69,7 @@ async function createScreening(movieId, date, time, hallName) {
 async function initDatabase() {
   const schema = [
     "CREATE TABLE IF NOT EXISTS admin_users (id UUID PRIMARY KEY, username TEXT NOT NULL UNIQUE, password_hash TEXT NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW())",
+    "CREATE TABLE IF NOT EXISTS customer_users (id UUID PRIMARY KEY, full_name TEXT NOT NULL, email TEXT NOT NULL UNIQUE, password_hash TEXT NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW())",
     "CREATE TABLE IF NOT EXISTS movies (id UUID PRIMARY KEY, title TEXT NOT NULL, genre TEXT NOT NULL DEFAULT 'Cits', duration INTEGER NOT NULL CHECK(duration>0), age TEXT NOT NULL DEFAULT 'U', year INTEGER NOT NULL, emoji TEXT NOT NULL DEFAULT '🎬', poster TEXT NOT NULL DEFAULT 'linear-gradient(135deg,#753039,#182838)', description TEXT NOT NULL DEFAULT '', active BOOLEAN NOT NULL DEFAULT TRUE, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW())",
     "CREATE TABLE IF NOT EXISTS screenings (id UUID PRIMARY KEY, movie_id UUID NOT NULL REFERENCES movies(id) ON DELETE RESTRICT, show_date DATE NOT NULL, show_time TIME NOT NULL, starts_at TIMESTAMPTZ NOT NULL, hall_name TEXT NOT NULL DEFAULT '1. zāle', created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), UNIQUE(movie_id,show_date,show_time))",
     "CREATE TABLE IF NOT EXISTS bookings (id UUID PRIMARY KEY, booking_code TEXT NOT NULL UNIQUE, screening_id UUID NOT NULL REFERENCES screenings(id) ON DELETE RESTRICT, customer_name TEXT NOT NULL, customer_email TEXT NOT NULL, ticket_count INTEGER NOT NULL CHECK(ticket_count BETWEEN 1 AND 8), custom_selection BOOLEAN NOT NULL DEFAULT FALSE, water_count INTEGER NOT NULL DEFAULT 0 CHECK(water_count>=0), popcorn_count INTEGER NOT NULL DEFAULT 0 CHECK(popcorn_count>=0), total_cents INTEGER NOT NULL CHECK(total_cents>=0), status TEXT NOT NULL DEFAULT 'confirmed' CHECK(status IN ('confirmed','cancelled')), created_at TIMESTAMPTZ NOT NULL DEFAULT NOW())",
@@ -81,6 +82,8 @@ async function initDatabase() {
     "CREATE INDEX IF NOT EXISTS idx_screening_seats_booking ON screening_seats(booking_id)"
   ];
   for (const statement of schema) await pool.query(statement);
+  await pool.query("ALTER TABLE bookings ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES customer_users(id) ON DELETE SET NULL");
+  await pool.query("CREATE INDEX IF NOT EXISTS idx_bookings_user ON bookings(user_id,created_at DESC)");
   await pool.query("ALTER TABLE bookings DROP CONSTRAINT IF EXISTS bookings_ticket_count_check");
   await pool.query("ALTER TABLE bookings ADD CONSTRAINT bookings_ticket_count_check CHECK(ticket_count BETWEEN 1 AND 10)");
   await pool.query("ALTER TABLE bookings ADD COLUMN IF NOT EXISTS checked_in BOOLEAN NOT NULL DEFAULT FALSE");
@@ -136,6 +139,10 @@ function adminOnly(req,res,next) {
   if (!req.session || !req.session.admin) return res.status(401).json({error:"Administrator login required."});
   next();
 }
+function customerOnly(req,res,next) {
+  if (!req.session || !req.session.user) return res.status(401).json({error:"Please sign in to your customer account."});
+  next();
+}
 
 app.get("/api/health", async (req,res) => {
   try { await pool.query("SELECT 1"); res.json({ok:true,service:"Dancing Fruit Cinema API"}); }
@@ -169,14 +176,72 @@ app.get("/api/screenings/:id/seats", async (req,res,next) => {
   } catch(error) { next(error); }
 });
 
-app.post("/api/bookings", async (req,res,next) => {
+app.post("/api/account/register",loginLimiter,async(req,res,next)=>{
+  const name=String(req.body?.name||"").trim();
+  const email=String(req.body?.email||"").trim().toLowerCase();
+  const password=String(req.body?.password||"");
+  if(name.length<2||name.length>70||! /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)||password.length<8||password.length>100)
+    return res.status(400).json({error:"Enter a valid name and email. Password must be at least 8 characters."});
+  try{
+    const exists=await pool.query("SELECT id FROM customer_users WHERE email=$1",[email]);
+    if(exists.rowCount)return res.status(409).json({error:"An account with this email already exists. Sign in instead."});
+    const id=crypto.randomUUID(),hash=await bcrypt.hash(password,12);
+    await pool.query("INSERT INTO customer_users(id,full_name,email,password_hash) VALUES($1,$2,$3,$4)",[id,name,email,hash]);
+    req.session.regenerate(error=>{
+      if(error)return next(error);
+      req.session.user={id,name,email};
+      req.session.save(saveError=>{if(saveError)return next(saveError);res.status(201).json({ok:true,user:req.session.user});});
+    });
+  }catch(error){next(error);}
+});
+app.post("/api/account/login",loginLimiter,async(req,res,next)=>{
+  try{
+    const email=String(req.body?.email||"").trim().toLowerCase();
+    const found=await pool.query("SELECT id,full_name,email,password_hash FROM customer_users WHERE email=$1",[email]);
+    if(!found.rowCount||!await bcrypt.compare(String(req.body?.password||""),found.rows[0].password_hash))
+      return res.status(401).json({error:"Incorrect email or password."});
+    const row=found.rows[0];
+    req.session.regenerate(error=>{
+      if(error)return next(error);
+      req.session.user={id:row.id,name:row.full_name,email:row.email};
+      req.session.save(saveError=>{if(saveError)return next(saveError);res.json({ok:true,user:req.session.user});});
+    });
+  }catch(error){next(error);}
+});
+app.get("/api/account/me",(req,res)=>req.session?.user?res.json({user:req.session.user}):res.status(401).json({error:"Not signed in."}));
+app.post("/api/account/logout",customerOnly,(req,res,next)=>req.session.destroy(error=>{if(error)return next(error);res.clearCookie("dfc.sid");res.json({ok:true});}));
+app.get("/api/account/bookings",customerOnly,async(req,res,next)=>{
+  try{
+    const result=await pool.query(
+      "SELECT b.booking_code,b.customer_name,b.customer_email,b.ticket_count,b.total_cents,b.status,b.checked_in,to_char(s.show_date,'YYYY-MM-DD') AS show_date,to_char(s.show_time,'HH24:MI') AS show_time,s.starts_at,m.title AS movie_title,COALESCE(array_agg(bs.seat_number ORDER BY bs.seat_number) FILTER(WHERE bs.seat_number IS NOT NULL),'{}') AS seats FROM bookings b JOIN screenings s ON s.id=b.screening_id JOIN movies m ON m.id=s.movie_id LEFT JOIN booking_seats bs ON bs.booking_id=b.id WHERE b.user_id=$1 GROUP BY b.id,s.id,m.id ORDER BY b.created_at DESC",
+      [req.session.user.id]
+    );
+    res.json({bookings:result.rows.map(row=>({code:row.booking_code,name:row.customer_name,email:row.customer_email,count:row.ticket_count,total:row.total_cents/100,status:row.status,checkedIn:row.checked_in,date:row.show_date,time:row.show_time,startsAt:row.starts_at,movie:row.movie_title,seats:row.seats}))});
+  }catch(error){next(error);}
+});
+app.post("/api/account/bookings/:code/cancel",customerOnly,async(req,res,next)=>{
+  const client=await pool.connect();
+  try{
+    await client.query("BEGIN");
+    const found=await client.query("SELECT id,status,starts_at FROM bookings b JOIN screenings s ON s.id=b.screening_id WHERE upper(b.booking_code)=upper($1) AND b.user_id=$2 FOR UPDATE OF b",[req.params.code,req.session.user.id]);
+    if(!found.rowCount){await client.query("ROLLBACK");return res.status(404).json({error:"Booking not found in your account."});}
+    const item=found.rows[0];
+    if(item.status!=="confirmed"){await client.query("ROLLBACK");return res.status(409).json({error:"This booking is already cancelled."});}
+    if((new Date(item.starts_at).getTime()-Date.now())/3600000<24){await client.query("ROLLBACK");return res.status(403).json({error:"You can cancel online until 24 hours before the screening. Contact the cinema for later changes."});}
+    await client.query("UPDATE screening_seats SET booking_id=NULL,office_chair=FALSE WHERE booking_id=$1",[item.id]);
+    await client.query("UPDATE bookings SET status='cancelled' WHERE id=$1",[item.id]);
+    await client.query("COMMIT");res.json({ok:true});
+  }catch(error){await client.query("ROLLBACK").catch(()=>{});next(error);}
+  finally{client.release();}
+});
+app.post("/api/bookings",customerOnly, async (req,res,next) => {
   const body = req.body || {};
   const count = Number(body.ticketCount), water = Number(body.waterCount || 0), popcorn = Number(body.popcornCount || 0), officeChairCount = Number(body.officeChairCount || 0);
   const selected = Array.isArray(body.selectedSeats) ? body.selectedSeats : [];
   const office = Array.isArray(body.officeSeats) ? body.officeSeats : [];
   const custom = Boolean(body.customSelection);
-  const email = String(body.customerEmail || "").trim().toLowerCase();
-  const name = String(body.customerName || "").trim();
+  const email = req.session.user.email;
+  const name = req.session.user.name;
   if (!body.screeningId || !name || name.length > 70 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
       !Number.isInteger(count) || count < 1 || count > 10 ||
       !Number.isInteger(water) || water < 0 || water > 20 ||
@@ -225,8 +290,8 @@ app.post("/api/bookings", async (req,res,next) => {
     const id = crypto.randomUUID();
     const code = "Dncngfrt-" + Array.from({length:3},()=>crypto.randomBytes(2).toString("hex").slice(0,3).toUpperCase()).join("-") + "-" + String(crypto.randomInt(0,1000000)).padStart(6,"0");
     await client.query(
-      "INSERT INTO bookings(id,booking_code,screening_id,customer_name,customer_email,ticket_count,custom_selection,water_count,popcorn_count,total_cents) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)",
-      [id,code,body.screeningId,name,email,count,custom,water,popcorn,total]
+      "INSERT INTO bookings(id,booking_code,screening_id,user_id,customer_name,customer_email,ticket_count,custom_selection,water_count,popcorn_count,total_cents) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)",
+      [id,code,body.screeningId,req.session.user.id,name,email,count,custom,water,popcorn,total]
     );
     const update = await client.query(
       "UPDATE screening_seats SET booking_id=$1,office_chair=(seat_number=ANY($2::text[])) WHERE screening_id=$3 AND seat_number=ANY($4::text[]) AND booking_id IS NULL",
@@ -272,8 +337,8 @@ async function cancelReservation(code,email,isAdmin) {
   try {
     await client.query("BEGIN");
     const result = await client.query(
-      "SELECT b.id,b.customer_email,b.status,s.starts_at FROM bookings b JOIN screenings s ON s.id=b.screening_id WHERE b.booking_code=$1 FOR UPDATE OF b",
-      [String(code).toUpperCase()]
+      "SELECT b.id,b.customer_email,b.status,s.starts_at FROM bookings b JOIN screenings s ON s.id=b.screening_id WHERE upper(b.booking_code)=upper($1) FOR UPDATE OF b",
+      [String(code).trim()]
     );
     if (!result.rowCount || (!isAdmin && result.rows[0].customer_email !== String(email || "").trim().toLowerCase())) {
       await client.query("ROLLBACK"); return {status:404,error:"Booking not found."};
@@ -290,8 +355,8 @@ async function cancelReservation(code,email,isAdmin) {
     await client.query("ROLLBACK").catch(()=>{}); throw error;
   } finally { client.release(); }
 }
-app.post("/api/bookings/:code/cancel", async (req,res,next) => {
-  try { const result=await cancelReservation(req.params.code,req.body?.customerEmail,false); res.status(result.status).json(result); }
+app.post("/api/bookings/:code/cancel", customerOnly, async (req,res,next) => {
+  try { const result=await cancelReservation(req.params.code,req.session.user.email,false); res.status(result.status).json(result); }
   catch(error) { next(error); }
 });
 
