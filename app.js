@@ -195,7 +195,7 @@ async function api(path, options) {
     config.headers["Content-Type"] = "application/json";
     config.body = JSON.stringify(config.body);
   }
-  const response = await fetch(API + path, config);
+  const response = await fetch(API + path, Object.assign({credentials:"same-origin"}, config));
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
     const error = new Error(localizeServerError(data.error || ("Request failed: " + response.status)));
@@ -475,8 +475,21 @@ function renderExtrasStep() {
     renderCustomerDetailsStep();
   };
 }
-function renderCustomerDetailsStep() {
-  if (!currentUser) { openAccountModal("register",true); return; }
+async function renderCustomerDetailsStep() {
+  if (!currentUser) { openAccountModal("login",true); return; }
+  // Revalidate the server session: the browser-side account label can outlive it.
+  try {
+    const session = await api("/account/me");
+    currentUser = session.user;
+    updateAccountButton();
+  } catch (error) {
+    currentUser = null;
+    updateAccountButton();
+    loadAccountBookings();
+    openAccountModal("login",true);
+    toast(language === "lv" ? "Tava pieslēgšanās sesija ir beigusies. Pieslēdzies vēlreiz." : "Your sign-in session has expired. Please sign in again.");
+    return;
+  }
   const movie = movies.find((item) => item.id === booking.movieId);
   const officeCount = booking.mode === "custom" ? booking.officeSeats.length : booking.officeCount;
   const passengerFields = booking.seats.map((seat,index) => {
@@ -528,8 +541,16 @@ function renderCustomerDetailsStep() {
       });
       renderConfirmation(result.booking);
     } catch (error) {
-      toast(error.message);
-      if (error.status === 409) renderSeatStep();
+      if (error.status === 401) {
+        currentUser = null;
+        updateAccountButton();
+        loadAccountBookings();
+        openAccountModal("login",true);
+        toast(language === "lv" ? "Tava pieslēgšanās sesija ir beigusies. Pieslēdzies vēlreiz." : "Your sign-in session has expired. Please sign in again.");
+      } else {
+        toast(error.message);
+        if (error.status === 409) renderSeatStep();
+      }
     } finally {
       const activeButton = $("#confirmBooking");
       if (activeButton) {
