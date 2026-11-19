@@ -83,6 +83,8 @@ async function initDatabase() {
   for (const statement of schema) await pool.query(statement);
   await pool.query("ALTER TABLE bookings DROP CONSTRAINT IF EXISTS bookings_ticket_count_check");
   await pool.query("ALTER TABLE bookings ADD CONSTRAINT bookings_ticket_count_check CHECK(ticket_count BETWEEN 1 AND 10)");
+  await pool.query("ALTER TABLE bookings ADD COLUMN IF NOT EXISTS checked_in BOOLEAN NOT NULL DEFAULT FALSE");
+  await pool.query("ALTER TABLE bookings ADD COLUMN IF NOT EXISTS checked_in_at TIMESTAMPTZ");
   await pool.query("DELETE FROM screening_seats WHERE booking_id IS NULL");
   await pool.query("INSERT INTO screening_seats(screening_id,seat_number,office_chair) SELECT s.id,v.seat_number,v.office_chair FROM screenings s CROSS JOIN (VALUES ('BED-1',FALSE),('BED-2',FALSE),('BED-3',FALSE),('BED-4',FALSE),('BED-5',FALSE),('BED-6',FALSE),('BED-7',FALSE),('BED-8',FALSE),('CHAIR-L',TRUE),('CHAIR-R',TRUE)) AS v(seat_number,office_chair) ON CONFLICT DO NOTHING");
 
@@ -221,7 +223,7 @@ app.post("/api/bookings", async (req,res,next) => {
     const officeAllocated = custom ? office : allocated.filter((seat) => seat === "CHAIR-L" || seat === "CHAIR-R");
     const total = count*p.ticket + (custom ? p.custom : 0) + officeAllocated.length*p.office + water*p.water + popcorn*p.popcorn;
     const id = crypto.randomUUID();
-    const code = "DFC-" + crypto.randomBytes(4).toString("hex").toUpperCase();
+    const code = "Dncngfrt-" + Array.from({length:3},()=>crypto.randomBytes(2).toString("hex").slice(0,3).toUpperCase()).join("-") + "-" + String(crypto.randomInt(0,1000000)).padStart(6,"0");
     await client.query(
       "INSERT INTO bookings(id,booking_code,screening_id,customer_name,customer_email,ticket_count,custom_selection,water_count,popcorn_count,total_cents) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)",
       [id,code,body.screeningId,name,email,count,custom,water,popcorn,total]
@@ -314,15 +316,36 @@ app.post("/api/admin/logout",adminOnly,(req,res,next)=>req.session.destroy((erro
 app.get("/api/admin/bookings",adminOnly,async(req,res,next)=>{
   try {
     const result=await pool.query(
-      "SELECT b.booking_code,b.customer_name,b.customer_email,b.ticket_count,b.total_cents,b.status,"+
+      "SELECT b.booking_code,b.customer_name,b.customer_email,b.ticket_count,b.total_cents,b.status,b.checked_in,b.checked_in_at,"+
       "to_char(s.show_date,'YYYY-MM-DD') AS show_date,to_char(s.show_time,'HH24:MI') AS show_time,m.title AS movie_title,"+
       "COALESCE(array_agg(ss.seat_number ORDER BY ss.seat_number) FILTER(WHERE ss.seat_number IS NOT NULL),'{}') AS seats "+
       "FROM bookings b JOIN screenings s ON s.id=b.screening_id JOIN movies m ON m.id=s.movie_id "+
       "LEFT JOIN booking_seats ss ON ss.booking_id=b.id GROUP BY b.id,s.id,m.id ORDER BY b.created_at DESC"
     );
     res.json({bookings:result.rows.map(row=>({code:row.booking_code,name:row.customer_name,email:row.customer_email,
-      count:row.ticket_count,total:row.total_cents/100,status:row.status,date:row.show_date,time:row.show_time,movie:row.movie_title,seats:row.seats}))});
+      count:row.ticket_count,total:row.total_cents/100,status:row.status,checkedIn:row.checked_in,checkedInAt:row.checked_in_at,date:row.show_date,time:row.show_time,movie:row.movie_title,seats:row.seats}))});
   } catch(error) { next(error); }
+});
+app.post("/api/admin/tickets/scan",adminOnly,async(req,res,next)=>{
+  const code=String(req.body?.code||"").trim();
+  if(!/^Dncngfrt-[A-Z0-9]{3}-[A-Z0-9]{3}-[A-Z0-9]{3}-\d{6}$/i.test(code))
+    return res.status(400).json({error:"Invalid ticket code format."});
+  const client=await pool.connect();
+  try{
+    await client.query("BEGIN");
+    const found=await client.query(
+      "SELECT b.id,b.booking_code,b.customer_name,b.status,b.checked_in,to_char(s.show_date,'YYYY-MM-DD') AS show_date,to_char(s.show_time,'HH24:MI') AS show_time,m.title AS movie_title,COALESCE(array_agg(bs.seat_number ORDER BY bs.seat_number) FILTER(WHERE bs.seat_number IS NOT NULL),'{}') AS seats FROM bookings b JOIN screenings s ON s.id=b.screening_id JOIN movies m ON m.id=s.movie_id LEFT JOIN booking_seats bs ON bs.booking_id=b.id WHERE upper(b.booking_code)=upper($1) GROUP BY b.id,s.id,m.id FOR UPDATE OF b",
+      [code]
+    );
+    if(!found.rowCount){await client.query("ROLLBACK");return res.status(404).json({error:"Ticket code not found."});}
+    const ticket=found.rows[0];
+    if(ticket.status!=="confirmed"){await client.query("ROLLBACK");return res.status(409).json({error:"This booking has been cancelled."});}
+    if(ticket.checked_in){await client.query("ROLLBACK");return res.status(409).json({error:"This ticket has already been scanned."});}
+    await client.query("UPDATE bookings SET checked_in=TRUE,checked_in_at=NOW() WHERE id=$1",[ticket.id]);
+    await client.query("COMMIT");
+    res.json({ok:true,ticket:{code:ticket.booking_code,name:ticket.customer_name,movie:ticket.movie_title,date:ticket.show_date,time:ticket.show_time,seats:ticket.seats}});
+  }catch(error){await client.query("ROLLBACK").catch(()=>{});next(error);}
+  finally{client.release();}
 });
 app.post("/api/admin/bookings/:code/cancel",adminOnly,async(req,res,next)=>{
   try { const result=await cancelReservation(req.params.code,null,true); res.status(result.status).json(result); }
@@ -361,7 +384,7 @@ app.post("/api/admin/movies",adminOnly,async(req,res,next)=>{
         if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) throw new Error("Invalid screening time.");
         const sid=crypto.randomUUID();
         const inserted=await client.query("INSERT INTO screenings(id,movie_id,show_date,show_time,starts_at,hall_name) VALUES($1,$2,$3::date,$4::time,($3::date + $4::time) AT TIME ZONE 'Europe/Riga',$5) ON CONFLICT(movie_id,show_date,show_time) DO NOTHING RETURNING id",[sid,id,date,time,"1. zāle"]);
-        if(inserted.rowCount) for(let row=1;row<=6;row++) for(let col=0;col<6;col++) await client.query("INSERT INTO screening_seats(screening_id,seat_number) VALUES($1,$2)",[sid,"R"+row+"-"+String.fromCharCode(65+col)]);
+        if(inserted.rowCount) for(const [seat,chair] of [...Array.from({length:8},(_,i)=>["BED-"+(i+1),false]),["CHAIR-L",true],["CHAIR-R",true]]) await client.query("INSERT INTO screening_seats(screening_id,seat_number,office_chair) VALUES($1,$2,$3)",[sid,seat,chair]);
       }
     }
     await client.query("COMMIT");res.status(201).json({id});
