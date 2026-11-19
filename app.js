@@ -875,14 +875,41 @@ function openAccountModal(mode,returnToBooking=false) {
     '<button class="small-button" id="accountSubmit" style="width:100%;margin-top:15px">'+(register?(language==="lv"?"Izveidot kontu":"Create account"):(language==="lv"?"Pieteikties":"Sign in"))+'</button>'+
     '<p class="account-switch">'+(register?(language==="lv"?"Jau ir konts?":"Already have an account?"):(language==="lv"?"Nav konta?":"Need an account?"))+' <button id="accountSwitch">'+(register?(language==="lv"?"Pieslēgties":"Sign in"):(language==="lv"?"Reģistrēties":"Create account"))+'</button></p>');
   $("#accountSwitch").onclick=()=>openAccountModal(register?"login":"register",returnToBooking);
-  $("#accountSubmit").onclick=async()=>{
-    const body={email:$("#accountEmail").value.trim(),password:$("#accountPassword").value};
-    if(register)body.name=$("#accountName").value.trim();
-    try{
-      const result=await api(register?"/account/register":"/account/login",{method:"POST",body});
-      currentUser=result.user;updateAccountButton();closeModal();loadAccountBookings();
-      if(returnToBooking&&booking)renderCustomerDetailsStep();else toast(language==="lv"?"Konts gatavs!":"You're signed in!");
-    }catch(error){toast(error.message);}
+  const submitAccount = async () => {
+    const button = $("#accountSubmit");
+    if (!button || button.disabled) return;
+    const body = { email: $("#accountEmail").value.trim(), password: $("#accountPassword").value };
+    if (register) body.name = $("#accountName").value.trim();
+    if (!body.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email) ||
+        (register && (body.name.length < 2 || body.name.length > 70)) ||
+        body.password.length < (register ? 8 : 1)) {
+      toast(register ? "Pārbaudi vārdu, e-pasta adresi un paroli (vismaz 8 rakstzīmes)." : "Ievadi derīgu e-pasta adresi un paroli.");
+      return;
+    }
+    button.disabled = true;
+    button.textContent = "Pārbauda…";
+    try {
+      const result = await api(register ? "/account/register" : "/account/login", { method: "POST", body });
+      currentUser = result.user;
+      updateAccountButton();
+      closeModal();
+      loadAccountBookings();
+      if (returnToBooking && booking) renderCustomerDetailsStep();
+      else toast("Konts gatavs!");
+    } catch (error) {
+      toast(error.message);
+      if ($("#accountSubmit")) {
+        $("#accountSubmit").disabled = false;
+        $("#accountSubmit").textContent = register ? "Izveidot kontu" : "Pieteikties";
+      }
+    }
+  };
+  $("#accountSubmit").onclick = submitAccount;
+  $("#accountPassword").onkeydown = (event) => {
+    if (event.key === "Enter") { event.preventDefault(); submitAccount(); }
+  };
+  if (register) $("#accountName").onkeydown = (event) => {
+    if (event.key === "Enter") { event.preventDefault(); $("#accountEmail").focus(); }
   };
 }
 function updateAccountButton(){const button=$("#accountButton");if(button)button.textContent=currentUser?(language==="lv"?"Mans konts":"My account"):(language==="lv"?"Pieteikties":"Sign in");}
