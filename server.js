@@ -187,6 +187,7 @@ app.post("/api/account/register",loginLimiter,async(req,res,next)=>{
     if(exists.rowCount)return res.status(409).json({error:"An account with this email already exists. Sign in instead."});
     const id=crypto.randomUUID(),hash=await bcrypt.hash(password,12);
     await pool.query("INSERT INTO customer_users(id,full_name,email,password_hash) VALUES($1,$2,$3,$4)",[id,name,email,hash]);
+    await pool.query("UPDATE bookings SET user_id=$1 WHERE lower(customer_email)=lower($2) AND user_id IS NULL",[id,email]);
     req.session.regenerate(error=>{
       if(error)return next(error);
       req.session.user={id,name,email};
