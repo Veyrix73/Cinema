@@ -82,3 +82,22 @@ A booking reference and email address are required to look up a reservation. Cus
 - The site records reservations; it does not currently take card payments or send confirmation emails.
 - Movie posters can be added through the admin editor using an HTTPS image URL or a JPG/PNG/WebP upload. Uploaded images are resized and stored in PostgreSQL; use images you have permission to display.
 - This is a starter cinema platform, not a certified ticketing/payment system. Add monitoring, backups, a privacy notice and any required legal information before using it with real customers.
+
+## Social sign-in (Google and Facebook)
+
+The customer account modal supports Google and Facebook OAuth. Password-based accounts remain available. Social sign-in reuses a customer account with the same provider-returned email so existing booking history stays attached; OAuth-only accounts do not receive a local password.
+
+Configure these environment variables on Render (and in local `.env` when testing):
+
+- `APP_BASE_URL` — the exact public origin, without a trailing slash (for example, your Render service URL).
+- `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` — create a Google OAuth 2.0 Web application client.
+- `FACEBOOK_APP_ID` and `FACEBOOK_APP_SECRET` — create a Meta app and enable Facebook Login.
+
+Register these exact redirect URIs in each provider's app settings:
+
+- `https://YOUR-DOMAIN/api/auth/google/callback`
+- `https://YOUR-DOMAIN/api/auth/facebook/callback`
+
+Replace `YOUR-DOMAIN` with the same host configured in `APP_BASE_URL`. Keep all client secrets only in Render environment variables or a local untracked `.env` file; never commit them. Google sign-in requires a verified email. Facebook sign-in requests the `public_profile` and `email` permissions; a Facebook account that does not share an email must use the email/password option instead.
+
+The provider apps must be configured and, where required, reviewed/published by Google or Meta before public visitors can use them. Until their environment variables are present, email/password login continues to work.

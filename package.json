@@ -2,7 +2,7 @@
   "name": "dancing-fruit-cinema",
   "version": "1.0.0",
   "private": true,
-  "description": "Dancing Fruit Cinema booking demo with a shared PostgreSQL backend",
+  "description": "Dancing Fruit Cinema booking platform with PostgreSQL, customer accounts and Google/Facebook OAuth",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

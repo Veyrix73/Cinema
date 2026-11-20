@@ -42,6 +42,7 @@ let movies = [];
 let prices = { ticket: 0.10, custom: 0.10, office: 0.20, water: 0.20, popcorn: 0.50 };
 let selectedGenre = "all";
 let booking = null;
+try { const saved = sessionStorage.getItem("dfc.oauthBooking"); if (saved) { booking = JSON.parse(saved); sessionStorage.removeItem("dfc.oauthBooking"); } } catch { booking = null; }
 let adminTab = "movies";
 let currentUser = null;
 let toastTimer = null;
@@ -965,12 +966,19 @@ function renderAdminAccount(panel) {
 function openAccountModal(mode,returnToBooking=false) {
   const register=mode==="register";
   showModal('<p class="eyebrow">DANCING FRUIT CINEMA</p><h2 id="modalTitle">'+(register?(language==="lv"?"Izveidot kontu":"Create account"):(language==="lv"?"Pieslēgties":"Sign in"))+'</h2><p class="modal-intro">'+(language==="lv"?"Tavs konts glabā rezervācijas un biļetes.":"Your account keeps your bookings and tickets.")+'</p>'+
-    (register?'<div class="field"><label for="accountName">'+(language==="lv"?"Vārds":"Name")+'</label><input id="accountName" maxlength="70" autocomplete="name"></div>':'')+
+    '<div class="oauth-buttons"><button type="button" class="oauth-button google" id="googleSignIn"><span class="oauth-mark">G</span><span>'+(language==="lv"?"Turpināt ar Google":"Continue with Google")+'</span></button><button type="button" class="oauth-button facebook" id="facebookSignIn"><span class="oauth-mark">f</span><span>'+(language==="lv"?"Turpināt ar Facebook":"Continue with Facebook")+'</span></button></div><div class="oauth-divider"><span>'+(language==="lv"?"vai ar e-pastu":"or use email")+'</span></div>'+    (register?'<div class="field"><label for="accountName">'+(language==="lv"?"Vārds":"Name")+'</label><input id="accountName" maxlength="70" autocomplete="name"></div>':'')+
     '<div class="field"><label for="accountEmail">E-pasts</label><input id="accountEmail" type="email" autocomplete="email"></div><div class="field"><label for="accountPassword">'+(language==="lv"?"Parole":"Password")+'</label><input id="accountPassword" type="password" autocomplete="'+(register?"new-password":"current-password")+'"></div>'+
     (register?'<p class="admin-note">'+(language==="lv"?"Parolei jābūt vismaz 8 rakstzīmes garai.":"Password must be at least 8 characters.")+'</p>':'')+
     '<button class="small-button" id="accountSubmit" style="width:100%;margin-top:15px">'+(register?(language==="lv"?"Izveidot kontu":"Create account"):(language==="lv"?"Pieteikties":"Sign in"))+'</button>'+
     '<p class="account-switch">'+(register?(language==="lv"?"Jau ir konts?":"Already have an account?"):(language==="lv"?"Nav konta?":"Need an account?"))+' <button id="accountSwitch">'+(register?(language==="lv"?"Pieslēgties":"Sign in"):(language==="lv"?"Reģistrēties":"Create account"))+'</button></p>');
   $("#accountSwitch").onclick=()=>openAccountModal(register?"login":"register",returnToBooking);
+  const startSocialLogin = (provider) => {
+    if (booking) sessionStorage.setItem("dfc.oauthBooking", JSON.stringify(booking));
+    else sessionStorage.removeItem("dfc.oauthBooking");
+    window.location.href = "/api/auth/" + provider;
+  };
+  $("#googleSignIn").onclick = () => startSocialLogin("google");
+  $("#facebookSignIn").onclick = () => startSocialLogin("facebook");
   const submitAccount = async () => {
     const button = $("#accountSubmit");
     if (!button || button.disabled) return;
@@ -1127,5 +1135,9 @@ document.querySelectorAll("#mainNav a").forEach((link)=>link.addEventListener("c
 
 setupMotion();
 applyLanguage();
-api("/account/me").then(data=>{currentUser=data.user;updateAccountButton();loadAccountBookings();}).catch(()=>updateAccountButton());
+api("/account/me").then(data=>{currentUser=data.user;updateAccountButton();loadAccountBookings();if(booking)renderCustomerDetailsStep();}).catch(()=>updateAccountButton());
+const authParams = new URLSearchParams(window.location.search);
+if (authParams.get("auth") === "success") toast(language === "lv" ? "Veiksmīgi pieslēdzies!" : "Successfully signed in!");
+if (authParams.has("authError")) toast(language === "lv" ? "Neizdevās pieslēgties. Pārbaudi iestatījumus un mēģini vēlreiz." : "Sign-in failed. Check the provider setup and try again.");
+if (authParams.has("auth") || authParams.has("authError")) history.replaceState({}, "", window.location.pathname + window.location.hash);
 loadData();

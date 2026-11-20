@@ -168,3 +168,14 @@
 @media print{body *{visibility:hidden}.print-ticket,.print-ticket *{visibility:visible}.print-ticket{position:absolute;left:0;top:0;width:100%;box-shadow:none}}
 
 .account-dashboard .eyebrow{margin-bottom:5px}.account-dashboard>h3{margin:20px 0 8px}.account-ticket-actions button{white-space:nowrap}
+
+/* Social sign-in buttons */
+.oauth-buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0 13px}
+.oauth-button{min-height:44px;display:flex;align-items:center;justify-content:center;gap:10px;border:1px solid #514044;border-radius:8px;background:#fff;color:#1d1718;font-size:11px;font-weight:700;cursor:pointer;padding:10px}
+.oauth-button:hover{filter:brightness(.94);transform:translateY(-1px)}
+.oauth-button.facebook{background:#1877f2;color:#fff;border-color:#1877f2}
+.oauth-mark{font:800 18px Arial,sans-serif}
+.oauth-button.google .oauth-mark{background:conic-gradient(from -45deg,#4285f4 0 25%,#34a853 25% 50%,#fbbc05 50% 75%,#ea4335 75%);background-clip:text;color:transparent}
+.oauth-divider{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:9px;margin:10px 0 17px}
+.oauth-divider:before,.oauth-divider:after{content:"";height:1px;background:var(--line);flex:1}
+@media(max-width:520px){.oauth-buttons{grid-template-columns:1fr}}
