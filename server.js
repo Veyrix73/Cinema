@@ -113,6 +113,8 @@ async function initDatabase() {
   await pool.query("ALTER TABLE bookings ADD CONSTRAINT bookings_ticket_count_check CHECK(ticket_count BETWEEN 1 AND 10)");
   await pool.query("ALTER TABLE bookings ADD COLUMN IF NOT EXISTS checked_in BOOLEAN NOT NULL DEFAULT FALSE");
   await pool.query("ALTER TABLE bookings ADD COLUMN IF NOT EXISTS checked_in_at TIMESTAMPTZ");
+  await pool.query("ALTER TABLE bookings ADD COLUMN IF NOT EXISTS cancelled_at TIMESTAMPTZ");
+  await pool.query("ALTER TABLE bookings ADD COLUMN IF NOT EXISTS cancelled_by TEXT");
   await pool.query("CREATE TABLE IF NOT EXISTS booking_passengers (booking_id UUID NOT NULL REFERENCES bookings(id) ON DELETE CASCADE, seat_number TEXT NOT NULL, passenger_name TEXT NOT NULL CHECK(length(passenger_name) BETWEEN 1 AND 70), PRIMARY KEY(booking_id,seat_number))");
   for (const seat of BED_SEAT_IDS) {
     await pool.query(
@@ -398,12 +400,12 @@ async function cancelReservation(code,email,isAdmin) {
     }
     const booking = result.rows[0];
     if (booking.status === "cancelled") { await client.query("ROLLBACK"); return {status:409,error:"Booking already cancelled."}; }
-    if (booking.checked_in) { await client.query("ROLLBACK"); return {status:409,error:"A checked-in booking cannot be cancelled."}; }
+    if (booking.checked_in && !isAdmin) { await client.query("ROLLBACK"); return {status:409,error:"A checked-in booking cannot be cancelled by a customer."}; }
     if (!isAdmin && (new Date(booking.starts_at).getTime()-Date.now())/3600000 < 24) {
       await client.query("ROLLBACK"); return {status:403,error:"Customer cancellations close 24 hours before the screening."};
     }
     await client.query("UPDATE screening_seats SET booking_id=NULL,office_chair=(seat_number=ANY($2::text[])) WHERE booking_id=$1",[booking.id,OFFICE_SEAT_IDS]);
-    await client.query("UPDATE bookings SET status='cancelled' WHERE id=$1",[booking.id]);
+    await client.query("UPDATE bookings SET status='cancelled',cancelled_at=NOW(),cancelled_by=$2 WHERE id=$1",[booking.id,isAdmin?"admin":"customer"]);
     await client.query("COMMIT"); return {status:200,ok:true};
   } catch(error) {
     await client.query("ROLLBACK").catch(()=>{}); throw error;
@@ -438,14 +440,19 @@ app.get("/api/admin/bookings",adminOnly,async(req,res,next)=>{
   try {
     const result=await pool.query(
       "SELECT b.booking_code,b.customer_name,b.customer_email,b.ticket_count,b.total_cents,b.status,b.checked_in,b.checked_in_at,"+
+      "b.water_count,b.popcorn_count,b.custom_selection,b.created_at,b.cancelled_at,b.cancelled_by,"+
       "to_char(s.show_date,'YYYY-MM-DD') AS show_date,to_char(s.show_time,'HH24:MI') AS show_time,m.title AS movie_title,"+
-      "COALESCE(array_agg(ss.seat_number ORDER BY ss.seat_number) FILTER(WHERE ss.seat_number IS NOT NULL),'{}') AS seats,"+
+      "COALESCE(array_agg(bs.seat_number ORDER BY bs.seat_number) FILTER(WHERE bs.seat_number IS NOT NULL),'{}') AS seats,"+
+      "COALESCE(array_agg(bs.seat_number ORDER BY bs.seat_number) FILTER(WHERE bs.office_chair=TRUE),'{}') AS office_seats,"+
       "COALESCE((SELECT json_agg(json_build_object('seat_number',bp.seat_number,'name',bp.passenger_name) ORDER BY bp.seat_number) FROM booking_passengers bp WHERE bp.booking_id=b.id),'[]'::json) AS passengers "+
       "FROM bookings b JOIN screenings s ON s.id=b.screening_id JOIN movies m ON m.id=s.movie_id "+
-      "LEFT JOIN booking_seats ss ON ss.booking_id=b.id GROUP BY b.id,s.id,m.id ORDER BY b.created_at DESC"
+      "LEFT JOIN booking_seats bs ON bs.booking_id=b.id GROUP BY b.id,s.id,m.id ORDER BY b.created_at DESC"
     );
     res.json({bookings:result.rows.map(row=>({code:row.booking_code,name:row.customer_name,email:row.customer_email,
-      count:row.ticket_count,total:row.total_cents/100,status:row.status,checkedIn:row.checked_in,checkedInAt:row.checked_in_at,date:row.show_date,time:row.show_time,movie:row.movie_title,seats:row.seats,passengers:row.passengers}))});
+      count:row.ticket_count,total:row.total_cents/100,status:row.status,checkedIn:row.checked_in,checkedInAt:row.checked_in_at,
+      waterCount:row.water_count,popcornCount:row.popcorn_count,customSelection:row.custom_selection,createdAt:row.created_at,
+      cancelledAt:row.cancelled_at,cancelledBy:row.cancelled_by,date:row.show_date,time:row.show_time,movie:row.movie_title,
+      seats:row.seats,officeSeats:row.office_seats,passengers:row.passengers}))});
   } catch(error) { next(error); }
 });
 app.post("/api/admin/tickets/scan",adminOnly,async(req,res,next)=>{
