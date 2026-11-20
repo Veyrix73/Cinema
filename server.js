@@ -106,6 +106,8 @@ async function initDatabase() {
     "CREATE INDEX IF NOT EXISTS idx_screening_seats_booking ON screening_seats(booking_id)"
   ];
   for (const statement of schema) await pool.query(statement);
+  await pool.query("ALTER TABLE customer_users ALTER COLUMN password_hash DROP NOT NULL");
+  await pool.query(`CREATE TABLE IF NOT EXISTS customer_oauth_accounts (provider TEXT NOT NULL CHECK(provider IN ('google','facebook')), provider_user_id TEXT NOT NULL, user_id UUID NOT NULL REFERENCES customer_users(id) ON DELETE CASCADE, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), PRIMARY KEY(provider,provider_user_id), UNIQUE(provider,user_id))`);
   await pool.query("ALTER TABLE bookings ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES customer_users(id) ON DELETE SET NULL");
   await pool.query("CREATE INDEX IF NOT EXISTS idx_bookings_user ON bookings(user_id,created_at DESC)");
   await pool.query("ALTER TABLE bookings DROP CONSTRAINT IF EXISTS bookings_ticket_count_check");
@@ -182,6 +184,58 @@ function customerOnly(req,res,next) {
   next();
 }
 
+function oauthRedirectUri(req, provider) {
+  const base = String(process.env.APP_BASE_URL || (production ? "" : req.protocol + "://" + req.get("host"))).replace(/\/$/, "");
+  if (!base) throw new Error("APP_BASE_URL must be configured before enabling social login.");
+  return base + "/api/auth/" + provider + "/callback";
+}
+async function fetchOAuthJson(url, options) {
+  const response = await fetch(url, options);
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error_description || data.error?.message || "The identity provider rejected the sign-in request.");
+  return data;
+}
+function oauthFailure(res, message) {
+  console.error("OAuth sign-in failed:", message);
+  return res.redirect("/?authError=" + encodeURIComponent("Social sign-in failed. Please try again."));
+}
+function finishOAuthSession(req, res, user) {
+  req.session.regenerate((error) => {
+    if (error) return oauthFailure(res, "Could not rotate the session.");
+    req.session.user = { id:user.id, name:user.full_name, email:user.email };
+    req.session.save((saveError) => {
+      if (saveError) return oauthFailure(res, "Could not save the customer session.");
+      res.redirect("/?auth=success");
+    });
+  });
+}
+async function findOrCreateOAuthUser(provider, profile) {
+  const email = String(profile.email || "").trim().toLowerCase();
+  const providerId = String(profile.id || "");
+  const name = String(profile.name || "").trim().slice(0,70) || email.split("@")[0];
+  if (!providerId || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("The provider did not return a usable account ID and email address.");
+  const linked = await pool.query(
+    "SELECT u.id,u.full_name,u.email FROM customer_oauth_accounts a JOIN customer_users u ON u.id=a.user_id WHERE a.provider=$1 AND a.provider_user_id=$2",
+    [provider, providerId]
+  );
+  if (linked.rowCount) return linked.rows[0];
+  const created = await pool.query(
+    "INSERT INTO customer_users(id,full_name,email,password_hash) VALUES($1,$2,$3,NULL) ON CONFLICT(email) DO UPDATE SET email=customer_users.email RETURNING id,full_name,email",
+    [crypto.randomUUID(), name, email]
+  );
+  await pool.query(
+    "INSERT INTO customer_oauth_accounts(provider,provider_user_id,user_id) VALUES($1,$2,$3) ON CONFLICT(provider,provider_user_id) DO NOTHING",
+    [provider, providerId, created.rows[0].id]
+  );
+  const identity = await pool.query(
+    "SELECT u.id,u.full_name,u.email FROM customer_oauth_accounts a JOIN customer_users u ON u.id=a.user_id WHERE a.provider=$1 AND a.provider_user_id=$2",
+    [provider, providerId]
+  );
+  if (!identity.rowCount) throw new Error("Could not link the social account.");
+  await pool.query("UPDATE bookings SET user_id=$1 WHERE lower(customer_email)=lower($2) AND user_id IS NULL", [identity.rows[0].id, identity.rows[0].email]);
+  return identity.rows[0];
+}
+
 app.get("/api/health", async (req,res) => {
   try { await pool.query("SELECT 1"); res.json({ok:true,service:"Dancing Fruit Cinema API"}); }
   catch { res.status(503).json({ok:false,error:"Database unavailable."}); }
@@ -219,6 +273,84 @@ app.get("/api/screenings/:id/seats", async (req,res,next) => {
   } catch(error) { next(error); }
 });
 
+
+app.get("/api/auth/:provider", (req,res,next) => {
+  const provider = req.params.provider;
+  if (!["google","facebook"].includes(provider)) return res.status(404).send("Unknown sign-in provider.");
+  const clientId = provider === "google" ? process.env.GOOGLE_CLIENT_ID : process.env.FACEBOOK_APP_ID;
+  const clientSecret = provider === "google" ? process.env.GOOGLE_CLIENT_SECRET : process.env.FACEBOOK_APP_SECRET;
+  if (!clientId || !clientSecret) return res.status(503).send(provider + " sign-in is not configured yet.");
+  try {
+    const state = crypto.randomBytes(32).toString("hex");
+    const nonce = crypto.randomBytes(32).toString("hex");
+    const redirectUri = oauthRedirectUri(req, provider);
+    req.session.oauthState = { provider, state, nonce, createdAt: Date.now() };
+    req.session.save((error) => {
+      if (error) return next(error);
+      const url = provider === "google" ? new URL("https://accounts.google.com/o/oauth2/v2/auth") : new URL("https://www.facebook.com/v27.0/dialog/oauth");
+      url.searchParams.set("client_id", clientId);
+      url.searchParams.set("redirect_uri", redirectUri);
+      url.searchParams.set("response_type", "code");
+      url.searchParams.set("state", state);
+      if (provider === "google") {
+        url.searchParams.set("scope", "openid email profile");
+        url.searchParams.set("nonce", nonce);
+        url.searchParams.set("prompt", "select_account");
+      } else url.searchParams.set("scope", "public_profile,email");
+      res.redirect(url.toString());
+    });
+  } catch (error) { next(error); }
+});
+app.get("/api/auth/:provider/callback", async (req,res,next) => {
+  const provider = req.params.provider;
+  if (!["google","facebook"].includes(provider)) return res.status(404).send("Unknown sign-in provider.");
+  const saved = req.session?.oauthState;
+  if (req.session) delete req.session.oauthState;
+  if (req.query.error) return oauthFailure(res, String(req.query.error));
+  if (!saved || saved.provider !== provider || typeof req.query.state !== "string" ||
+      saved.state.length !== req.query.state.length ||
+      !crypto.timingSafeEqual(Buffer.from(saved.state), Buffer.from(req.query.state)) ||
+      Date.now() - saved.createdAt > 10 * 60 * 1000 || typeof req.query.code !== "string") {
+    return oauthFailure(res, "Invalid or expired OAuth state.");
+  }
+  try {
+    const redirectUri = oauthRedirectUri(req, provider);
+    let profile;
+    if (provider === "google") {
+      const tokens = await fetchOAuthJson("https://oauth2.googleapis.com/token", {
+        method:"POST",
+        headers:{"Content-Type":"application/x-www-form-urlencoded"},
+        body:new URLSearchParams({code:req.query.code,client_id:process.env.GOOGLE_CLIENT_ID || "",client_secret:process.env.GOOGLE_CLIENT_SECRET || "",redirect_uri:redirectUri,grant_type:"authorization_code"})
+      });
+      if (!tokens.access_token || !tokens.id_token) throw new Error("Google did not return the required tokens.");
+      const claims = await fetchOAuthJson("https://oauth2.googleapis.com/tokeninfo?id_token=" + encodeURIComponent(tokens.id_token));
+      if (claims.aud !== process.env.GOOGLE_CLIENT_ID || claims.iss !== "https://accounts.google.com" ||
+          claims.nonce !== saved.nonce || claims.email_verified !== "true" || !claims.sub) throw new Error("Google identity verification failed.");
+      profile = await fetchOAuthJson("https://openidconnect.googleapis.com/v1/userinfo", {headers:{Authorization:"Bearer " + tokens.access_token}});
+      if (profile.sub !== claims.sub || profile.email !== claims.email || !profile.email_verified) throw new Error("Google profile verification failed.");
+      profile.id = profile.sub;
+    } else {
+      const tokenUrl = new URL("https://graph.facebook.com/v27.0/oauth/access_token");
+      tokenUrl.searchParams.set("client_id", process.env.FACEBOOK_APP_ID || "");
+      tokenUrl.searchParams.set("client_secret", process.env.FACEBOOK_APP_SECRET || "");
+      tokenUrl.searchParams.set("redirect_uri", redirectUri);
+      tokenUrl.searchParams.set("code", req.query.code);
+      const tokens = await fetchOAuthJson(tokenUrl);
+      if (!tokens.access_token) throw new Error("Facebook did not return an access token.");
+      const profileUrl = new URL("https://graph.facebook.com/v27.0/me");
+      profileUrl.searchParams.set("fields", "id,name,email");
+      profileUrl.searchParams.set("access_token", tokens.access_token);
+      profile = await fetchOAuthJson(profileUrl);
+      if (!profile.email || !profile.id) throw new Error("Facebook did not provide an email address. Use email and password sign-in instead.");
+    }
+    const user = await findOrCreateOAuthUser(provider, profile);
+    finishOAuthSession(req, res, user);
+  } catch (error) {
+    console.error(provider + " OAuth callback:", error);
+    oauthFailure(res, error.message);
+  }
+});
+
 app.post("/api/account/register",loginLimiter,async(req,res,next)=>{
   const name=String(req.body?.name||"").trim();
   const email=String(req.body?.email||"").trim().toLowerCase();
@@ -242,7 +374,7 @@ app.post("/api/account/login",loginLimiter,async(req,res,next)=>{
   try{
     const email=String(req.body?.email||"").trim().toLowerCase();
     const found=await pool.query("SELECT id,full_name,email,password_hash FROM customer_users WHERE email=$1",[email]);
-    if(!found.rowCount||!await bcrypt.compare(String(req.body?.password||""),found.rows[0].password_hash))
+    if(!found.rowCount||!found.rows[0].password_hash||!await bcrypt.compare(String(req.body?.password||""),found.rows[0].password_hash))
       return res.status(401).json({error:"Incorrect email or password."});
     const row=found.rows[0];
     req.session.regenerate(error=>{
