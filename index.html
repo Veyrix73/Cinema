@@ -6,12 +6,16 @@
   <meta name="theme-color" content="#130c0d">
   <meta name="description" content="Dancing Fruit Cinema — izvēlies filmu un rezervē savu kino vietu.">
   <title>Dancing Fruit Cinema</title>
-  <link rel="stylesheet" href="styles.css">
-  <script src="app.js?v=9573316" defer></script>
+  <meta name="color-scheme" content="dark">
+  <meta property="og:title" content="Dancing Fruit Cinema">
+  <meta property="og:description" content="Izvēlies filmu, rezervē savu vietu un izbaudi kino savā ritmā.">
+  <link rel="icon" type="image/svg+xml" href="dancing-fruit-logo.svg">
+  <link rel="stylesheet" href="styles.css?v=20261120-brand">
+  <script src="app.js?v=20261120-brand" defer></script>
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="#home"><span class="brand-fruit">🍍</span><span>DANCING FRUIT <b>CINEMA</b></span></a>
+    <a class="brand" href="#home"><img class="brand-logo" src="dancing-fruit-logo.svg" alt=""><span>DANCING FRUIT <b>CINEMA</b></span></a>
     <button class="menu-toggle" id="menuToggle" aria-label="Atvērt izvēlni">☰</button>
     <nav id="mainNav">
       <a href="#home" data-i18n="navHome">Sākums</a>
@@ -33,9 +37,10 @@
         <a class="button button-primary" href="#movies"><span data-i18n="browseMovies">Apskatīt filmas</span><span>→</span></a>
         <p class="hero-note"><span class="dot"></span><span data-i18n="ticketsFrom">Standarta biļetes no</span> <strong id="heroTicketPrice">0,10 €</strong></p>
       </div>
-      <div class="hero-visual" aria-label="Kinoteātra talismans">
-        <div class="visual-glow"></div><div class="film-reel">✦</div><div class="pineapple">🍍</div><div class="popcorn">🍿</div>
-        <div class="ticket-sign"><small>DANCING FRUIT</small><strong>CINEMA</strong><span>TAVS FILMU VAKARS</span></div>
+      <div class="hero-visual">
+        <a class="hero-emblem" href="#movies" aria-label="Apskatīt filmas">
+          <img src="dancing-fruit-logo.svg" alt="Dancing Fruit Cinema">
+        </a>
       </div>
     </section>
     <section class="stats">
@@ -89,7 +94,7 @@
     </section>
   </main>
   <footer class="footer">
-    <a class="brand" href="#home"><span class="brand-fruit">🍍</span><span>DANCING FRUIT <b>CINEMA</b></span></a>
+    <a class="brand" href="#home"><img class="brand-logo" src="dancing-fruit-logo.svg" alt=""><span>DANCING FRUIT <b>CINEMA</b></span></a>
     <p data-i18n="footerText">Dancing Fruit Cinema © 2026 · Visas tiesības aizsargātas.</p>
     <span class="footer-tag">RADĪTS KINO MĪĻOTĀJIEM</span>
   </footer>
