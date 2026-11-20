@@ -216,7 +216,17 @@ function showModal(html) {
   $("#modalBackdrop").classList.remove("hidden");
   document.body.style.overflow = "hidden";
 }
-function closeModal() {
+function closeModal(force = false) {
+  // Protect an active ticket purchase from accidental clicks on the backdrop, X, or Escape.
+  // The completed-ticket screen is safe to close because the booking is already saved.
+  const purchaseInProgress = Boolean(booking) && !$("#keepTicketButton");
+  if (!force && purchaseInProgress) {
+    const message = language === "lv"
+      ? "Vai tiešām vēlies iziet no rezervācijas? Tava pašreizējā izvēle netiks saglabāta."
+      : "Are you sure you want to leave checkout? Your current selections will be lost.";
+    if (!window.confirm(message)) return;
+    booking = null;
+  }
   $("#modalBackdrop").classList.add("hidden");
   document.body.style.overflow = "";
 }
@@ -975,7 +985,7 @@ function openAccountModal(mode,returnToBooking=false) {
       const result = await api(register ? "/account/register" : "/account/login", { method: "POST", body });
       currentUser = result.user;
       updateAccountButton();
-      closeModal();
+      closeModal(true);
       loadAccountBookings();
       if (returnToBooking && booking) renderCustomerDetailsStep();
       else toast("Konts gatavs!");
