@@ -234,6 +234,28 @@ button:disabled,.button:disabled,.small-button:disabled,.danger-button:disabled{
 @media(max-width:650px){.confirm-card{padding:20px}.confirm-actions{flex-direction:column-reverse}.confirm-actions button{width:100%}.admin-booking-item{align-items:stretch}.admin-booking-actions{width:100%}.admin-booking-actions button{flex:1}.admin-ticket-view{padding:11px}.admin-ticket-paper{padding:14px}.admin-ticket-fields{gap:10px}.admin-ticket-actions{flex-direction:column}.admin-ticket-actions button{width:100%}}
 
 
+/* Admin booking status cards */
+.admin-booking-filter-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:2px 0 10px}
+.admin-booking-filter-heading>span{font:800 9px Manrope,sans-serif;letter-spacing:1.8px;color:#c8aaa0}
+.admin-booking-filter-heading>small{font-size:9px;color:var(--muted);text-align:right}
+.admin-booking-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0 0 18px}
+.admin-filter-card{--filter-accent:#d8b16d;--filter-rgb:216,177,109;position:relative;display:grid;grid-template-columns:34px minmax(0,1fr) auto;grid-template-rows:auto auto;align-items:center;gap:0 10px;min-width:0;min-height:96px;padding:14px 13px;text-align:left;border:1px solid rgba(var(--filter-rgb),.22);border-radius:12px;background:linear-gradient(145deg,rgba(var(--filter-rgb),.105),rgba(17,11,13,.94) 72%);color:#f4e9e4;cursor:pointer;overflow:hidden;transition:transform .2s ease,border-color .2s ease,background .2s ease,box-shadow .2s ease}
+.admin-filter-card:before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:3px;border-radius:0 4px 4px 0;background:var(--filter-accent);opacity:.65}
+.admin-filter-card:hover{transform:translateY(-2px);border-color:rgba(var(--filter-rgb),.55);background:linear-gradient(145deg,rgba(var(--filter-rgb),.16),rgba(17,11,13,.96) 72%)}
+.admin-filter-card:focus-visible{outline:2px solid var(--filter-accent);outline-offset:3px}
+.admin-filter-card.active{border-color:var(--filter-accent);background:linear-gradient(145deg,rgba(var(--filter-rgb),.2),rgba(24,15,17,.98) 78%);box-shadow:0 7px 22px rgba(var(--filter-rgb),.09),inset 0 0 0 1px rgba(var(--filter-rgb),.16)}
+.admin-filter-card.filter-active{--filter-accent:#77d8a5;--filter-rgb:119,216,165}
+.admin-filter-card.filter-used{--filter-accent:#8db8ff;--filter-rgb:141,184,255}
+.admin-filter-card.filter-cancelled{--filter-accent:#f08082;--filter-rgb:240,128,130}
+.admin-filter-icon{grid-column:1;grid-row:1 / span 2;display:grid;place-items:center;width:34px;height:34px;border-radius:10px;background:rgba(var(--filter-rgb),.13);border:1px solid rgba(var(--filter-rgb),.24);color:var(--filter-accent);font-size:17px;font-weight:900}
+.admin-filter-copy{grid-column:2;grid-row:1 / span 2;display:flex;flex-direction:column;gap:5px;min-width:0}
+.admin-filter-copy b{font:800 11px Manrope,sans-serif;color:#f5e8e2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.admin-filter-copy small{font-size:9px;line-height:1.45;color:#a99792}
+.admin-filter-count{grid-column:3;grid-row:1;font:800 25px Manrope,sans-serif;line-height:1;color:var(--filter-accent);align-self:start}
+.admin-filter-arrow{grid-column:3;grid-row:2;justify-self:end;align-self:end;color:var(--filter-accent);font-size:18px;opacity:.65;transition:transform .2s ease,opacity .2s ease}
+.admin-filter-card.active .admin-filter-arrow{transform:translateX(3px);opacity:1}
+@media(max-width:720px){.admin-booking-filters{grid-template-columns:1fr;gap:7px}.admin-filter-card{min-height:76px;padding:11px 13px}.admin-filter-count{font-size:23px}}
+@media(prefers-reduced-motion:reduce){.admin-filter-card,.admin-filter-arrow{transition:none!important}}
 /* Admin booking status filters */
 .admin-booking-filters{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
 .admin-booking-filters button{display:inline-flex;align-items:center;gap:8px;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:#100b0c;color:#cbbab4;font:700 10px Manrope;cursor:pointer}
