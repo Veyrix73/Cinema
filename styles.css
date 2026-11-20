@@ -189,3 +189,46 @@ button:disabled,.button:disabled,.small-button:disabled,.danger-button:disabled{
   .hero-emblem{width:min(100%,255px)}
 }
 @media(prefers-reduced-motion:reduce){.hero-emblem{transition:none!important}.hero-emblem:hover{transform:none}}
+
+
+/* Confirmation prompt and full admin ticket view */
+.confirm-layer{position:fixed;inset:0;z-index:120;background:rgba(0,0,0,.78);display:grid;place-items:center;padding:18px}
+.confirm-card{width:min(440px,100%);background:#1a1113;border:1px solid #875056;border-radius:14px;padding:24px;box-shadow:0 24px 70px #000b}
+.confirm-card h3{font:800 21px Manrope;margin:0 0 10px;color:#fff}
+.confirm-message{font-size:12px;line-height:1.7;color:#d4c3bd;white-space:pre-line;margin:0}
+.confirm-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:22px;flex-wrap:wrap}
+.confirm-actions button{min-height:42px}
+.confirm-actions button:disabled{opacity:.55;cursor:wait}
+.admin-booking-item{align-items:center}
+.admin-booking-actions{display:flex;gap:8px;flex-wrap:wrap;flex-shrink:0}
+.booking-cancelled{color:#ff8888}
+.booking-active{color:#8fe0b8}
+.admin-back-button{margin-bottom:15px}
+.admin-ticket-view{border:1px solid var(--line);border-radius:12px;padding:17px;background:#140d0f}
+.admin-ticket-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
+.admin-ticket-heading h3{margin:0}
+.admin-ticket-heading .admin-note{margin:5px 0 0}
+.admin-ticket-status{font-size:10px;font-weight:800;padding:7px 10px;border-radius:20px;border:1px solid}
+.admin-ticket-status.active{color:#a8f0c8;border-color:#40875f;background:#1c3b2c}
+.admin-ticket-status.cancelled{color:#ffaaaa;border-color:#9a4141;background:#4b2023}
+.admin-ticket-paper{background:#fff;color:#171717;border:2px solid #222;border-radius:5px;padding:22px;margin:12px 0}
+.admin-ticket-brand{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:2px dashed #aaa;padding-bottom:12px;font-size:12px;letter-spacing:1px}
+.admin-ticket-brand span{font-size:10px;text-align:right}
+.admin-ticket-paper h2{font:800 25px Arial,sans-serif;color:#111;margin:20px 0}
+.admin-ticket-void{border:2px solid #a00000;color:#a00000;text-align:center;font:bold 12px Arial;padding:8px;margin:8px 0 15px;letter-spacing:1px}
+.admin-ticket-fields{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.admin-ticket-fields small,.admin-ticket-info small{display:block;color:#777;font-size:9px;letter-spacing:1px;margin-bottom:5px}
+.admin-ticket-fields b{display:block;font:700 13px Arial,sans-serif;overflow-wrap:anywhere;color:#111}
+.admin-ticket-barcode{margin:18px auto 7px;max-width:100%;height:55px}
+.admin-ticket-barcode svg{width:100%;height:100%}
+.admin-ticket-code{text-align:center;font:bold 13px monospace;letter-spacing:1px;overflow-wrap:anywhere;color:#111}
+.admin-ticket-payment{text-align:center;border:1px dashed #555;padding:9px;margin-top:13px;font:bold 11px Arial,sans-serif;letter-spacing:1px}
+.admin-ticket-info{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:12px;background:#0d090a;border:1px solid var(--line);border-radius:8px}
+.admin-ticket-info b{display:block;font-size:11px;overflow-wrap:anywhere}
+.admin-ticket-subheading{font:700 13px Manrope;margin:18px 0 8px}
+.admin-ticket-passengers{display:grid;gap:6px}
+.admin-ticket-passenger{display:flex;justify-content:space-between;gap:12px;border:1px solid var(--line);padding:9px;border-radius:6px;font-size:11px}
+.admin-ticket-passenger span{color:var(--gold)}
+.admin-ticket-passenger b{overflow-wrap:anywhere;text-align:right}
+.admin-ticket-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+@media(max-width:650px){.confirm-card{padding:20px}.confirm-actions{flex-direction:column-reverse}.confirm-actions button{width:100%}.admin-booking-item{align-items:stretch}.admin-booking-actions{width:100%}.admin-booking-actions button{flex:1}.admin-ticket-view{padding:11px}.admin-ticket-paper{padding:14px}.admin-ticket-fields{gap:10px}.admin-ticket-actions{flex-direction:column}.admin-ticket-actions button{width:100%}}
