@@ -16,7 +16,7 @@ const DICT = {
     details:"Tavi dati un apstiprinājums",detailsIntro:"Pārbaudi katra apmeklētāja vārdu un rezervācijas informāciju.",passengerNames:"Apmeklētāju vārdi",passengerNamesHelp:"Ievadi katras biļetes īpašnieka vārdu.",passenger:"Apmeklētājs",name:"Vārds",email:"E-pasts",cancellationRule:"Klients var atcelt rezervāciju līdz 24 stundām pirms seansa sākuma. Pēc šī termiņa atcelšanu var veikt tikai administrators.",back:"← Atpakaļ",confirm:"Apstiprināt rezervāciju",validDetails:"Lūdzu, ievadi derīgu vārdu un e-pastu.",seatRace:"Viena no vietām tikko tika rezervēta. Izvēlies vietas vēlreiz.",confirmedEyebrow:"REZERVĀCIJA APSTIPRINĀTA",confirmed:"Tiekamies kinoteātrī!",savedBrowser:"Tava rezervācija ir saglabāta serverī.",bookingNumber:"Rezervācijas numurs",screening:"Seanss",close:"Aizvērt",demoPayment:"Šī ir rezervācija bez tiešsaistes maksājuma. Biļetes apmaksa šobrīd netiek veikta.",
     lookupMissing:"Ievadi rezervācijas kodu un e-pastu.",lookupNo:"Rezervācija ar šādu kodu un e-pastu nav atrasta.",statusConfirmed:"Apstiprināta",statusCancelled:"Atcelta",cancelBooking:"Atcelt rezervāciju",cancelConfirm:"Vai tiešām atcelt šo rezervāciju?",cancelled:"Rezervācija atcelta. Vietas atkal ir pieejamas.",cancelTooLate:"Klienta atcelšana iespējama tikai līdz 24 stundām pirms seansa.",
     adminLogin:"Administratora pieslēgšanās",adminIntro:"Ievadi serverī izveidotā administratora konta datus.",username:"Lietotājvārds",password:"Parole",login:"Pieteikties",badLogin:"Nepareizs lietotājvārds vai parole.",adminHint:"Atver šo logu ar Ctrl + Shift + Alt + P. Fn taustiņu pārlūks parasti nevar noteikt, tāpēc tas nav vajadzīgs.",
-    adminTitle:"Administrācijas panelis",adminIntro2:"Pārvaldi filmas, seansus, rezervācijas un cenas.",tabMovies:"🎬 Filmas un seansi",tabBookings:"🎟️ Rezervācijas",tabPrices:"€ Cenas",tabAccount:"⚙ Konts",logout:"Izrakstīties",adminSession:"Administratora sesija",addMovie:"+ Pievienot filmu",edit:"Rediģēt",delete:"Dzēst",noMovies:"Pagaidām nav filmu.",movieTitle:"Filmas nosaukums",genre:"Žanrs",duration:"Ilgums (minūtēs)",ageRating:"Vecuma ierobežojums",year:"Izlaiduma gads",posterEmoji:"Plakāta simbols",posterUrl:"Filmas plakāta attēla saite (HTTPS)",posterUpload:"Augšupielādēt plakātu",posterRemove:"Noņemt plakātu",posterPreview:"Plakāta priekšskatījums",posterUploadHelp:"Izvēlies JPG, PNG vai WebP attēlu. Tas tiks samazināts un saglabāts kopā ar filmu.",posterBackground:"Plakāta fona CSS krāsa",description:"Apraksts",schedule:"Seansi (katru datumu jaunā rindā)",scheduleHelp:"Formāts: GGGG-MM-DD:14:00,17:00 — katru datumu raksti jaunā rindā.",save:"Saglabāt",movieRequired:"Aizpildi nosaukumu, aprakstu un derīgu ilgumu.",invalidSchedule:"Pārbaudi seansu datumu un laiku formātu.",movieSaved:"Filma saglabāta.",movieDeleted:"Filma noņemta no publiskā saraksta.",deleteMovieConfirm:"Noņemt šo filmu no publiskā saraksta?",bookingList:"Visas rezervācijas",noBookings:"Vēl nav rezervāciju.",priceTitle:"Cenu iestatījumi",priceTicket:"Standarta biļete (€)",priceCustom:"Vietas izvēle par rezervāciju (€)",priceOffice:"Biroja krēsla vieta (€)",priceWater:"Ūdens (€)",pricePopcorn:"Popkorns (€)",savePrices:"Saglabāt cenas",pricesSaved:"Cenas saglabātas.",changePassword:"Mainīt administratora paroli",currentPassword:"Pašreizējā parole",newPassword:"Jaunā parole (vismaz 12 rakstzīmes)",passwordChanged:"Parole nomainīta.",passwordMin:"Jaunajai parolei jābūt vismaz 12 rakstzīmēm.",wrongCurrent:"Pašreizējā parole nav pareiza.",serverError:"Serveris pašlaik nav pieejams. Pārbaudi servera iestatījumus.",loading:"Ielādē...",bookNow:"Pirkt biļeti",min:"min",bookingSearchSuccess:"Rezervācija atrasta.",emptyScreenings:"Nav pievienotu seansu."
+    adminTitle:"Administrācijas panelis",adminIntro2:"Pārvaldi filmas, seansus, rezervācijas un cenas.",tabMovies:"🎬 Filmas un seansi",tabBookings:"🎟️ Rezervācijas",tabPrices:"€ Cenas",tabAccount:"⚙ Konts",logout:"Izrakstīties",adminSession:"Administratora sesija",addMovie:"+ Pievienot filmu",edit:"Rediģēt",delete:"Dzēst",noMovies:"Pagaidām nav filmu.",movieTitle:"Filmas nosaukums",genre:"Žanrs",duration:"Ilgums (minūtēs)",ageRating:"Vecuma ierobežojums",year:"Izlaiduma gads",posterEmoji:"Plakāta simbols",posterUrl:"Filmas plakāta attēla saite (HTTPS)",posterUpload:"Augšupielādēt plakātu",posterRemove:"Noņemt plakātu",posterPreview:"Plakāta priekšskatījums",posterUploadHelp:"Izvēlies JPG, PNG vai WebP attēlu. Tas tiks samazināts un saglabāts kopā ar filmu.",posterBackground:"Plakāta fona CSS krāsa",description:"Apraksts",schedule:"Seansi (katru datumu jaunā rindā)",scheduleHelp:"Formāts: GGGG-MM-DD:14:00,17:00 — katru datumu raksti jaunā rindā.",save:"Saglabāt",movieRequired:"Aizpildi nosaukumu, aprakstu un derīgu ilgumu.",invalidSchedule:"Pārbaudi seansu datumu un laiku formātu.",movieSaved:"Filma saglabāta.",movieDeleted:"Filma noņemta no publiskā saraksta.",deleteMovieConfirm:"Noņemt šo filmu no publiskā saraksta?",bookingList:"Visas rezervācijas",noBookings:"Vēl nav rezervāciju.",viewTicket:"Apskatīt biļeti",backBookings:"← Atpakaļ uz rezervācijām",confirmTitle:"Apstiprini darbību",confirmAction:"Jā, turpināt",confirmCancel:"Nē, atpakaļ",cancelHistoryNote:"Biļete tiks atcelta, bet rezervācijas vēsture paliks saglabāta. Vietas atkal būs pieejamas.",leaveBookingTitle:"Pamest rezervāciju?",leaveBookingMessage:"Tava izvēle netiks saglabāta. Vai tiešām vēlies aizvērt šo logu?",leaveBookingConfirm:"Pamest rezervāciju",createdAt:"Izveidota",cancelledAt:"Atcelta",cancelledBy:"Atcēla",ticketDetails:"Biļetes informācija",priceTitle:"Cenu iestatījumi",priceTicket:"Standarta biļete (€)",priceCustom:"Vietas izvēle par rezervāciju (€)",priceOffice:"Biroja krēsla vieta (€)",priceWater:"Ūdens (€)",pricePopcorn:"Popkorns (€)",savePrices:"Saglabāt cenas",pricesSaved:"Cenas saglabātas.",changePassword:"Mainīt administratora paroli",currentPassword:"Pašreizējā parole",newPassword:"Jaunā parole (vismaz 12 rakstzīmes)",passwordChanged:"Parole nomainīta.",passwordMin:"Jaunajai parolei jābūt vismaz 12 rakstzīmēm.",wrongCurrent:"Pašreizējā parole nav pareiza.",serverError:"Serveris pašlaik nav pieejams. Pārbaudi servera iestatījumus.",loading:"Ielādē...",bookNow:"Pirkt biļeti",min:"min",bookingSearchSuccess:"Rezervācija atrasta.",emptyScreenings:"Nav pievienotu seansu."
   },
   en: {
     navHome:"Home",navMovies:"Movies",navSeats:"Seating",navBookings:"My bookings",buyTicket:"Book a ticket",
@@ -33,7 +33,7 @@ const DICT = {
     details:"Your details and confirmation",detailsIntro:"Check each guest name and the booking details.",passengerNames:"Guest names",passengerNamesHelp:"Enter the name of the person using each ticket.",passenger:"Guest",name:"Name",email:"Email",cancellationRule:"Customers can cancel up to 24 hours before the screening starts. After that, only an administrator can cancel.",back:"← Back",confirm:"Confirm booking",validDetails:"Please enter a valid name and email address.",seatRace:"One of those seats was just booked. Please choose seats again.",confirmedEyebrow:"BOOKING CONFIRMED",confirmed:"See you at the cinema!",savedBrowser:"Your reservation has been saved on the server.",bookingNumber:"Booking reference",screening:"Screening",close:"Close",demoPayment:"This booking does not take an online payment. No ticket payment has been collected.",
     lookupMissing:"Enter the booking code and email address.",lookupNo:"No booking was found for that code and email.",statusConfirmed:"Confirmed",statusCancelled:"Cancelled",cancelBooking:"Cancel booking",cancelConfirm:"Are you sure you want to cancel this booking?",cancelled:"Booking cancelled. The seats are available again.",cancelTooLate:"Customers can only cancel up to 24 hours before the screening.",
     adminLogin:"Administrator login",adminIntro:"Enter the administrator account configured on the server.",username:"Username",password:"Password",login:"Log in",badLogin:"Incorrect username or password.",adminHint:"Open this window with Ctrl + Shift + Alt + P. Browsers usually cannot detect the Fn key, so it is not needed.",
-    adminTitle:"Admin dashboard",adminIntro2:"Manage movies, screenings, bookings and prices.",tabMovies:"🎬 Movies & screenings",tabBookings:"🎟️ Bookings",tabPrices:"€ Prices",tabAccount:"⚙ Account",logout:"Log out",adminSession:"Administrator session",addMovie:"+ Add movie",edit:"Edit",delete:"Remove",noMovies:"There are no movies yet.",movieTitle:"Movie title",genre:"Genre",duration:"Duration (minutes)",ageRating:"Age rating",year:"Release year",posterEmoji:"Poster symbol",posterUrl:"Poster image URL (HTTPS)",posterUpload:"Upload poster image",posterRemove:"Remove poster",posterPreview:"Poster preview",posterUploadHelp:"Choose a JPG, PNG or WebP image. It will be resized and saved with the movie.",posterBackground:"Poster background CSS colour",description:"Description",schedule:"Screenings (one date per line)",scheduleHelp:"Format: YYYY-MM-DD:14:00,17:00 — put each date on a new line.",save:"Save",movieRequired:"Enter a title, description and valid duration.",invalidSchedule:"Check the screening date and time format.",movieSaved:"Movie saved.",movieDeleted:"Movie removed from the public list.",deleteMovieConfirm:"Remove this movie from the public list?",bookingList:"All bookings",noBookings:"There are no bookings yet.",priceTitle:"Price settings",priceTicket:"Standard ticket (€)",priceCustom:"Custom seat selection per booking (€)",priceOffice:"Office chair upgrade (€)",priceWater:"Water (€)",pricePopcorn:"Popcorn (€)",savePrices:"Save prices",pricesSaved:"Prices saved.",changePassword:"Change admin password",currentPassword:"Current password",newPassword:"New password (at least 12 characters)",passwordChanged:"Password changed.",passwordMin:"The new password must be at least 12 characters.",wrongCurrent:"The current password is incorrect.",serverError:"The server is currently unavailable. Check the server setup.",loading:"Loading...",bookNow:"Book ticket",min:"min",bookingSearchSuccess:"Booking found.",emptyScreenings:"No screenings added."
+    adminTitle:"Admin dashboard",adminIntro2:"Manage movies, screenings, bookings and prices.",tabMovies:"🎬 Movies & screenings",tabBookings:"🎟️ Bookings",tabPrices:"€ Prices",tabAccount:"⚙ Account",logout:"Log out",adminSession:"Administrator session",addMovie:"+ Add movie",edit:"Edit",delete:"Remove",noMovies:"There are no movies yet.",movieTitle:"Movie title",genre:"Genre",duration:"Duration (minutes)",ageRating:"Age rating",year:"Release year",posterEmoji:"Poster symbol",posterUrl:"Poster image URL (HTTPS)",posterUpload:"Upload poster image",posterRemove:"Remove poster",posterPreview:"Poster preview",posterUploadHelp:"Choose a JPG, PNG or WebP image. It will be resized and saved with the movie.",posterBackground:"Poster background CSS colour",description:"Description",schedule:"Screenings (one date per line)",scheduleHelp:"Format: YYYY-MM-DD:14:00,17:00 — put each date on a new line.",save:"Save",movieRequired:"Enter a title, description and valid duration.",invalidSchedule:"Check the screening date and time format.",movieSaved:"Movie saved.",movieDeleted:"Movie removed from the public list.",deleteMovieConfirm:"Remove this movie from the public list?",bookingList:"All bookings",noBookings:"There are no bookings yet.",viewTicket:"View ticket",backBookings:"← Back to bookings",confirmTitle:"Confirm action",confirmAction:"Yes, continue",confirmCancel:"No, go back",cancelHistoryNote:"This ticket will be cancelled, but its booking history will remain saved. The seats will become available again.",leaveBookingTitle:"Leave checkout?",leaveBookingMessage:"Your current selections will be lost. Are you sure you want to close this window?",leaveBookingConfirm:"Leave checkout",createdAt:"Created",cancelledAt:"Cancelled",cancelledBy:"Cancelled by",ticketDetails:"Ticket details",priceTitle:"Price settings",priceTicket:"Standard ticket (€)",priceCustom:"Custom seat selection per booking (€)",priceOffice:"Office chair upgrade (€)",priceWater:"Water (€)",pricePopcorn:"Popcorn (€)",savePrices:"Save prices",pricesSaved:"Prices saved.",changePassword:"Change admin password",currentPassword:"Current password",newPassword:"New password (at least 12 characters)",passwordChanged:"Password changed.",passwordMin:"The new password must be at least 12 characters.",wrongCurrent:"The current password is incorrect.",serverError:"The server is currently unavailable. Check the server setup.",loading:"Loading...",bookNow:"Book ticket",min:"min",bookingSearchSuccess:"Booking found.",emptyScreenings:"No screenings added."
   }
 };
 
@@ -216,17 +216,55 @@ function showModal(html) {
   $("#modalBackdrop").classList.remove("hidden");
   document.body.style.overflow = "hidden";
 }
+function showConfirmDialog(message, onConfirm, options = {}) {
+  const previous = $("#actionConfirm");
+  if (previous) previous.remove();
+  const layer = document.createElement("div");
+  layer.id = "actionConfirm";
+  layer.className = "confirm-layer";
+  layer.innerHTML =
+    '<section class="confirm-card" role="alertdialog" aria-modal="true" aria-labelledby="actionConfirmTitle">' +
+      '<p class="eyebrow">DANCING FRUIT CINEMA</p>' +
+      '<h3 id="actionConfirmTitle">' + escapeHTML(options.title || t("confirmTitle")) + '</h3>' +
+      '<p class="confirm-message">' + escapeHTML(message) + '</p>' +
+      '<div class="confirm-actions">' +
+        '<button type="button" class="button button-secondary" id="confirmStay">' + escapeHTML(options.cancelLabel || t("confirmCancel")) + '</button>' +
+        '<button type="button" class="danger-button" id="confirmProceed">' + escapeHTML(options.confirmLabel || t("confirmAction")) + '</button>' +
+      '</div>' +
+    '</section>';
+  document.body.appendChild(layer);
+  const dismiss = () => layer.remove();
+  layer.addEventListener("click", (event) => { if (event.target === layer) dismiss(); });
+  $("#confirmStay").onclick = dismiss;
+  $("#confirmProceed").onclick = async () => {
+    const proceed = $("#confirmProceed");
+    const stay = $("#confirmStay");
+    if (!proceed || proceed.disabled) return;
+    proceed.disabled = true;
+    stay.disabled = true;
+    proceed.textContent = t("loading");
+    try {
+      dismiss();
+      if (typeof onConfirm === "function") await onConfirm();
+    } catch (error) {
+      dismiss();
+      toast(error.message || t("serverError"));
+    }
+  };
+  $("#confirmStay").focus();
+}
 function closeModal(force = false) {
-  // Protect an active ticket purchase from accidental clicks on the backdrop, X, or Escape.
-  // The completed-ticket screen is safe to close because the booking is already saved.
+  // Checkout can always be closed; this menu simply confirms before discarding the draft.
   const purchaseInProgress = Boolean(booking) && !$("#keepTicketButton");
   if (!force && purchaseInProgress) {
-    const message = language === "lv"
-      ? "Vai tiešām vēlies iziet no rezervācijas? Tava pašreizējā izvēle netiks saglabāta."
-      : "Are you sure you want to leave checkout? Your current selections will be lost.";
-    if (!window.confirm(message)) return;
-    booking = null;
+    showConfirmDialog(t("leaveBookingMessage"), () => {
+      booking = null;
+      closeModal(true);
+    }, {title:t("leaveBookingTitle"), confirmLabel:t("leaveBookingConfirm")});
+    return;
   }
+  const confirmLayer = $("#actionConfirm");
+  if (confirmLayer) confirmLayer.remove();
   $("#modalBackdrop").classList.add("hidden");
   document.body.style.overflow = "";
 }
@@ -582,7 +620,7 @@ function ticketPassengerText(item){
 }
 function printTicket(item,movie,bookingState,user) {
   const barcode=code39Svg(item.code);
-  const html='<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dancing Fruit Cinema — biļete</title><style>*{box-sizing:border-box}body{font-family:Arial,sans-serif;background:#eee;padding:24px}.ticket{max-width:720px;margin:auto;background:white;color:#161616;border:2px solid #222;border-radius:16px;padding:28px}.top{display:flex;align-items:center;gap:14px;border-bottom:2px dashed #aaa;padding-bottom:14px;font-weight:bold;letter-spacing:2px}.top img{width:62px;height:62px;object-fit:contain}.top span{margin-left:auto;text-align:right}.ticket h1{font-size:30px;margin:22px 0}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.grid span{display:block;font-size:11px;color:#666}.grid b{display:block;margin-top:5px;overflow-wrap:anywhere}.barcode{margin:28px auto 8px;max-width:620px}.barcode svg{width:100%;height:110px}.code{text-align:center;font:bold 18px monospace;letter-spacing:2px}.pay{text-align:center;margin-top:20px;padding:12px;border:1px dashed #555;font-weight:bold}@page{size:A5 portrait;margin:10mm}@media print{body{background:white;padding:0}.ticket{border:1px solid #111;border-radius:0;break-inside:avoid;max-width:none}}</style></head><body><article class="ticket"><div class="top"><img src="https://i.ibb.co/S7MWNTyt/Chat-GPT-Image-Nov-20-2026-05-56-47-PM.png" alt="Dancing Fruit Cinema"><b>DANCING FRUIT CINEMA</b><span>VIENA BIĻETE</span></div><h1>'+escapeHTML(movie?.title||"Cinema")+'</h1><div class="grid"><div><span>DATUMS</span><b>'+escapeHTML(bookingState.date)+'</b></div><div><span>LAIKS</span><b>'+escapeHTML(bookingState.time)+'</b></div><div><span>PERSONA</span><b>'+escapeHTML(ticketPassengerText(item))+'</b></div><div><span>VIETAS</span><b>'+item.seats.map(escapeHTML).join(", ")+'</b></div></div><div class="barcode">'+barcode+'</div><div class="code">'+escapeHTML(item.code)+'</div><div class="pay">APMAKSA KINOTEĀTRĪ</div></article></body></html>';
+  const html='<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dancing Fruit Cinema — biļete</title><style>*{box-sizing:border-box}body{font-family:Arial,sans-serif;background:#eee;padding:24px}.ticket{max-width:720px;margin:auto;background:white;color:#161616;border:2px solid #222;border-radius:16px;padding:28px}.top{display:flex;align-items:center;gap:14px;border-bottom:2px dashed #aaa;padding-bottom:14px;font-weight:bold;letter-spacing:2px}.top img{width:62px;height:62px;object-fit:contain}.top span{margin-left:auto;text-align:right}.ticket h1{font-size:30px;margin:22px 0}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.grid span{display:block;font-size:11px;color:#666}.grid b{display:block;margin-top:5px;overflow-wrap:anywhere}.barcode{margin:28px auto 8px;max-width:620px}.barcode svg{width:100%;height:110px}.code{text-align:center;font:bold 18px monospace;letter-spacing:2px}.pay{text-align:center;margin-top:20px;padding:12px;border:1px dashed #555;font-weight:bold}.cancelled{margin:10px 0;padding:10px;border:2px solid #a40000;color:#a40000;text-align:center;font-weight:900;letter-spacing:2px}@page{size:A5 portrait;margin:10mm}@media print{body{background:white;padding:0}.ticket{border:1px solid #111;border-radius:0;break-inside:avoid;max-width:none}}</style></head><body><article class="ticket"><div class="top"><img src="https://i.ibb.co/S7MWNTyt/Chat-GPT-Image-Nov-20-2026-05-56-47-PM.png" alt="Dancing Fruit Cinema"><b>DANCING FRUIT CINEMA</b><span>VIENA BIĻETE</span></div><h1>'+escapeHTML(movie?.title||"Cinema")+'</h1>'+(item.status==="cancelled"?'<div class="cancelled">CANCELLED · NOT VALID FOR ENTRY</div>':'')+'<div class="grid"><div><span>DATUMS</span><b>'+escapeHTML(bookingState.date)+'</b></div><div><span>LAIKS</span><b>'+escapeHTML(bookingState.time)+'</b></div><div><span>PERSONA</span><b>'+escapeHTML(ticketPassengerText(item))+'</b></div><div><span>VIETAS</span><b>'+item.seats.map(escapeHTML).join(", ")+'</b></div></div><div class="barcode">'+barcode+'</div><div class="code">'+escapeHTML(item.code)+'</div><div class="pay">APMAKSA KINOTEĀTRĪ</div></article></body></html>';
   const win=window.open("","_blank");
   if(!win){toast(language==="lv"?"Atļauj uznirstošos logus, lai drukātu biļeti.":"Allow pop-ups to print the ticket.");return;}
   win.document.open();win.document.write(html);win.document.close();
@@ -595,7 +633,7 @@ function printTicket(item,movie,bookingState,user) {
 }
 function downloadTicketSvg(item,movie,state,user){
  const barcode=code39Svg(item.code),match=barcode.match(/viewBox="0 0 ([0-9]+) 62"/),bars=barcode.slice(barcode.indexOf(">")+1,barcode.lastIndexOf("</svg>")),width=match?Number(match[1]):400;
- const svg='<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="720" viewBox="0 0 1000 720"><rect width="1000" height="620" rx="28" fill="#fffaf4"/><rect x="18" y="18" width="964" height="584" rx="22" fill="none" stroke="#5b3038" stroke-width="4"/><text x="55" y="75" font-family="Arial" font-size="28" font-weight="bold" fill="#5b3038">DANCING FRUIT CINEMA</text><text x="945" y="75" text-anchor="end" font-family="Arial" font-size="18" fill="#5b3038">VIENA BIĻETE</text><path d="M55 100H945" stroke="#bda8a4" stroke-dasharray="9 9" stroke-width="3"/><text x="55" y="165" font-family="Arial" font-size="46" font-weight="bold" fill="#21191a">'+escapeHTML(movie?.title||"Cinema")+'</text><g font-family="Arial" fill="#76666a" font-size="16"><text x="55" y="320">DATUMS</text><text x="520" y="320">LAIKS</text><text x="55" y="390">PERSONA</text><text x="55" y="465">VIETAS</text></g><g font-family="Arial" font-size="24" font-weight="bold" fill="#21191a"><text x="55" y="355">'+escapeHTML(state.date)+'</text><text x="520" y="355">'+escapeHTML(state.time)+'</text><text x="55" y="425">'+escapeHTML(ticketPassengerText(item))+'</text><text x="55" y="500">'+item.seats.map(escapeHTML).join(", ")+'</text></g><g transform="translate(90 535) scale('+(800/width)+' 1.65)">'+bars+'</g><text x="500" y="650" text-anchor="middle" font-family="monospace" font-size="25" font-weight="bold" letter-spacing="3" fill="#21191a">'+escapeHTML(item.code)+'</text><text x="500" y="680" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold" letter-spacing="2" fill="#5b3038">APMAKSA KINOTEĀTRĪ</text></svg>';
+ const svg='<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="720" viewBox="0 0 1000 720"><rect width="1000" height="620" rx="28" fill="#fffaf4"/><rect x="18" y="18" width="964" height="584" rx="22" fill="none" stroke="#5b3038" stroke-width="4"/><text x="55" y="75" font-family="Arial" font-size="28" font-weight="bold" fill="#5b3038">DANCING FRUIT CINEMA</text><text x="945" y="75" text-anchor="end" font-family="Arial" font-size="18" fill="#5b3038">VIENA BIĻETE</text><path d="M55 100H945" stroke="#bda8a4" stroke-dasharray="9 9" stroke-width="3"/><text x="55" y="165" font-family="Arial" font-size="46" font-weight="bold" fill="#21191a">'+escapeHTML(movie?.title||"Cinema")+'</text>'+(item.status==="cancelled"?'<text x="945" y="205" text-anchor="end" font-family="Arial" font-size="24" font-weight="bold" fill="#b00020">CANCELLED · INVALID</text>':'')+'<g font-family="Arial" fill="#76666a" font-size="16"><text x="55" y="320">DATUMS</text><text x="520" y="320">LAIKS</text><text x="55" y="390">PERSONA</text><text x="55" y="465">VIETAS</text></g><g font-family="Arial" font-size="24" font-weight="bold" fill="#21191a"><text x="55" y="355">'+escapeHTML(state.date)+'</text><text x="520" y="355">'+escapeHTML(state.time)+'</text><text x="55" y="425">'+escapeHTML(ticketPassengerText(item))+'</text><text x="55" y="500">'+item.seats.map(escapeHTML).join(", ")+'</text></g><g transform="translate(90 535) scale('+(800/width)+' 1.65)">'+bars+'</g><text x="500" y="650" text-anchor="middle" font-family="monospace" font-size="25" font-weight="bold" letter-spacing="3" fill="#21191a">'+escapeHTML(item.code)+'</text><text x="500" y="680" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold" letter-spacing="2" fill="#5b3038">APMAKSA KINOTEĀTRĪ</text></svg>';
  const url=URL.createObjectURL(new Blob([svg],{type:"image/svg+xml"})),link=document.createElement("a");link.href=url;link.download="Dancing-Fruit-Ticket-"+item.code+".svg";link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 function renderConfirmation(item) {
@@ -626,9 +664,9 @@ async function showLookupResult(code,email) {
       '<small>' + formatDate(item.date) + ' · ' + escapeHTML(item.time) + ' · ' + item.seats.map(escapeHTML).join(", ") + ' · ' + formatMoney(item.total) + '</small>' +
       '<small>' + (item.status === "cancelled" ? t("statusCancelled") : t("statusConfirmed")) + '</small></div>' +
       (item.status === "confirmed" ? '<button class="danger-button" id="customerCancel">' + t("cancelBooking") + '</button>' : '') + '</div>';
-    if ($("#customerCancel")) $("#customerCancel").onclick = async () => {
+    if ($("#customerCancel")) $("#customerCancel").onclick = () => showConfirmDialog(t("cancelConfirm") + "\n\n" + t("cancelHistoryNote"), async () => {
       const button = $("#customerCancel");
-      if (!button || button.disabled || !confirm(t("cancelConfirm"))) return;
+      if (!button) return;
       button.disabled = true;
       button.textContent = t("loading");
       try {
@@ -642,7 +680,7 @@ async function showLookupResult(code,email) {
           $("#customerCancel").textContent = t("cancelBooking");
         }
       }
-    };
+    });
   } catch(error) {
     $("#customerBookings").innerHTML = '<p class="admin-note">' + escapeHTML(error.message || t("lookupNo")) + '</p>';
   }
@@ -844,19 +882,86 @@ function renderMovieEditor(movie) {
 async function renderAdminBookings(panel) {
   const data = await api("/admin/bookings");
   const list = data.bookings || [];
-  panel.innerHTML = '<h3>' + t("bookingList") + '</h3>' + (list.length ? list.map((item) =>
-    '<div class="admin-item"><div><b>' + escapeHTML(item.code) + ' · ' + escapeHTML(item.name) + '</b><small>' +
-    escapeHTML(item.movie) + ' · ' + formatDate(item.date) + ' · ' + escapeHTML(item.time) + ' · ' + item.seats.map(escapeHTML).join(", ") +
-    '</small><small>' + escapeHTML(item.email) + ' · ' + formatMoney(item.total) + ' · ' + (item.checkedIn ? (language === "lv" ? "Biļete izmantota" : "Checked in") : (language === "lv" ? "Nav skenēta" : "Not scanned")) + ' · ' + (item.status === "cancelled" ? t("statusCancelled") : t("statusConfirmed")) +
-    '</small></div>' + (item.status === "confirmed" ? '<button class="danger-button" data-admin-cancel="' + escapeHTML(item.code) + '">' + t("cancelBooking") + '</button>' : "") + '</div>'
-  ).join("") : '<p class="admin-note">' + t("noBookings") + '</p>');
-  document.querySelectorAll("[data-admin-cancel]").forEach((button) => button.onclick = async () => {
-    if (button.disabled || !confirm(t("cancelConfirm"))) return;
+  panel.innerHTML = '<h3>' + t("bookingList") + '</h3>' +
+    (list.length ? list.map((item) =>
+      '<div class="admin-item admin-booking-item"><div><b>' + escapeHTML(item.code) + ' · ' + escapeHTML(item.name) + '</b><small>' +
+      escapeHTML(item.movie) + ' · ' + formatDate(item.date) + ' · ' + escapeHTML(item.time) + ' · ' + (item.seats || []).map(escapeHTML).join(", ") +
+      '</small><small>' + escapeHTML(item.email) + ' · ' + formatMoney(item.total) + ' · ' +
+      (item.checkedIn ? (language === "lv" ? "Biļete izmantota" : "Checked in") : (language === "lv" ? "Nav skenēta" : "Not scanned")) +
+      ' · <strong class="' + (item.status === "cancelled" ? 'booking-cancelled' : 'booking-active') + '">' +
+      (item.status === "cancelled" ? t("statusCancelled") : t("statusConfirmed")) + '</strong></small></div>' +
+      '<div class="admin-booking-actions"><button class="small-button" data-admin-view-ticket="' + escapeHTML(item.code) + '">' + t("viewTicket") + '</button>' +
+      (item.status === "confirmed" ? '<button class="danger-button" data-admin-cancel="' + escapeHTML(item.code) + '">' + t("cancelBooking") + '</button>' : '') + '</div></div>'
+    ).join("") : '<p class="admin-note">' + t("noBookings") + '</p>');
+  panel.querySelectorAll("[data-admin-view-ticket]").forEach((button) => button.onclick = () => {
+    const item = list.find((entry) => entry.code === button.dataset.adminViewTicket);
+    if (item) renderAdminTicket(panel, item);
+  });
+  panel.querySelectorAll("[data-admin-cancel]").forEach((button) => button.onclick = () =>
+    showConfirmDialog(t("cancelConfirm") + "\n\n" + t("cancelHistoryNote"), async () => {
+      button.disabled = true;
+      button.textContent = t("loading");
+      try {
+        await api("/admin/bookings/" + encodeURIComponent(button.dataset.adminCancel) + "/cancel", {method:"POST"});
+        toast(t("cancelled"));
+        await renderAdminBookings(panel);
+      } catch(error) {
+        toast(error.message);
+        button.disabled = false;
+        button.textContent = t("cancelBooking");
+      }
+    })
+  );
+}
+function renderAdminTicket(panel, item) {
+  const seats = item.seats || [];
+  const passengers = item.passengers || [];
+  const cancelled = item.status === "cancelled";
+  const statusText = cancelled ? t("statusCancelled") : t("statusConfirmed");
+  const created = item.createdAt ? new Date(item.createdAt).toLocaleString(language === "lv" ? "lv-LV" : "en-IE") : "—";
+  const passengerRows = passengers.length
+    ? passengers.map(person => '<div class="admin-ticket-passenger"><span>' + escapeHTML(person.seat_number || person.seat || "—") + '</span><b>' + escapeHTML(person.name || "—") + '</b></div>').join("")
+    : '<p class="admin-note">—</p>';
+  const ticket = {code:item.code,seats,passengers,status:item.status};
+  const movie = {title:item.movie};
+  const state = {date:formatDate(item.date),time:item.time};
+  panel.innerHTML =
+    '<button class="button button-secondary admin-back-button" id="backAdminBookings">' + t("backBookings") + '</button>' +
+    '<div class="admin-ticket-view"><div class="admin-ticket-heading"><div><p class="eyebrow">DANCING FRUIT CINEMA</p><h3>' + t("ticketDetails") + '</h3><p class="admin-note">' + escapeHTML(item.code) + '</p></div>' +
+    '<span class="admin-ticket-status ' + (cancelled ? 'cancelled' : 'active') + '">' + statusText + '</span></div>' +
+    '<article class="admin-ticket-paper"><div class="admin-ticket-brand"><b>DANCING FRUIT CINEMA</b><span>VIENA BIĻETE</span></div>' +
+    '<h2>' + escapeHTML(item.movie) + '</h2>' +
+    (cancelled ? '<div class="admin-ticket-void">ATCELTA · BIĻETE NAV DERĪGA</div>' : '') +
+    '<div class="admin-ticket-fields"><div><small>DATUMS</small><b>' + formatDate(item.date) + '</b></div><div><small>LAIKS</small><b>' + escapeHTML(item.time) + '</b></div>' +
+    '<div><small>VIESIS</small><b>' + escapeHTML(item.name) + '</b></div><div><small>VIETAS</small><b>' + seats.map(escapeHTML).join(", ") + '</b></div></div>' +
+    '<div class="admin-ticket-barcode">' + code39Svg(item.code) + '</div><div class="admin-ticket-code">' + escapeHTML(item.code) + '</div>' +
+    '<div class="admin-ticket-payment">APMAKSA KINOTEĀTRĪ</div></article>' +
+    '<div class="admin-ticket-info"><div><small>' + t("email") + '</small><b>' + escapeHTML(item.email) + '</b></div>' +
+    '<div><small>' + t("createdAt") + '</small><b>' + escapeHTML(created) + '</b></div>' +
+    '<div><small>' + t("tickets") + '</small><b>' + Number(item.count || seats.length) + '</b></div>' +
+    '<div><small>' + t("total") + '</small><b>' + formatMoney(item.total) + '</b></div>' +
+    '<div><small>' + t("water") + '</small><b>' + Number(item.waterCount || 0) + '</b></div>' +
+    '<div><small>' + t("popcorn") + '</small><b>' + Number(item.popcornCount || 0) + '</b></div></div>' +
+    '<h4 class="admin-ticket-subheading">' + t("passengerNames") + '</h4><div class="admin-ticket-passengers">' + passengerRows + '</div>' +
+    (cancelled ? '<p class="admin-note">' + t("cancelledAt") + ': ' + escapeHTML(item.cancelledAt ? new Date(item.cancelledAt).toLocaleString(language === "lv" ? "lv-LV" : "en-IE") : "—") + ' · ' + t("cancelledBy") + ': ' + escapeHTML(item.cancelledBy || "—") + '</p>' : '') +
+    '<div class="admin-ticket-actions"><button class="small-button" id="adminTicketPrint">' + (language === "lv" ? "Drukāt biļeti" : "Print ticket") + '</button>' +
+    '<button class="button button-secondary" id="adminTicketDownload">' + (language === "lv" ? "Lejupielādēt biļeti" : "Download ticket") + '</button>' +
+    (cancelled ? '' : '<button class="danger-button" id="adminTicketCancel">' + t("cancelBooking") + '</button>') + '</div></div>';
+  $("#backAdminBookings").onclick = () => renderAdminBookings(panel);
+  $("#adminTicketPrint").onclick = () => printTicket(ticket,movie,state,{name:item.name,email:item.email});
+  $("#adminTicketDownload").onclick = () => downloadTicketSvg(ticket,movie,state,{name:item.name,email:item.email});
+  if ($("#adminTicketCancel")) $("#adminTicketCancel").onclick = () => showConfirmDialog(t("cancelConfirm") + "\n\n" + t("cancelHistoryNote"), async () => {
+    const button = $("#adminTicketCancel");
+    if (!button) return;
     button.disabled = true;
     button.textContent = t("loading");
     try {
-      await api("/admin/bookings/"+encodeURIComponent(button.dataset.adminCancel)+"/cancel",{method:"POST"});
-      toast(t("cancelled")); await renderAdminBookings($("#adminPanel"));
+      await api("/admin/bookings/" + encodeURIComponent(item.code) + "/cancel", {method:"POST"});
+      toast(t("cancelled"));
+      const refreshed = await api("/admin/bookings");
+      const updated = (refreshed.bookings || []).find(entry => entry.code === item.code);
+      if (updated) renderAdminTicket(panel, updated);
+      else await renderAdminBookings(panel);
     } catch(error) {
       toast(error.message);
       button.disabled = false;
@@ -1048,12 +1153,12 @@ async function loadAccountBookings(){
         button.textContent="Izrakstīties";
       }
     };
-    document.querySelectorAll("[data-account-cancel]").forEach(button=>button.onclick=async()=>{
-      if(button.disabled||!confirm(t("cancelConfirm")))return;
+    document.querySelectorAll("[data-account-cancel]").forEach(button=>button.onclick=()=>showConfirmDialog(t("cancelConfirm")+"\n\n"+t("cancelHistoryNote"),async()=>{
+      if(button.disabled)return;
       button.disabled=true;button.textContent=t("loading");
       try{await api("/account/bookings/"+encodeURIComponent(button.dataset.accountCancel)+"/cancel",{method:"POST"});toast(t("cancelled"));loadAccountBookings();}
-      catch(error){toast(error.message);button.disabled=false;button.textContent="Atcelt";}
-    });
+      catch(error){toast(error.message);button.disabled=false;button.textContent=language==="lv"?"Atcelt":"Cancel";}
+    }));
     document.querySelectorAll("[data-account-ticket]").forEach(button=>button.onclick=()=>openSavedTicket(button.dataset.accountTicket));
   }catch(error){
     if(error.status===401){
@@ -1089,6 +1194,7 @@ document.addEventListener("keydown",(event)=>{
   if (event.ctrlKey && event.shiftKey && event.altKey && event.key.toLowerCase() === "p") {
     event.preventDefault(); openAdmin();
   }
+  if (event.key === "Escape" && $("#actionConfirm")) { $("#actionConfirm").remove(); return; }
   if (event.key === "Escape" && !$("#modalBackdrop").classList.contains("hidden")) closeModal();
 });
 $("#modalClose").addEventListener("click",closeModal);
@@ -1119,13 +1225,12 @@ $("#bookingLookup").addEventListener("submit",async(event)=>{
       (item.status === "confirmed" ? '<button class="danger-button" id="cancelMyBooking">' + t("cancelBooking") + '</button>' : '') + '</div>';
     $("#customerBookings").dataset.code = code;
     $("#customerBookings").dataset.email = email;
-    if ($("#cancelMyBooking")) $("#cancelMyBooking").onclick = async () => {
-      if (!confirm(t("cancelConfirm"))) return;
+    if ($("#cancelMyBooking")) $("#cancelMyBooking").onclick = () => showConfirmDialog(t("cancelConfirm")+"\n\n"+t("cancelHistoryNote"),async()=>{
       try {
         await api("/bookings/"+encodeURIComponent(code)+"/cancel",{method:"POST",body:{customerEmail:email}});
         toast(t("cancelled")); $("#customerBookings").innerHTML = ""; $("#bookingLookup").requestSubmit();
       } catch(error) { toast(error.message); }
-    };
+    });
   } catch(error) {
     $("#customerBookings").innerHTML = '<p class="admin-note">' + escapeHTML(error.message || t("lookupNo")) + '</p>';
   } finally {
