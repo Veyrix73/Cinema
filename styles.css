@@ -232,3 +232,12 @@ button:disabled,.button:disabled,.small-button:disabled,.danger-button:disabled{
 .admin-ticket-passenger b{overflow-wrap:anywhere;text-align:right}
 .admin-ticket-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
 @media(max-width:650px){.confirm-card{padding:20px}.confirm-actions{flex-direction:column-reverse}.confirm-actions button{width:100%}.admin-booking-item{align-items:stretch}.admin-booking-actions{width:100%}.admin-booking-actions button{flex:1}.admin-ticket-view{padding:11px}.admin-ticket-paper{padding:14px}.admin-ticket-fields{gap:10px}.admin-ticket-actions{flex-direction:column}.admin-ticket-actions button{width:100%}}
+
+
+/* Admin booking status filters */
+.admin-booking-filters{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
+.admin-booking-filters button{display:inline-flex;align-items:center;gap:8px;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:#100b0c;color:#cbbab4;font:700 10px Manrope;cursor:pointer}
+.admin-booking-filters button.active{border-color:#bd9650;background:#d49c291a;color:#ffe0a0}
+.admin-booking-filters button b{display:inline-grid;place-items:center;min-width:19px;height:19px;padding:0 5px;border-radius:12px;background:#ffffff12;font-size:9px}
+.admin-booking-filters button.active b{background:#bd965033}
+@media(max-width:650px){.admin-booking-filters{display:grid;grid-template-columns:1fr}.admin-booking-filters button{justify-content:space-between;min-height:40px}}
