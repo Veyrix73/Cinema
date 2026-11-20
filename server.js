@@ -257,7 +257,7 @@ app.post("/api/account/logout",customerOnly,(req,res,next)=>req.session.destroy(
 app.get("/api/account/bookings",customerOnly,async(req,res,next)=>{
   try{
     const result=await pool.query(
-      "SELECT b.booking_code,b.customer_name,b.customer_email,b.ticket_count,b.total_cents,b.status,b.checked_in,to_char(s.show_date,'YYYY-MM-DD') AS show_date,to_char(s.show_time,'HH24:MI') AS show_time,s.starts_at,m.title AS movie_title,COALESCE(array_agg(bs.seat_number ORDER BY bs.seat_number) FILTER(WHERE bs.seat_number IS NOT NULL),'{}') AS seats,COALESCE((SELECT json_agg(json_build_object('seat_number',bp.seat_number,'name',bp.passenger_name) ORDER BY bp.seat_number) FROM booking_passengers bp WHERE bp.booking_id=b.id),'[]'::json) AS passengers FROM bookings b JOIN screenings s ON s.id=b.screening_id JOIN movies m ON m.id=s.movie_id LEFT JOIN booking_seats bs ON bs.booking_id=b.id WHERE b.user_id=$1 AND b.status='confirmed' GROUP BY b.id,s.id,m.id ORDER BY b.created_at DESC",
+      "SELECT b.booking_code,b.customer_name,b.customer_email,b.ticket_count,b.total_cents,b.status,b.checked_in,to_char(s.show_date,'YYYY-MM-DD') AS show_date,to_char(s.show_time,'HH24:MI') AS show_time,s.starts_at,m.title AS movie_title,COALESCE(array_agg(bs.seat_number ORDER BY bs.seat_number) FILTER(WHERE bs.seat_number IS NOT NULL),'{}') AS seats,COALESCE((SELECT json_agg(json_build_object('seat_number',bp.seat_number,'name',bp.passenger_name) ORDER BY bp.seat_number) FROM booking_passengers bp WHERE bp.booking_id=b.id),'[]'::json) AS passengers FROM bookings b JOIN screenings s ON s.id=b.screening_id JOIN movies m ON m.id=s.movie_id LEFT JOIN booking_seats bs ON bs.booking_id=b.id WHERE b.user_id=$1 GROUP BY b.id,s.id,m.id ORDER BY b.created_at DESC",
       [req.session.user.id]
     );
     res.json({bookings:result.rows.map(row=>({code:row.booking_code,name:row.customer_name,email:row.customer_email,count:row.ticket_count,total:row.total_cents/100,status:row.status,checkedIn:row.checked_in,date:row.show_date,time:row.show_time,startsAt:row.starts_at,movie:row.movie_title,seats:row.seats,passengers:row.passengers}))});
@@ -373,7 +373,7 @@ app.post("/api/bookings/lookup", lookupLimiter, async (req,res,next) => {
       "COALESCE(array_agg(ss.seat_number ORDER BY ss.seat_number) FILTER(WHERE ss.office_chair=TRUE),'{}') AS office_seats," +
       "COALESCE((SELECT json_agg(json_build_object('seat_number',bp.seat_number,'name',bp.passenger_name) ORDER BY bp.seat_number) FROM booking_passengers bp WHERE bp.booking_id=b.id),'[]'::json) AS passengers " +
       "FROM bookings b JOIN screenings s ON s.id=b.screening_id JOIN movies m ON m.id=s.movie_id " +
-      "LEFT JOIN booking_seats ss ON ss.booking_id=b.id WHERE upper(b.booking_code)=upper($1) AND lower(b.customer_email)=lower($2) AND b.status='confirmed' GROUP BY b.id,s.id,m.id",
+      "LEFT JOIN booking_seats ss ON ss.booking_id=b.id WHERE upper(b.booking_code)=upper($1) AND lower(b.customer_email)=lower($2) GROUP BY b.id,s.id,m.id",
       [code,email]
     );
     if (!result.rowCount) return res.status(404).json({error:"No booking found for that code and email."});
@@ -442,7 +442,7 @@ app.get("/api/admin/bookings",adminOnly,async(req,res,next)=>{
       "COALESCE(array_agg(ss.seat_number ORDER BY ss.seat_number) FILTER(WHERE ss.seat_number IS NOT NULL),'{}') AS seats,"+
       "COALESCE((SELECT json_agg(json_build_object('seat_number',bp.seat_number,'name',bp.passenger_name) ORDER BY bp.seat_number) FROM booking_passengers bp WHERE bp.booking_id=b.id),'[]'::json) AS passengers "+
       "FROM bookings b JOIN screenings s ON s.id=b.screening_id JOIN movies m ON m.id=s.movie_id "+
-      "LEFT JOIN booking_seats ss ON ss.booking_id=b.id WHERE b.status='confirmed' GROUP BY b.id,s.id,m.id ORDER BY b.created_at DESC"
+      "LEFT JOIN booking_seats ss ON ss.booking_id=b.id GROUP BY b.id,s.id,m.id ORDER BY b.created_at DESC"
     );
     res.json({bookings:result.rows.map(row=>({code:row.booking_code,name:row.customer_name,email:row.customer_email,
       count:row.ticket_count,total:row.total_cents/100,status:row.status,checkedIn:row.checked_in,checkedInAt:row.checked_in_at,date:row.show_date,time:row.show_time,movie:row.movie_title,seats:row.seats,passengers:row.passengers}))});
