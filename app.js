@@ -1056,9 +1056,9 @@ async function openSavedTicket(code){
   if(!item)return;
   const movie={title:item.movie};const state={date:item.date,time:item.time};
   showModal('<div class="ticket-confirmation"><h2 id="modalTitle">'+(language==="lv"?"Tava biļete":"Your ticket")+'</h2><div class="print-ticket" id="printTicket"><div class="ticket-top"><b>DANCING FRUIT CINEMA</b><span>KINO BIĻETE</span></div><h3>'+escapeHTML(item.movie)+'</h3><div class="ticket-details"><span><small>DATUMS</small><b>'+formatDate(item.date)+'</b></span><span><small>LAIKS</small><b>'+escapeHTML(item.time)+'</b></span><span><small>PERSONA</small><b>'+escapeHTML(ticketPassengerText(item))+'</b></span><span><small>VIETAS</small><b>'+item.seats.map(escapeHTML).join(", ")+'</b></span></div><div class="ticket-barcode">'+code39Svg(item.code)+'</div><div class="ticket-code-text">'+escapeHTML(item.code)+'</div><div class="ticket-pay">APMAKSA KINOTEĀTRĪ</div></div><button class="small-button" id="printSavedTicket">'+(language==="lv"?"Drukāt biļeti":"Print ticket")+'</button></div>');
-  $("#printSavedTicket").onclick=()=>printTicket({code:item.code,seats:item.seats},movie,state,{name:item.name,email:item.email});
+  $("#printSavedTicket").onclick=()=>printTicket({code:item.code,seats:item.seats,passengers:item.passengers||[]},movie,state,{name:item.name,email:item.email});
   $("#printSavedTicket").insertAdjacentHTML("afterend",'<button class="button button-secondary" id="downloadSavedTicket">'+(language==="lv"?"Lejupielādēt biļeti":"Download ticket")+'</button>');
-  $("#downloadSavedTicket").onclick=()=>downloadTicketSvg({code:item.code,seats:item.seats},movie,state,{name:item.name,email:item.email});
+  $("#downloadSavedTicket").onclick=()=>downloadTicketSvg({code:item.code,seats:item.seats,passengers:item.passengers||[]},movie,state,{name:item.name,email:item.email});
 }
 document.addEventListener("click",(event)=>{
   const bookButton = event.target.closest("[data-book]");
