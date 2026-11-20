@@ -168,3 +168,24 @@
 @media print{body *{visibility:hidden}.print-ticket,.print-ticket *{visibility:visible}.print-ticket{position:absolute;left:0;top:0;width:100%;box-shadow:none}}
 
 .account-dashboard .eyebrow{margin-bottom:5px}.account-dashboard>h3{margin:20px 0 8px}.account-ticket-actions button{white-space:nowrap}
+
+
+/* Dancing Fruit Cinema official artwork + usability finish */
+.brand-logo{display:block;width:46px;height:46px;object-fit:contain;border-radius:9px;flex:0 0 auto;filter:drop-shadow(0 4px 10px #0008)}
+.brand{gap:11px}
+.hero-visual{min-width:0}
+.hero-emblem{display:block;width:min(100%,350px);margin-inline:auto;border-radius:22px;overflow:hidden;box-shadow:0 26px 65px #0009,0 0 45px #e3a13a24;transform:translateY(0);transition:transform .35s ease,box-shadow .35s ease}
+.hero-emblem:hover{transform:translateY(-5px) rotate(-.5deg);box-shadow:0 34px 75px #000b,0 0 55px #e3a13a38}
+.hero-emblem img{display:block;width:100%;height:auto;aspect-ratio:1;object-fit:cover}
+.ticket-top{align-items:center;gap:12px}
+.ticket-top img{width:54px;height:54px;object-fit:contain;flex:0 0 auto}
+.ticket-top b{margin-right:auto}
+button:disabled,.button:disabled,.small-button:disabled,.danger-button:disabled{opacity:.56;cursor:not-allowed;filter:saturate(.55)}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+@media(max-width:650px){
+  .brand-logo{width:39px;height:39px}
+  .brand{gap:7px}
+  .hero-visual{height:270px}
+  .hero-emblem{width:min(100%,255px)}
+}
+@media(prefers-reduced-motion:reduce){.hero-emblem{transition:none!important}.hero-emblem:hover{transform:none}}
