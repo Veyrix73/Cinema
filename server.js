@@ -409,7 +409,7 @@ async function cancelReservation(code,email,isAdmin) {
     await client.query("ROLLBACK").catch(()=>{}); throw error;
   } finally { client.release(); }
 }
-app.post("/api/bookings/:code/cancel", async (req,res,next) => {
+app.post("/api/bookings/:code/cancel", lookupLimiter, async (req,res,next) => {
   const email = String(req.body?.customerEmail || "").trim().toLowerCase();
   if (!email) return res.status(400).json({error:"Enter the email address used for this booking."});
   try { const result=await cancelReservation(req.params.code,email,false); res.status(result.status).json(result); }
