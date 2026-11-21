@@ -1,5 +1,6 @@
 const $ = (selector) => document.querySelector(selector);
 const API = "/api";
+let activeTicketCameraCleanup = null;
 const DICT = {
   lv: {
     navHome:"Sākums",navMovies:"Filmas",navSeats:"Sēdvietas",navBookings:"Manas rezervācijas",buyTicket:"Pirkt biļeti",
@@ -756,6 +757,7 @@ async function renderAdminOverview() {
   }
 }
 async function renderAdminTab() {
+  if (adminTab !== "scan" && activeTicketCameraCleanup) activeTicketCameraCleanup();
   const panel = $("#adminPanel");
   if (!panel) return;
   panel.innerHTML = t("loading");
@@ -1091,6 +1093,7 @@ function renderTicketScanner(panel) {
 
   const stopCamera = () => {
     scanning = false;
+    if (activeTicketCameraCleanup === stopCamera) activeTicketCameraCleanup = null;
     if (frameRequest) cancelAnimationFrame(frameRequest);
     frameRequest = 0;
     if (stream) stream.getTracks().forEach(track => track.stop());
@@ -1106,6 +1109,8 @@ function renderTicketScanner(panel) {
     startButton.disabled = false;
     stopButton.disabled = true;
   };
+
+  activeTicketCameraCleanup = stopCamera;
 
   const drawDetection = (item) => {
     const box = item.boundingBox;
