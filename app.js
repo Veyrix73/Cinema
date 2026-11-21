@@ -1100,6 +1100,7 @@ function renderTicketScanner(panel) {
     const context = overlay.getContext("2d");
     context.clearRect(0, 0, overlay.width, overlay.height);
     placeholder.hidden = false;
+    $("#ticketCameraStage").classList.remove("is-camera-on");
     live.classList.remove("is-live");
     live.innerHTML = '<i></i>' + (lv ? "GAIDA KAMERU" : "CAMERA STANDBY");
     startButton.disabled = false;
@@ -1222,6 +1223,7 @@ function renderTicketScanner(panel) {
       video.srcObject = stream;
       await video.play();
       placeholder.hidden = true;
+      $("#ticketCameraStage").classList.add("is-camera-on");
       scanning = true;
       stopButton.disabled = false;
       live.innerHTML = '<i></i>' + (lv ? "MEKLĒ QR KODU" : "LOOKING FOR QR CODE");
