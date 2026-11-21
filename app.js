@@ -1128,6 +1128,9 @@ function renderTicketScanner(panel) {
   const startButton = $("#startTicketCamera"), stopButton = $("#stopTicketCamera");
   const placeholder = $("#ticketCameraPlaceholder"), live = $("#ticketCameraLive"), help = $("#ticketCameraHelp");
   let stream = null, detector = null, frameRequest = 0, scanning = false, busy = false, lastCode = "", lastScanAt = 0;
+  const scanCanvas = document.createElement("canvas");
+  const scanContext = scanCanvas.getContext("2d", {willReadFrequently:true});
+  let lastFrameScanAt = 0;
 
   const stopCamera = () => {
     scanning = false;
@@ -1219,12 +1222,32 @@ function renderTicketScanner(panel) {
   };
 
   const detectFrame = async () => {
-    if (!scanning || !detector || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
+    if (!scanning || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
       if (scanning) frameRequest = requestAnimationFrame(detectFrame);
       return;
     }
     try {
-      const found = await detector.detect(video);
+      let found = [];
+      if (detector) {
+        found = await detector.detect(video);
+      } else if (typeof window.jsQR === "function" && Date.now() - lastFrameScanAt >= 120) {
+        lastFrameScanAt = Date.now();
+        const width = video.videoWidth, height = video.videoHeight;
+        if (width && height) {
+          if (scanCanvas.width !== width || scanCanvas.height !== height) {
+            scanCanvas.width = width;
+            scanCanvas.height = height;
+          }
+          scanContext.drawImage(video, 0, 0, width, height);
+          const pixels = scanContext.getImageData(0, 0, width, height);
+          const qr = window.jsQR(pixels.data, width, height, {inversionAttempts:"attemptBoth"});
+          if (qr) {
+            const points = [qr.location.topLeftCorner,qr.location.topRightCorner,qr.location.bottomRightCorner,qr.location.bottomLeftCorner];
+            const xs = points.map(point=>point.x), ys = points.map(point=>point.y);
+            found = [{rawValue:qr.data,cornerPoints:points,boundingBox:{x:Math.min(...xs),y:Math.min(...ys),width:Math.max(...xs)-Math.min(...xs),height:Math.max(...ys)-Math.min(...ys)}}];
+          }
+        }
+      }
       if (found.length) {
         const item = found[0];
         drawDetection(item);
@@ -1252,17 +1275,24 @@ function renderTicketScanner(panel) {
       help.textContent = lv ? "Šajā pārlūkā kamera nav pieejama. Atver vietni HTTPS adresē vai izmanto manuālo ievadi." : "Camera access is unavailable. Open the site over HTTPS or use manual entry.";
       return;
     }
-    if (!("BarcodeDetector" in window)) {
-      help.textContent = lv ? "Šis pārlūks neatbalsta iebūvēto QR skeneri. Izmanto manuālo ievadi vai citu pārlūku." : "This browser does not support the built-in QR scanner. Use manual entry or another browser.";
-      return;
-    }
     try {
-      const formats = await BarcodeDetector.getSupportedFormats();
-      if (!formats.includes("qr_code")) throw new Error(lv ? "QR kodu noteikšana nav atbalstīta." : "QR-code detection is not supported.");
-      detector = new BarcodeDetector({formats:["qr_code"]});
+      detector = null;
+      if (typeof window.BarcodeDetector === "function") {
+        try {
+          const formats = await BarcodeDetector.getSupportedFormats();
+          if (formats.includes("qr_code")) detector = new BarcodeDetector({formats:["qr_code"]});
+        } catch { detector = null; }
+      }
+      if (!detector && typeof window.jsQR !== "function") {
+        throw new Error(lv ? "QR skenera bibliotēka nav ielādēta. Pārlādē lapu un mēģini vēlreiz." : "QR scanner library did not load. Reload the page and try again.");
+      }
       startButton.disabled = true;
       help.textContent = lv ? "Pieprasa kameras atļauju…" : "Requesting camera permission…";
-      stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment",width:{ideal:1280},height:{ideal:720}},audio:false});
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"},width:{ideal:1280},height:{ideal:720}},audio:false});
+      } catch(cameraError) {
+        stream = await navigator.mediaDevices.getUserMedia({video:true,audio:false});
+      }
       video.srcObject = stream;
       await video.play();
       placeholder.hidden = true;
@@ -1271,7 +1301,7 @@ function renderTicketScanner(panel) {
       stopButton.disabled = false;
       live.innerHTML = '<i></i>' + (lv ? "MEKLĒ QR KODU" : "LOOKING FOR QR CODE");
       live.classList.add("is-live");
-      help.textContent = lv ? "Pavērs kameru pret QR kodu. Atrastais kods tiks iezīmēts zaļā krāsā." : "Point the camera at the QR code. Detected codes are highlighted in green.";
+      help.textContent = detector ? (lv ? "Pavērs kameru pret QR kodu. Atrastais kods tiks iezīmēts zaļā krāsā." : "Point the camera at the QR code. Detected codes are highlighted in green.") : (lv ? "Darbojas saderīgais QR skeneris. Pavērs kameru pret biļetes kodu." : "Compatibility QR scanner is active. Point the camera at the ticket code.");
       frameRequest = requestAnimationFrame(detectFrame);
     } catch(error) {
       stopCamera();
