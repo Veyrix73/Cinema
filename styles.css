@@ -302,3 +302,112 @@ button:disabled,.button:disabled,.small-button:disabled,.danger-button:disabled{
 .profile-preview-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px}
 .profile-avatar-preview{width:46px;height:46px;border-radius:14px}
 @media(max-width:600px){.profile-editor-grid{grid-template-columns:1fr}.account-heading{align-items:flex-start;gap:10px}.account-profile-heading{min-width:0}.account-avatar{width:48px;height:48px}.profile-customise{padding:14px}}
+
+
+/* Ultra-mobile pass: small phones, iOS safe areas, touch and narrow layouts */
+:root { --mobile-gutter: clamp(14px, 4vw, 22px); }
+html { -webkit-text-size-adjust: 100%; }
+body { min-width: 320px; }
+button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+button, .button, .small-button, .danger-button, .filter, .language-toggle { touch-action: manipulation; }
+img, svg, video, canvas { max-width: 100%; }
+input, select, textarea { max-width: 100%; }
+
+@media (max-width: 650px) {
+  .topbar {
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+    gap: 5px;
+  }
+  .brand { gap: 6px; letter-spacing: .6px; }
+  .brand-logo { width: 30px; height: 30px; object-fit: contain; }
+  .brand > span:last-child { font-size: 9px; }
+  .header-actions { flex: 0 0 auto; }
+  .account-button { min-height: 40px; padding: 8px 10px; font-size: 10px; white-space: nowrap; }
+  .menu-toggle { min-width: 38px; min-height: 42px; margin: 0 2px; }
+  .topbar nav { z-index: 25; max-height: calc(100dvh - 72px); overflow-y: auto; padding-bottom: max(20px, env(safe-area-inset-bottom)); }
+  .hero { min-height: 0; padding-top: 42px; }
+  .hero-copy { min-width: 0; }
+  .hero-description, .experience-text { font-size: 14px; line-height: 1.65; }
+  .hero .button { min-height: 46px; }
+  .stats { padding-left: var(--mobile-gutter); padding-right: var(--mobile-gutter); }
+  .stats div { min-width: 0; }
+  .stats strong { overflow-wrap: anywhere; }
+  .section, .experience { padding-left: var(--mobile-gutter); padding-right: var(--mobile-gutter); }
+  .section-heading { min-width: 0; }
+  .section-heading > * { max-width: 100%; }
+  .section-heading h2 { font-size: clamp(25px, 7vw, 34px); }
+  .search { min-height: 46px; font-size: 16px; }
+  .filters { flex-wrap: nowrap; overflow-x: auto; padding: 2px 2px 10px; margin-right: calc(-1 * var(--mobile-gutter)); scrollbar-width: thin; }
+  .filter { flex: 0 0 auto; min-height: 40px; font-size: 11px; }
+  .movie-info { padding: 15px; }
+  .movie-info p { font-size: 12px; min-height: 0; }
+  .movie-meta { flex-wrap: wrap; font-size: 10px; }
+  .movie-bottom { gap: 10px; }
+  .small-button, .danger-button { min-height: 42px; padding: 11px 14px; font-size: 11px; }
+  .lookup { gap: 8px; }
+  .lookup input, .field input, .field select, .field textarea { min-height: 46px; font-size: 16px; }
+  .field textarea { min-height: 110px; }
+  .account-heading { align-items: flex-start; flex-direction: column; gap: 12px; }
+  .account-profile-heading { min-width: 0; }
+  .account-profile-heading > div { min-width: 0; overflow-wrap: anywhere; }
+  .profile-editor-grid { grid-template-columns: minmax(0, 1fr); }
+  .profile-preview-row { gap: 10px; }
+  .account-ticket { align-items: stretch; flex-direction: column; gap: 12px; }
+  .account-ticket-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .account-ticket-actions button { flex: 1 1 130px; }
+  .modal-backdrop { padding: max(6px, env(safe-area-inset-top)) 6px max(6px, env(safe-area-inset-bottom)); }
+  .modal { max-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 12px); overflow-x: hidden; overscroll-behavior: contain; }
+  .modal h2 { overflow-wrap: anywhere; }
+  .modal-intro, .admin-note { font-size: 12px; }
+  .seat-grid { width: 100%; max-width: 100%; }
+  .seat { min-height: 44px; font-size: 10px; }
+  .screen-label { width: 88%; letter-spacing: 3px; }
+  .seat-legend { gap: 9px; font-size: 11px; }
+  .choice-card { min-height: 76px; padding: 11px; }
+  .modal-actions { position: sticky; bottom: -16px; padding: 10px 0 max(4px, env(safe-area-inset-bottom)); background: #1a1113; }
+  .admin-side { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .admin-side button { min-height: 44px; font-size: 10px; }
+  .admin-item > div:first-child { min-width: 0; overflow-wrap: anywhere; }
+  .admin-item > div:last-child { width: 100%; }
+  .admin-item > div:last-child button { flex: 1 1 110px; }
+  table { display: block; max-width: 100%; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; }
+  .toast { left: 12px; right: 12px; bottom: max(12px, env(safe-area-inset-bottom)); text-align: center; }
+  .footer { padding-left: var(--mobile-gutter); padding-right: var(--mobile-gutter); padding-bottom: max(24px, env(safe-area-inset-bottom)); }
+}
+
+@media (max-width: 390px) {
+  .brand > span:last-child { font-size: 8px; }
+  .brand-logo { width: 26px; height: 26px; }
+  .account-button { padding-inline: 8px; font-size: 9px; }
+  .hero { padding-left: 17px; padding-right: 17px; }
+  .hero h1 { font-size: clamp(34px, 10.5vw, 43px); letter-spacing: -1.8px; }
+  .stats { gap: 8px; }
+  .stats strong { font-size: 17px; }
+  .experience h2 { font-size: 34px; }
+  .seat-grid { gap: 4px; }
+  .seat { min-height: 40px; font-size: 9px; }
+  .admin-side { gap: 5px; }
+  .admin-side button { padding: 7px 4px; font-size: 9px; }
+}
+
+@media (max-width: 350px) {
+  .brand { gap: 4px; }
+  .brand > span:last-child { letter-spacing: 0; }
+  .menu-toggle { min-width: 32px; font-size: 21px; }
+  .language-toggle { padding: 8px 6px; }
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .seat { min-height: 37px; }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .movie-card:hover { transform: none; }
+  .movie-card:hover .poster-image { transform: none; }
+  .filter, .admin-side button, .choice-card { min-height: 42px; }
+}
+
+@media (max-height: 520px) and (orientation: landscape) {
+  .modal { max-height: 94dvh; }
+  .modal-backdrop { place-items: start center; }
+  .topbar { position: relative; }
+}
