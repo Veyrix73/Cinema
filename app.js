@@ -1068,31 +1068,179 @@ function playScanBeep(valid,ctx){
 }
 
 function renderTicketScanner(panel) {
+  const lv = language === "lv";
   panel.innerHTML =
-    '<div class="scanner-heading"><div><p class="eyebrow">DANCING FRUIT CINEMA</p><h3>' + (language === "lv" ? "Biļešu pārbaude" : "Ticket check-in") + '</h3><p class="admin-note">' + (language === "lv" ? "Ievadi vai noskenē biļetes kodu. Skenētājs, kas darbojas kā tastatūra, ievadīs kodu automātiski." : "Type or scan a ticket code. A keyboard-style barcode scanner can enter the code automatically.") + '</p></div><span class="scanner-icon">▣</span></div>' +
-    '<div class="scanner-form"><label for="ticketScanCode">' + (language === "lv" ? "Biļetes kods" : "Ticket code") + '</label><div class="scanner-input-row"><input id="ticketScanCode" autocomplete="off" placeholder="Dncngfrt-XXX-XXX-XXX-000000"><button class="small-button" id="scanTicketButton">' + (language === "lv" ? "Pārbaudīt" : "Check ticket") + '</button></div></div>' +
-    '<div id="ticketScanResult" class="ticket-scan-result"><span class="scan-idle">▣</span><p>' + (language === "lv" ? "Gatavs pārbaudīt biļeti" : "Ready to check a ticket") + '</p></div>';
-  const input=$("#ticketScanCode"), button=$("#scanTicketButton"), result=$("#ticketScanResult");
-  const scan=async()=>{
-    const code=input.value.trim();
-    if(!code){input.focus();return;}
-    const scanAudio=createScanAudio();
-    button.disabled=true;button.textContent=language==="lv"?"Pārbauda…":"Checking…";
-    result.innerHTML='<p>'+(language==="lv"?"Pārbauda kodu…":"Checking code…")+'</p>';
-    try{
-      const data=await api("/admin/tickets/scan",{method:"POST",body:{code}});
-      playScanBeep(true,scanAudio);
-      const item=data.ticket;
-      result.innerHTML='<div class="scan-success">✓</div><p class="scan-status">'+(language==="lv"?"BIĻETE DERĪGA":"TICKET VALID")+'</p><h3>'+escapeHTML(item.movie)+'</h3><p>'+escapeHTML(item.name)+' · '+escapeHTML(item.date)+' · '+escapeHTML(item.time)+'</p><p>'+(language==="lv"?"Vietas":"Seats")+': '+item.seats.map(escapeHTML).join(", ")+'</p><strong>'+escapeHTML(item.code)+'</strong><small>'+(language==="lv"?"Atzīmēta kā izmantota":"Marked as checked in")+'</small>';
-      input.value="";
-    }catch(error){
-      playScanBeep(false,scanAudio);
-      result.innerHTML='<div class="scan-error">×</div><p class="scan-status">'+(language==="lv"?"BIĻETE NAV DERĪGA":"TICKET NOT VALID")+'</p><p>'+escapeHTML(error.message)+'</p>';
-    }finally{button.disabled=false;button.textContent=language==="lv"?"Pārbaudīt":"Check ticket";input.focus();}
+    '<div class="scanner-heading"><div><p class="eyebrow">DANCING FRUIT CINEMA</p><h3>' + (lv ? "Biļešu pārbaude" : "Ticket check-in") + '</h3><p class="admin-note">' + (lv ? "Izmanto klēpjdatora kameru, lai nolasītu biļetes QR kodu, vai ievadi kodu manuāli." : "Use your laptop webcam to read a ticket QR code, or enter the code manually.") + '</p></div><span class="scanner-icon">▣</span></div>' +
+    '<div class="camera-scanner">' +
+      '<div class="camera-stage" id="ticketCameraStage">' +
+        '<video id="ticketCameraVideo" playsinline muted></video><canvas id="ticketCameraOverlay"></canvas>' +
+        '<div class="camera-placeholder" id="ticketCameraPlaceholder"><span>▧</span><b>' + (lv ? "Kamera nav ieslēgta" : "Camera is off") + '</b><small>' + (lv ? "Nospied “Ieslēgt kameru”, lai sāktu skenēšanu." : "Press “Start camera” to begin scanning.") + '</small></div>' +
+        '<div class="camera-scan-line" aria-hidden="true"></div><span class="camera-live" id="ticketCameraLive"><i></i>' + (lv ? "GAIDA KAMERU" : "CAMERA STANDBY") + '</span>' +
+      '</div>' +
+      '<div class="camera-controls"><button class="small-button" id="startTicketCamera">' + (lv ? "▶ Ieslēgt kameru" : "▶ Start camera") + '</button><button class="button button-secondary" id="stopTicketCamera" disabled>' + (lv ? "Apturēt" : "Stop") + '</button></div>' +
+      '<p class="camera-help" id="ticketCameraHelp">' + (lv ? "Pārlūkā jāatļauj piekļuve kamerai. Kamera darbojas tikai šajā lapā, kamēr tā ir ieslēgta." : "Allow camera access in your browser. Video is processed in this page while the camera is on.") + '</p>' +
+    '</div>' +
+    '<div class="scanner-form"><label for="ticketScanCode">' + (lv ? "Biļetes kods manuāli" : "Enter ticket code manually") + '</label><div class="scanner-input-row"><input id="ticketScanCode" autocomplete="off" placeholder="Dncngfrt-XXX-XXX-XXX-000000"><button class="small-button" id="scanTicketButton">' + (lv ? "Pārbaudīt" : "Check ticket") + '</button></div></div>' +
+    '<div id="ticketScanResult" class="ticket-scan-result"><span class="scan-idle">▣</span><p>' + (lv ? "Gatavs pārbaudīt biļeti" : "Ready to check a ticket") + '</p></div>';
+
+  const input = $("#ticketScanCode"), button = $("#scanTicketButton"), result = $("#ticketScanResult");
+  const video = $("#ticketCameraVideo"), overlay = $("#ticketCameraOverlay");
+  const startButton = $("#startTicketCamera"), stopButton = $("#stopTicketCamera");
+  const placeholder = $("#ticketCameraPlaceholder"), live = $("#ticketCameraLive"), help = $("#ticketCameraHelp");
+  let stream = null, detector = null, frameRequest = 0, scanning = false, busy = false, lastCode = "", lastScanAt = 0;
+
+  const stopCamera = () => {
+    scanning = false;
+    if (frameRequest) cancelAnimationFrame(frameRequest);
+    frameRequest = 0;
+    if (stream) stream.getTracks().forEach(track => track.stop());
+    stream = null;
+    video.pause();
+    video.srcObject = null;
+    const context = overlay.getContext("2d");
+    context.clearRect(0, 0, overlay.width, overlay.height);
+    placeholder.hidden = false;
+    live.classList.remove("is-live");
+    live.innerHTML = '<i></i>' + (lv ? "GAIDA KAMERU" : "CAMERA STANDBY");
+    startButton.disabled = false;
+    stopButton.disabled = true;
   };
-  button.onclick=scan;
-  input.onkeydown=(event)=>{if(event.key==="Enter"){event.preventDefault();scan();}};
-  input.focus();
+
+  const drawDetection = (item) => {
+    const box = item.boundingBox;
+    const context = overlay.getContext("2d");
+    const width = video.videoWidth, height = video.videoHeight;
+    if (!width || !height) return;
+    if (overlay.width !== width || overlay.height !== height) {
+      overlay.width = width;
+      overlay.height = height;
+    }
+    context.clearRect(0, 0, width, height);
+    if (item.cornerPoints && item.cornerPoints.length) {
+      context.beginPath();
+      item.cornerPoints.forEach((point, index) => index ? context.lineTo(point.x, point.y) : context.moveTo(point.x, point.y));
+      context.closePath();
+    } else if (box) context.rect(box.x, box.y, box.width, box.height);
+    context.lineWidth = Math.max(4, width / 240);
+    context.strokeStyle = "#66f2a4";
+    context.shadowColor = "#66f2a4";
+    context.shadowBlur = 18;
+    context.stroke();
+    context.shadowBlur = 0;
+    if (box) {
+      context.fillStyle = "rgba(102,242,164,.12)";
+      context.fillRect(box.x, box.y, box.width, box.height);
+    }
+  };
+
+  const extractTicketCode = (raw) => {
+    const value = String(raw || "").trim();
+    const match = value.match(/Dncngfrt-[A-Z0-9]{3}-[A-Z0-9]{3}-[A-Z0-9]{3}-\d{6}/i);
+    return match ? match[0] : value;
+  };
+
+  const scan = async (providedCode) => {
+    const code = String(providedCode || input.value).trim();
+    if (!code || busy) { if (!code) input.focus(); return; }
+    busy = true;
+    const scanAudio = createScanAudio();
+    button.disabled = true;
+    button.textContent = lv ? "Pārbauda…" : "Checking…";
+    result.innerHTML = '<div class="scan-processing"><span></span><span></span><span></span></div><p>' + (lv ? "Pārbauda biļeti serverī…" : "Verifying ticket with the server…") + '</p>';
+    try {
+      const data = await api("/admin/tickets/scan", {method:"POST", body:{code}});
+      playScanBeep(true, scanAudio);
+      const item = data.ticket;
+      result.innerHTML = '<div class="scan-success">✓</div><p class="scan-status">' + (lv ? "BIĻETE DERĪGA" : "TICKET VALID") + '</p><h3>' + escapeHTML(item.movie) + '</h3><p>' + escapeHTML(item.name) + ' · ' + escapeHTML(item.date) + ' · ' + escapeHTML(item.time) + '</p><p>' + (lv ? "Vietas" : "Seats") + ': ' + (item.seats || []).map(escapeHTML).join(", ") + '</p><strong>' + escapeHTML(item.code) + '</strong><small>' + (lv ? "Biļete atzīmēta kā izmantota." : "Ticket successfully checked in.") + '</small>';
+      input.value = "";
+      lastCode = code;
+      if (scanning) {
+        live.innerHTML = '<i></i>' + (lv ? "BIĻETE APSTIPRINĀTA" : "TICKET ACCEPTED");
+        live.classList.add("is-live");
+      }
+      await renderAdminOverview();
+    } catch(error) {
+      playScanBeep(false, scanAudio);
+      result.innerHTML = '<div class="scan-error">×</div><p class="scan-status">' + (lv ? "BIĻETI NEVAR APSTIPRINĀT" : "TICKET NOT ACCEPTED") + '</p><p>' + escapeHTML(error.message) + '</p>';
+      if (scanning) {
+        live.innerHTML = '<i></i>' + (lv ? "PĀRBAUDE NEIZDEVĀS" : "SCAN NOT ACCEPTED");
+        live.classList.remove("is-live");
+      }
+    } finally {
+      busy = false;
+      button.disabled = false;
+      button.textContent = lv ? "Pārbaudīt" : "Check ticket";
+      if (!providedCode) input.focus();
+    }
+  };
+
+  const detectFrame = async () => {
+    if (!scanning || !detector || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
+      if (scanning) frameRequest = requestAnimationFrame(detectFrame);
+      return;
+    }
+    try {
+      const found = await detector.detect(video);
+      if (found.length) {
+        const item = found[0];
+        drawDetection(item);
+        const code = extractTicketCode(item.rawValue);
+        const now = Date.now();
+        if (code && code !== lastCode && now - lastScanAt > 1800 && !busy) {
+          lastScanAt = now;
+          live.innerHTML = '<i></i>' + (lv ? "QR KODS ATRASTS" : "QR CODE DETECTED");
+          live.classList.add("is-live");
+          input.value = code;
+          await scan(code);
+        }
+      } else {
+        const context = overlay.getContext("2d");
+        context.clearRect(0, 0, overlay.width, overlay.height);
+      }
+    } catch(error) {
+      help.textContent = (lv ? "Kameras nolasīšanas kļūda: " : "Camera scanning error: ") + error.message;
+    }
+    if (scanning) frameRequest = requestAnimationFrame(detectFrame);
+  };
+
+  startButton.onclick = async () => {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      help.textContent = lv ? "Šajā pārlūkā kamera nav pieejama. Atver vietni HTTPS adresē vai izmanto manuālo ievadi." : "Camera access is unavailable. Open the site over HTTPS or use manual entry.";
+      return;
+    }
+    if (!("BarcodeDetector" in window)) {
+      help.textContent = lv ? "Šis pārlūks neatbalsta iebūvēto QR skeneri. Izmanto manuālo ievadi vai citu pārlūku." : "This browser does not support the built-in QR scanner. Use manual entry or another browser.";
+      return;
+    }
+    try {
+      const formats = await BarcodeDetector.getSupportedFormats();
+      if (!formats.includes("qr_code")) throw new Error(lv ? "QR kodu noteikšana nav atbalstīta." : "QR-code detection is not supported.");
+      detector = new BarcodeDetector({formats:["qr_code"]});
+      startButton.disabled = true;
+      help.textContent = lv ? "Pieprasa kameras atļauju…" : "Requesting camera permission…";
+      stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment",width:{ideal:1280},height:{ideal:720}},audio:false});
+      video.srcObject = stream;
+      await video.play();
+      placeholder.hidden = true;
+      scanning = true;
+      stopButton.disabled = false;
+      live.innerHTML = '<i></i>' + (lv ? "MEKLĒ QR KODU" : "LOOKING FOR QR CODE");
+      live.classList.add("is-live");
+      help.textContent = lv ? "Pavērs kameru pret QR kodu. Atrastais kods tiks iezīmēts zaļā krāsā." : "Point the camera at the QR code. Detected codes are highlighted in green.";
+      frameRequest = requestAnimationFrame(detectFrame);
+    } catch(error) {
+      stopCamera();
+      help.textContent = (lv ? "Neizdevās ieslēgt kameru: " : "Could not start camera: ") + error.message;
+    }
+  };
+  stopButton.onclick = stopCamera;
+  button.onclick = () => scan();
+  input.onkeydown = event => { if (event.key === "Enter") { event.preventDefault(); scan(); } };
+  const cleanup = () => stopCamera();
+  const closeButton = $("#modalClose");
+  if (closeButton) closeButton.addEventListener("click", cleanup, {once:true});
+  const backdrop = $("#modalBackdrop");
+  if (backdrop) backdrop.addEventListener("click", event => { if (event.target === backdrop) cleanup(); }, {once:true});
 }
 async function renderAdminPrices(panel) {
   const data = await api("/prices");
