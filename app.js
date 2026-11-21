@@ -711,6 +711,7 @@ function renderAdminLogin() {
 async function renderAdminDashboard() {
   showModal(
     '<p class="eyebrow">DANCING FRUIT CINEMA · ADMIN</p><h2 id="modalTitle">' + t("adminTitle") + '</h2><p class="modal-intro">' + t("adminIntro2") + '</p>' +
+    '<section class="admin-overview" id="adminOverview"><div class="admin-overview-loading">' + t("loading") + '</div></section>' +
     '<div class="admin-wrap"><aside class="admin-side">' +
     '<button class="active" data-admin-tab="movies">' + t("tabMovies") + '</button><button data-admin-tab="bookings">' + t("tabBookings") + '</button>' +
     '<button data-admin-tab="scan">🎫 ' + (language === "lv" ? "Skenēt biļetes" : "Scan tickets") + '</button><button data-admin-tab="prices">' + t("tabPrices") + '</button><button data-admin-tab="account">' + t("tabAccount") + '</button></aside>' +
@@ -726,7 +727,33 @@ async function renderAdminDashboard() {
     try { await api("/admin/logout",{method:"POST"}); closeModal(); toast(t("logout")); }
     catch(error) { toast(error.message); }
   };
+  await renderAdminOverview();
   await renderAdminTab();
+}
+async function renderAdminOverview() {
+  const target = $("#adminOverview");
+  if (!target) return;
+  try {
+    const [bookingData, movieData] = await Promise.all([api("/admin/bookings"), api("/movies")]);
+    const bookings = bookingData.bookings || [];
+    const moviesList = movieData.movies || [];
+    const active = bookings.filter(item => item.status === "confirmed" && !item.checkedIn);
+    const used = bookings.filter(item => item.status === "confirmed" && item.checkedIn);
+    const cancelled = bookings.filter(item => item.status === "cancelled");
+    const revenue = bookings.filter(item => item.status === "confirmed").reduce((sum,item) => sum + Number(item.total || 0),0);
+    const upcoming = moviesList.reduce((sum,movie) => sum + (movie.screenings || []).length,0);
+    const cards = [
+      ["ACTIVE TICKETS",active.length,"Ready for admission","✓","green"],
+      ["CHECKED IN",used.length,"Already admitted","▣","blue"],
+      ["MOVIES & SHOWTIMES",moviesList.length + " / " + upcoming,"Published movies · upcoming screenings","🎬","gold"],
+      ["CONFIRMED VALUE",formatMoney(revenue),"Cancelled tickets excluded","€","gold"]
+    ];
+    target.innerHTML = '<div class="admin-overview-heading"><div><span class="admin-overview-kicker">LIVE OVERVIEW</span><h3>' + (language === "lv" ? "Kinoteātra pārskats" : "Cinema overview") + '</h3></div><span class="admin-overview-updated">' + (language === "lv" ? "Atjaunots tagad" : "Updated just now") + '</span></div>' +
+      '<div class="admin-stat-grid">' + cards.map(card => '<article class="admin-stat-card ' + card[4] + '"><span class="admin-stat-icon">' + card[3] + '</span><span class="admin-stat-label">' + card[0] + '</span><strong>' + card[1] + '</strong><small>' + card[2] + '</small></article>').join("") + '</div>' +
+      '<div class="admin-overview-foot">' + (language === "lv" ? "Kopā rezervācijas" : "Total reservations") + ': <b>' + bookings.length + '</b> <span>·</span> ' + (language === "lv" ? "Atceltās" : "Cancelled") + ': <b>' + cancelled.length + '</b></div>';
+  } catch(error) {
+    target.innerHTML = '<p class="admin-note">' + escapeHTML(error.message || t("serverError")) + '</p>';
+  }
 }
 async function renderAdminTab() {
   const panel = $("#adminPanel");
@@ -887,7 +914,7 @@ async function renderAdminBookings(panel) {
   const used = list.filter(item => item.status === "confirmed" && item.checkedIn);
   const cancelled = list.filter(item => item.status === "cancelled");
   const visible = adminBookingFilter === "used" ? used : adminBookingFilter === "cancelled" ? cancelled : active;
-  panel.innerHTML = '<h3>' + t("bookingList") + '</h3>' +
+  panel.innerHTML = '<div class="admin-booking-toolbar"><div><h3>' + t("bookingList") + '</h3><p class="admin-note">' + (language === "lv" ? "Meklē rezervācijas un eksportē sarakstu." : "Search reservations and export the list.") + '</p></div><div class="admin-booking-tools"><input id="adminBookingSearch" type="search" placeholder="' + (language === "lv" ? "Meklēt kodu, vārdu, e-pastu..." : "Search code, name, email...") + '"><button type="button" class="button button-secondary" id="adminExportBookings">↓ CSV</button></div></div>' +
     '<div class="admin-booking-filter-heading"><span>' + (language === "lv" ? "BIĻEŠU STATUSS" : "TICKET OVERVIEW") + '</span><small>' + (language === "lv" ? "Izvēlies sadaļu, lai skatītu biļetes" : "Choose a category to view its tickets") + '</small></div>' +
     '<div class="admin-booking-filters" role="group" aria-label="' + t("bookingList") + '">' +
       '<button type="button" data-admin-booking-filter="active" aria-pressed="' + (adminBookingFilter === "active") + '" class="admin-filter-card filter-active ' + (adminBookingFilter === "active" ? "active" : "") + '">' +
@@ -907,6 +934,25 @@ async function renderAdminBookings(panel) {
       '<div class="admin-booking-actions"><button class="small-button" data-admin-view-ticket="' + escapeHTML(item.code) + '">' + t("viewTicket") + '</button>' +
       (item.status === "confirmed" ? '<button class="danger-button" data-admin-cancel="' + escapeHTML(item.code) + '">' + t("cancelBooking") + '</button>' : '') + '</div></div>'
     ).join("") : '<p class="admin-note">' + t("noMatchingBookings") + '</p>');
+  const searchInput = $("#adminBookingSearch");
+  const applyBookingSearch = () => {
+    const term = String(searchInput?.value || "").trim().toLocaleLowerCase();
+    panel.querySelectorAll(".admin-booking-item").forEach(row => row.hidden = !row.textContent.toLocaleLowerCase().includes(term));
+    const empty = panel.querySelector(".admin-note:last-child");
+    if (empty && visible.length) empty.hidden = Boolean(term) && !panel.querySelector(".admin-booking-item:not([hidden])");
+  };
+  if (searchInput) searchInput.addEventListener("input", applyBookingSearch);
+  const exportButton = $("#adminExportBookings");
+  if (exportButton) exportButton.onclick = () => {
+    const columns = ["code","name","email","movie","date","time","seats","total","status","checkedIn"];
+    const quote = value => '"' + String(value ?? "").replace(/"/g,'""') + '"';
+    const rows = [columns.join(","), ...list.map(item => columns.map(key => quote(key === "seats" ? (item.seats || []).join(" | ") : key === "checkedIn" ? Boolean(item.checkedIn) : item[key])).join(","))];
+    const blob = new Blob(["\\ufeff" + rows.join("\\r\\n")], {type:"text/csv;charset=utf-8"});
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url; link.download = "dancing-fruit-cinema-bookings.csv"; link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
   panel.querySelectorAll("[data-admin-booking-filter]").forEach(button => button.onclick = async () => {
     adminBookingFilter = button.dataset.adminBookingFilter;
     await renderAdminBookings(panel);
