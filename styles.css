@@ -291,3 +291,14 @@ button:disabled,.button:disabled,.small-button:disabled,.danger-button:disabled{
 .admin-booking-item[hidden]{display:none!important}
 @media(max-width:760px){.admin-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-overview{padding:13px}.admin-booking-toolbar{align-items:stretch}.admin-booking-tools{min-width:0;width:100%}}
 @media(max-width:390px){.admin-stat-grid{grid-template-columns:1fr 1fr}.admin-stat-card{padding:11px}.admin-stat-label{font-size:8px}.admin-booking-tools{flex-wrap:wrap}.admin-booking-tools input{flex-basis:100%}.admin-booking-tools button{width:100%}}
+
+/* Customer profile customisation */
+.account-profile-heading{display:flex;align-items:center;gap:13px}
+.account-avatar{--avatar-color:#9b5d43;display:inline-grid;place-items:center;flex:0 0 auto;width:58px;height:58px;border-radius:18px;background:color-mix(in srgb,var(--avatar-color) 22%,#171112);border:1px solid color-mix(in srgb,var(--avatar-color) 70%,transparent);font-size:27px}
+.profile-customise{margin:20px 0;padding:18px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(135deg,#ffffff08,#00000014)}
+.profile-customise h3{margin:4px 0 14px}
+.profile-editor-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.profile-editor-grid input,.profile-editor-grid select{width:100%;min-height:42px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:#130e0f;color:var(--text)}
+.profile-preview-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px}
+.profile-avatar-preview{width:46px;height:46px;border-radius:14px}
+@media(max-width:600px){.profile-editor-grid{grid-template-columns:1fr}.account-heading{align-items:flex-start;gap:10px}.account-profile-heading{min-width:0}.account-avatar{width:48px;height:48px}.profile-customise{padding:14px}}
