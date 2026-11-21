@@ -780,9 +780,9 @@ async function renderAdminOverview() {
       '<div class="admin-stat-grid">' + cards.map(card => '<article class="admin-stat-card ' + card[4] + '"><span class="admin-stat-icon">' + card[3] + '</span><span class="admin-stat-label">' + card[0] + '</span><strong>' + card[1] + '</strong><small>' + card[2] + '</small></article>').join("") + '</div>' +
       '<div class="admin-overview-foot">' + (language === "lv" ? "Kopā rezervācijas" : "Total reservations") + ': <b>' + bookings.length + '</b> <span>·</span> ' + (language === "lv" ? "Apstiprinātās" : "Confirmed") + ': <b>' + confirmed.length + '</b></div>' +
       '<div class="admin-quick-actions"><span>' + (language === "lv" ? "ĀTRĀS DARBĪBAS" : "QUICK ACTIONS") + '</span>' +
-      '<button type="button" data-admin-quick="bookings">▤ ' + (language === "lv" ? "Rezervācijas" : "Bookings") + '</button>' +
-      '<button type="button" data-admin-quick="scan">▣ ' + (language === "lv" ? "Skenēt biļeti" : "Scan ticket") + '</button>' +
-      '<button type="button" data-admin-quick="movies">＋ ' + (language === "lv" ? "Pārvaldīt filmas" : "Manage movies") + '</button></div>';
+      '<button type="button" class="admin-quick-card" data-admin-quick="bookings"><span class="admin-quick-icon">▤</span><span class="admin-quick-copy"><b>' + (language === "lv" ? "Rezervācijas" : "Bookings") + '</b><small>' + (language === "lv" ? "Pārskati un pārvaldi" : "Review and manage") + '</small></span><span class="admin-quick-arrow">↗</span></button>' +
+      '<button type="button" class="admin-quick-card" data-admin-quick="scan"><span class="admin-quick-icon">▣</span><span class="admin-quick-copy"><b>' + (language === "lv" ? "Skenēt biļeti" : "Scan ticket") + '</b><small>' + (language === "lv" ? "Pārbaudi ieejas biļeti" : "Validate an entry ticket") + '</small></span><span class="admin-quick-arrow">↗</span></button>' +
+      '<button type="button" class="admin-quick-card" data-admin-quick="movies"><span class="admin-quick-icon">＋</span><span class="admin-quick-copy"><b>' + (language === "lv" ? "Pārvaldīt filmas" : "Manage movies") + '</b><small>' + (language === "lv" ? "Filmas un seansi" : "Movies and screenings") + '</small></span><span class="admin-quick-arrow">↗</span></button></div>';
     target.querySelectorAll("[data-admin-quick]").forEach(button => button.onclick = () => {
       adminTab = button.dataset.adminQuick;
       document.querySelectorAll("[data-admin-tab]").forEach(item => item.classList.toggle("active",item.dataset.adminTab === adminTab));
