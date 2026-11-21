@@ -162,6 +162,21 @@ async function initDatabase() {
   }
 }
 
+
+async function purgeExpiredTickets() {
+  // Remove confirmed tickets from dates that have ended in the cinema's local timezone.
+  // Cancelled bookings are intentionally retained as booking history.
+  const result = await pool.query(
+    "DELETE FROM bookings b USING screenings s " +
+    "WHERE b.screening_id=s.id AND b.status='confirmed' " +
+    "AND s.show_date < (NOW() AT TIME ZONE 'Europe/Riga')::date"
+  );
+  if (result.rowCount) {
+    console.log("Automatically removed " + result.rowCount + " expired ticket booking(s).");
+  }
+  return result.rowCount;
+}
+
 async function getPrices(client) {
   const result = await (client || pool).query("SELECT setting_key,value_cents FROM cinema_settings");
   const found = Object.fromEntries(result.rows.map((row) => [row.setting_key,row.value_cents]));
@@ -637,7 +652,13 @@ app.use((error,req,res,next)=>{
 });
 
 const port=Number(process.env.PORT||3000);
-initDatabase().then(()=>{
+initDatabase().then(async()=>{
+  await purgeExpiredTickets();
+  // Check once per minute; the SQL uses Europe/Riga's calendar date and is safe to rerun.
+  const ticketCleanupTimer = setInterval(() => {
+    purgeExpiredTickets().catch((error) => console.error("Automatic ticket cleanup failed:", error));
+  }, 60 * 1000);
+  if (typeof ticketCleanupTimer.unref === "function") ticketCleanupTimer.unref();
   app.listen(port,()=>console.log("Dancing Fruit Cinema running on port "+port));
 }).catch((error)=>{
   console.error("Database initialisation failed:",error);
