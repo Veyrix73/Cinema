@@ -107,6 +107,8 @@ async function initDatabase() {
   ];
   for (const statement of schema) await pool.query(statement);
   await pool.query("ALTER TABLE bookings ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES customer_users(id) ON DELETE SET NULL");
+  await pool.query("ALTER TABLE customer_users ADD COLUMN IF NOT EXISTS avatar_emoji TEXT NOT NULL DEFAULT '🍿'");
+  await pool.query("ALTER TABLE customer_users ADD COLUMN IF NOT EXISTS avatar_color TEXT NOT NULL DEFAULT '#9b5d43'");
   await pool.query("CREATE INDEX IF NOT EXISTS idx_bookings_user ON bookings(user_id,created_at DESC)");
   await pool.query("ALTER TABLE bookings DROP CONSTRAINT IF EXISTS bookings_ticket_count_check");
   // Keep room for older reservations with up to 10 tickets; the API strictly limits all new bookings to 7.
@@ -235,7 +237,7 @@ app.post("/api/account/register",loginLimiter,async(req,res,next)=>{
     await pool.query("UPDATE bookings SET user_id=$1 WHERE lower(customer_email)=lower($2) AND user_id IS NULL",[id,email]);
     req.session.regenerate(error=>{
       if(error)return next(error);
-      req.session.user={id,name,email};
+      req.session.user={id,name,email,avatarEmoji:"🍿",avatarColor:"#9b5d43"};
       req.session.save(saveError=>{if(saveError)return next(saveError);res.status(201).json({ok:true,user:req.session.user});});
     });
   }catch(error){next(error);}
@@ -243,18 +245,42 @@ app.post("/api/account/register",loginLimiter,async(req,res,next)=>{
 app.post("/api/account/login",loginLimiter,async(req,res,next)=>{
   try{
     const email=String(req.body?.email||"").trim().toLowerCase();
-    const found=await pool.query("SELECT id,full_name,email,password_hash FROM customer_users WHERE email=$1",[email]);
+    const found=await pool.query("SELECT id,full_name,email,password_hash,avatar_emoji,avatar_color FROM customer_users WHERE email=$1",[email]);
     if(!found.rowCount||!await bcrypt.compare(String(req.body?.password||""),found.rows[0].password_hash))
       return res.status(401).json({error:"Incorrect email or password."});
     const row=found.rows[0];
     req.session.regenerate(error=>{
       if(error)return next(error);
-      req.session.user={id:row.id,name:row.full_name,email:row.email};
+      req.session.user={id:row.id,name:row.full_name,email:row.email,avatarEmoji:row.avatar_emoji||"🍿",avatarColor:row.avatar_color||"#9b5d43"};
       req.session.save(saveError=>{if(saveError)return next(saveError);res.json({ok:true,user:req.session.user});});
     });
   }catch(error){next(error);}
 });
-app.get("/api/account/me",(req,res)=>req.session?.user?res.json({user:req.session.user}):res.status(401).json({error:"Not signed in."}));
+app.get("/api/account/me",customerOnly,async(req,res,next)=>{
+  try{
+    const result=await pool.query("SELECT full_name,email,avatar_emoji,avatar_color FROM customer_users WHERE id=$1",[req.session.user.id]);
+    if(!result.rowCount)return res.status(401).json({error:"Account not found."});
+    const row=result.rows[0];
+    req.session.user={...req.session.user,name:row.full_name,email:row.email,avatarEmoji:row.avatar_emoji,avatarColor:row.avatar_color};
+    res.json({user:req.session.user});
+  }catch(error){next(error);}
+});
+app.put("/api/account/profile",customerOnly,async(req,res,next)=>{
+  const name=String(req.body?.name||"").trim();
+  const avatarEmoji=String(req.body?.avatarEmoji||"");
+  const avatarColor=String(req.body?.avatarColor||"");
+  const allowedEmojis=["🍿","🎬","🍓","🍉","🍒","🍍","🍊","⭐","🎟️","🐱"];
+  const allowedColors=["#9b5d43","#b84a55","#c28b35","#438b78","#477da8","#8062a8","#777777"];
+  if(name.length<2||name.length>70||!allowedEmojis.includes(avatarEmoji)||!allowedColors.includes(avatarColor))
+    return res.status(400).json({error:"Check your display name, profile icon and colour."});
+  try{
+    const result=await pool.query("UPDATE customer_users SET full_name=$1,avatar_emoji=$2,avatar_color=$3 WHERE id=$4 RETURNING id,full_name,email,avatar_emoji,avatar_color",[name,avatarEmoji,avatarColor,req.session.user.id]);
+    if(!result.rowCount)return res.status(404).json({error:"Account not found."});
+    const row=result.rows[0];
+    req.session.user={id:row.id,name:row.full_name,email:row.email,avatarEmoji:row.avatar_emoji,avatarColor:row.avatar_color};
+    req.session.save(error=>{if(error)return next(error);res.json({ok:true,user:req.session.user});});
+  }catch(error){next(error);}
+});
 app.post("/api/account/logout",customerOnly,(req,res,next)=>req.session.destroy(error=>{if(error)return next(error);res.clearCookie("dfc.sid");res.json({ok:true});}));
 app.get("/api/account/bookings",customerOnly,async(req,res,next)=>{
   try{
