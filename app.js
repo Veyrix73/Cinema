@@ -726,6 +726,7 @@ function renderAdminLogin() {
 async function renderAdminDashboard() {
   showModal(
     '<p class="eyebrow">DANCING FRUIT CINEMA · ADMIN</p><h2 id="modalTitle">' + t("adminTitle") + '</h2><p class="modal-intro">' + t("adminIntro2") + '</p>' +
+    '<div class="admin-dashboard-toolbar"><span>' + (language === "lv" ? "ADMINISTRĒŠANAS CENTRS" : "MANAGEMENT CENTRE") + '</span><button type="button" class="button button-secondary" id="adminRefreshDashboard">↻ ' + (language === "lv" ? "Atjaunot datus" : "Refresh data") + '</button></div>' +
     '<section class="admin-overview" id="adminOverview"><div class="admin-overview-loading">' + t("loading") + '</div></section>' +
     '<div class="admin-wrap"><aside class="admin-side">' +
     '<button class="active" data-admin-tab="movies">' + t("tabMovies") + '</button><button data-admin-tab="bookings">' + t("tabBookings") + '</button>' +
@@ -742,12 +743,19 @@ async function renderAdminDashboard() {
     try { await api("/admin/logout",{method:"POST"}); closeModal(); toast(t("logout")); }
     catch(error) { toast(error.message); }
   };
+  $("#adminRefreshDashboard").onclick = async () => {
+    await renderAdminOverview();
+    await renderAdminTab();
+    toast(language === "lv" ? "Dati atjaunoti." : "Dashboard refreshed.");
+  };
   await renderAdminOverview();
   await renderAdminTab();
 }
 async function renderAdminOverview() {
   const target = $("#adminOverview");
   if (!target) return;
+  const refreshButton = $("#adminRefreshDashboard");
+  if (refreshButton) { refreshButton.disabled = true; refreshButton.classList.add("is-refreshing"); }
   try {
     const [bookingData, movieData] = await Promise.all([api("/admin/bookings"), api("/movies")]);
     const bookings = bookingData.bookings || [];
@@ -755,19 +763,35 @@ async function renderAdminOverview() {
     const active = bookings.filter(item => item.status === "confirmed" && !item.checkedIn);
     const used = bookings.filter(item => item.status === "confirmed" && item.checkedIn);
     const cancelled = bookings.filter(item => item.status === "cancelled");
-    const revenue = bookings.filter(item => item.status === "confirmed").reduce((sum,item) => sum + Number(item.total || 0),0);
+    const confirmed = bookings.filter(item => item.status === "confirmed");
+    const revenue = confirmed.reduce((sum,item) => sum + Number(item.total || 0),0);
     const upcoming = moviesList.reduce((sum,movie) => sum + (movie.screenings || []).length,0);
+    const today = new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Riga",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+    const todayBookings = confirmed.filter(item => item.date === today);
     const cards = [
       ["ACTIVE TICKETS",active.length,"Ready for admission","✓","green"],
       ["CHECKED IN",used.length,"Already admitted","▣","blue"],
-      ["MOVIES & SHOWTIMES",moviesList.length + " / " + upcoming,"Published movies · upcoming screenings","🎬","gold"],
-      ["CONFIRMED VALUE",formatMoney(revenue),"Cancelled tickets excluded","€","gold"]
+      ["MOVIES & SHOWTIMES",moviesList.length + " / " + upcoming,"Published movies · screenings","🎬","gold"],
+      ["CONFIRMED VALUE",formatMoney(revenue),"Cancelled tickets excluded","€","gold"],
+      ["TODAY'S BOOKINGS",todayBookings.length,"Confirmed screenings today","◷","blue"],
+      ["CANCELLED",cancelled.length,"Kept in booking history","↶","gold"]
     ];
-    target.innerHTML = '<div class="admin-overview-heading"><div><span class="admin-overview-kicker">LIVE OVERVIEW</span><h3>' + (language === "lv" ? "Kinoteātra pārskats" : "Cinema overview") + '</h3></div><span class="admin-overview-updated">' + (language === "lv" ? "Atjaunots tagad" : "Updated just now") + '</span></div>' +
+    target.innerHTML = '<div class="admin-overview-heading"><div><span class="admin-overview-kicker">LIVE OVERVIEW</span><h3>' + (language === "lv" ? "Kinoteātra pārskats" : "Cinema overview") + '</h3></div><span class="admin-overview-updated"><i></i>' + (language === "lv" ? "Atjaunots " : "Updated ") + new Date().toLocaleTimeString(language === "lv" ? "lv-LV" : "en-IE",{hour:"2-digit",minute:"2-digit"}) + '</span></div>' +
       '<div class="admin-stat-grid">' + cards.map(card => '<article class="admin-stat-card ' + card[4] + '"><span class="admin-stat-icon">' + card[3] + '</span><span class="admin-stat-label">' + card[0] + '</span><strong>' + card[1] + '</strong><small>' + card[2] + '</small></article>').join("") + '</div>' +
-      '<div class="admin-overview-foot">' + (language === "lv" ? "Kopā rezervācijas" : "Total reservations") + ': <b>' + bookings.length + '</b> <span>·</span> ' + (language === "lv" ? "Atceltās" : "Cancelled") + ': <b>' + cancelled.length + '</b></div>';
+      '<div class="admin-overview-foot">' + (language === "lv" ? "Kopā rezervācijas" : "Total reservations") + ': <b>' + bookings.length + '</b> <span>·</span> ' + (language === "lv" ? "Apstiprinātās" : "Confirmed") + ': <b>' + confirmed.length + '</b></div>' +
+      '<div class="admin-quick-actions"><span>' + (language === "lv" ? "ĀTRĀS DARBĪBAS" : "QUICK ACTIONS") + '</span>' +
+      '<button type="button" data-admin-quick="bookings">▤ ' + (language === "lv" ? "Rezervācijas" : "Bookings") + '</button>' +
+      '<button type="button" data-admin-quick="scan">▣ ' + (language === "lv" ? "Skenēt biļeti" : "Scan ticket") + '</button>' +
+      '<button type="button" data-admin-quick="movies">＋ ' + (language === "lv" ? "Pārvaldīt filmas" : "Manage movies") + '</button></div>';
+    target.querySelectorAll("[data-admin-quick]").forEach(button => button.onclick = () => {
+      adminTab = button.dataset.adminQuick;
+      document.querySelectorAll("[data-admin-tab]").forEach(item => item.classList.toggle("active",item.dataset.adminTab === adminTab));
+      renderAdminTab();
+    });
   } catch(error) {
     target.innerHTML = '<p class="admin-note">' + escapeHTML(error.message || t("serverError")) + '</p>';
+  } finally {
+    if (refreshButton) { refreshButton.disabled = false; refreshButton.classList.remove("is-refreshing"); }
   }
 }
 async function renderAdminTab() {
