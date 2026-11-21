@@ -465,3 +465,12 @@ input, select, textarea { max-width: 100%; }
 @keyframes scanDot{to{opacity:.25;transform:translateY(-5px)}}
 @media(max-width:650px){.admin-wrap{grid-template-columns:1fr;gap:13px}.admin-side{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.admin-side button{text-align:center}.camera-stage{min-height:170px}.scanner-input-row{flex-direction:column}.scanner-input-row button{width:100%;min-height:40px}}
 @media(prefers-reduced-motion:reduce){.admin-overview,.admin-panel,.admin-stat-card,.admin-side button,.admin-item,.scanner-heading,.camera-scanner,.scanner-form,.ticket-scan-result{animation:none!important;transition:none!important}.camera-stage.is-camera-on .camera-scan-line,.camera-live.is-live i{animation:none!important}}
+
+
+/* QR ticket presentation */
+.ticket-qr{display:flex;justify-content:center;align-items:center;margin:16px auto 8px;padding:8px;background:#fff;width:max-content;max-width:100%;border:1px solid #ddd;border-radius:8px}
+.ticket-qr img{display:block;width:164px;height:164px;max-width:100%;image-rendering:pixelated}
+.ticket-qr-fallback svg{display:block;width:220px;height:64px}
+.admin-ticket-qr .ticket-qr{margin:18px auto}
+.admin-ticket-qr .ticket-qr img{width:176px;height:176px}
+@media(max-width:480px){.ticket-qr img{width:142px;height:142px}.admin-ticket-qr .ticket-qr img{width:150px;height:150px}}
