@@ -1198,8 +1198,26 @@ async function loadAccountBookings(){
   if(!currentUser){target.innerHTML="";return;}
   try{
     const data=await api("/account/bookings");
-    target.innerHTML='<div class="account-dashboard"><div class="account-heading"><div><p class="eyebrow">'+(language==="lv"?"TAVS KINO KONTS":"YOUR CINEMA ACCOUNT")+'</p><h3>'+escapeHTML(currentUser.name)+'</h3><p>'+escapeHTML(currentUser.email)+'</p></div><button class="button button-secondary" id="accountLogout">'+(language==="lv"?"Izrakstīties":"Sign out")+'</button></div><h3>'+(language==="lv"?"Manas biļetes":"My tickets")+'</h3>'+
+    const profileColor = /^#[0-9a-f]{6}$/i.test(currentUser.avatarColor || "") ? currentUser.avatarColor : "#9b5d43";
+    const profileEmoji = ["🍿","🎬","🍓","🍉","🍒","🍍","🍊","⭐","🎟️","🐱"].includes(currentUser.avatarEmoji) ? currentUser.avatarEmoji : "🍿";
+    target.innerHTML='<div class="account-dashboard"><div class="account-heading"><div class="account-profile-heading"><span class="account-avatar" style="--avatar-color:'+profileColor+'">'+profileEmoji+'</span><div><p class="eyebrow">'+(language==="lv"?"TAVS KINO KONTS":"YOUR CINEMA ACCOUNT")+'</p><h3>'+escapeHTML(currentUser.name)+'</h3><p>'+escapeHTML(currentUser.email)+'</p></div></div><button class="button button-secondary" id="accountLogout">'+(language==="lv"?"Izrakstīties":"Sign out")+'</button></div>'+
+      '<section class="profile-customise"><div><p class="eyebrow">'+(language==="lv"?"PERSONĪGAIS PROFILS":"PERSONAL PROFILE")+'</p><h3>'+(language==="lv"?"Pielāgo savu profilu":"Customise your profile")+'</h3></div><div class="profile-editor-grid"><div class="field"><label for="profileName">'+(language==="lv"?"Parādāmais vārds":"Display name")+'</label><input id="profileName" maxlength="70" value="'+escapeHTML(currentUser.name)+'"></div><div class="field"><label for="profileEmoji">'+(language==="lv"?"Profila ikona":"Profile icon")+'</label><select id="profileEmoji">'+["🍿","🎬","🍓","🍉","🍒","🍍","🍊","⭐","🎟️","🐱"].map(emoji=>'<option value="'+emoji+'"'+(emoji===profileEmoji?" selected":"")+'>'+emoji+'</option>').join("")+'</select></div><div class="field"><label for="profileColor">'+(language==="lv"?"Profila krāsa":"Profile colour")+'</label><select id="profileColor">'+[["#9b5d43","Terracotta"],["#b84a55","Berry"],["#c28b35","Amber"],["#438b78","Mint"],["#477da8","Ocean"],["#8062a8","Violet"],["#777777","Silver"]].map(([value,label])=>'<option value="'+value+'"'+(value===profileColor?" selected":"")+'>'+label+'</option>').join("")+'</select></div></div><div class="profile-preview-row"><span class="account-avatar profile-avatar-preview" id="profileAvatarPreview" style="--avatar-color:'+profileColor+'">'+profileEmoji+'</span><button class="small-button" id="saveProfile">'+(language==="lv"?"Saglabāt profilu":"Save profile")+'</button></div></section><h3>'+(language==="lv"?"Manas biļetes":"My tickets")+'</h3>'+
       ((data.bookings||[]).length?data.bookings.map(item=>'<article class="account-ticket"><div><b>'+escapeHTML(item.movie)+'</b><small>'+formatDate(item.date)+' · '+escapeHTML(item.time)+' · '+item.seats.map(escapeHTML).join(", ")+'</small><small>'+escapeHTML(item.code)+' · '+(item.status==="cancelled"?(language==="lv"?"Atcelta":"Cancelled"):(item.checkedIn?(language==="lv"?"Izmantota":"Checked in"):(language==="lv"?"Apstiprināta":"Confirmed")))+'</small></div><div class="account-ticket-actions">'+(item.status==="confirmed"?'<button class="small-button" data-account-ticket="'+escapeHTML(item.code)+'">'+(language==="lv"?"Atvērt biļeti":"Open ticket")+'</button>'+(new Date(item.startsAt).getTime()-Date.now()>24*3600000?'<button class="danger-button" data-account-cancel="'+escapeHTML(item.code)+'">'+(language==="lv"?"Atcelt":"Cancel")+'</button>':''):'')+'</div></article>').join(""):'<p class="admin-note">'+(language==="lv"?"Vēl nav rezervāciju.":"No bookings yet.")+'</p>')+'</div>';
+    $("#profileEmoji").onchange = $("#profileColor").onchange = () => {
+      const preview=$("#profileAvatarPreview");
+      if(preview){preview.textContent=$("#profileEmoji").value;preview.style.setProperty("--avatar-color",$("#profileColor").value);}
+    };
+    $("#saveProfile").onclick=async()=>{
+      const button=$("#saveProfile"),name=$("#profileName").value.trim();
+      if(name.length<2||name.length>70){toast(language==="lv"?"Vārdam jābūt 2–70 rakstzīmes garam.":"Name must be 2–70 characters.");return;}
+      button.disabled=true;button.textContent=language==="lv"?"Saglabā…":"Saving…";
+      try{
+        const result=await api("/account/profile",{method:"PUT",body:{name,avatarEmoji:$("#profileEmoji").value,avatarColor:$("#profileColor").value}});
+        currentUser=result.user;updateAccountButton();toast(language==="lv"?"Profils saglabāts!":"Profile saved!");
+        await loadAccountBookings();
+      }catch(error){toast(error.message);}
+      finally{if($("#saveProfile")){$("#saveProfile").disabled=false;$("#saveProfile").textContent=language==="lv"?"Saglabāt profilu":"Save profile";}}
+    };
     $("#accountLogout").onclick=async()=>{
       const button=$("#accountLogout");
       if(button.disabled)return;
